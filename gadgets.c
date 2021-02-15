@@ -10,7 +10,7 @@ typedef enum {
 
 typedef struct {
     GadgetType type;  // Type of gadget
-    char* assembly;  // Actual string
+    const char* assembly;  // Actual string
     char* opcode;
     int numOperands;
     char** operands;
@@ -30,7 +30,6 @@ Gadget createGadget(GadgetType type, const char* assembly){
     char* line = strdup(assembly);  // Make string writable
     char* opcode = strtok(line, " ");  // Peel off opcode
     char* operands = strtok(NULL, "");  // Save all operands
-
     char* operand = strtok(operands, ",");
     char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
     int numOperands = 0;
@@ -44,7 +43,7 @@ Gadget createGadget(GadgetType type, const char* assembly){
 
     Gadget gadget = {
         type,
-        line,
+        assembly,
         opcode,
         numOperands,
         operandList
@@ -53,20 +52,44 @@ Gadget createGadget(GadgetType type, const char* assembly){
 }
 
 int main(){
-    Gadget loadConstGadgets[8];
-    loadConstGadgets[0] = createGadget(LOAD_CONST,"pop eax");
-    loadConstGadgets[1] = createGadget(LOAD_CONST,"pop ecx");
-    loadConstGadgets[2] = createGadget(LOAD_CONST,"pop edx");
-    loadConstGadgets[3] = createGadget(LOAD_CONST,"pop ebx");
-    loadConstGadgets[4] = createGadget(LOAD_CONST,"pop esp");
-    loadConstGadgets[5] = createGadget(LOAD_CONST,"pop ebp");
-    loadConstGadgets[6] = createGadget(LOAD_CONST,"pop esi");
-    loadConstGadgets[7] = createGadget(LOAD_CONST,"pop edi");
+    int numGadgets = 8;
+    char* loadConstGadgetsStrings[8] = {
+        "pop eax",
+        "pop ecx",
+        "pop edx",
+        "pop ebx",
+        "pop esp",
+        "pop ebp",
+        "pop esi",
+        "pop edi"
+    };
+    Gadget loadConstGadgets[numGadgets];
+    for(int i = 0 ; i < numGadgets ; i++){
+        loadConstGadgets[i] = createGadget(LOAD_CONST,loadConstGadgetsStrings[i]);   
+    }
 
-    Gadget binaryOpGadgets[4];
-    binaryOpGadgets[0] = createGadget(BINARY_OP,"sub eax, ecx");
-    binaryOpGadgets[0] = createGadget(BINARY_OP,"add eax, 4");
-    binaryOpGadgets[0] = createGadget(BINARY_OP,"add eax, 0x4");
-    binaryOpGadgets[0] = createGadget(BINARY_OP,"add eax, ebx");
+    numGadgets = 4;
+    char* binaryOpGadgetsStrings[4] = {
+        "sub eax, ecx",
+        "add eax, 4",
+        "add eax, 0x4",
+        "add eax, ebx"
+    };
+    Gadget binaryOpGadgets[numGadgets];
+    for(int i = 0 ; i < numGadgets ; i++){
+        binaryOpGadgets[i] = createGadget(BINARY_OP,binaryOpGadgetsStrings[i]);   
+    }
+
+    numGadgets = 3;
+    char* moveRegGadgetsStrings[3] = {
+        "mov eax, ecx",
+        "mov eax, edx",
+        "mov eax, ebx"
+    };
+    Gadget moveRegGadgets[numGadgets];
+    for(int i = 0 ; i < numGadgets ; i++){
+        moveRegGadgets[i] = createGadget(MOVE_REG,moveRegGadgetsStrings[i]);   
+    }
+
     return 0;
 }
