@@ -21,6 +21,8 @@ typedef struct Gadgets {
     Gadget* moveRegGadgets;
 } Gadgets;
 
+void removeChars(char* str, char c);
+
 Gadget createGadget(GadgetType type, const char* assembly);
 
 Gadgets loadGadgets();
