@@ -1,20 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-typedef enum {
-    LOAD_CONST,
-    MOVE_REG,
-    BINARY_OP
-} GadgetType;
-
-typedef struct {
-    GadgetType type;  // Type of gadget
-    const char* assembly;  // Actual string
-    char* opcode;
-    int numOperands;
-    char** operands;
-} Gadget;
+#include "gadgets.h"
 
 // Remove all occurances of c from str
 void removeChars(char* str, char c) {
@@ -51,8 +38,8 @@ Gadget createGadget(GadgetType type, const char* assembly){
     return gadget;
 }
 
-int main(){
-    int numGadgets = 8;
+Gadgets loadGadgets(){
+    int numLoadConstGadgets = 8;
     char* loadConstGadgetsStrings[8] = {
         "pop eax",
         "pop ecx",
@@ -63,33 +50,42 @@ int main(){
         "pop esi",
         "pop edi"
     };
-    Gadget loadConstGadgets[numGadgets];
-    for(int i = 0 ; i < numGadgets ; i++){
+    Gadget loadConstGadgets[numLoadConstGadgets];
+    for(int i = 0 ; i < numLoadConstGadgets ; i++){
         loadConstGadgets[i] = createGadget(LOAD_CONST,loadConstGadgetsStrings[i]);   
     }
 
-    numGadgets = 4;
+    int numBinaryOpGadgets = 4;
     char* binaryOpGadgetsStrings[4] = {
         "sub eax, ecx",
         "add eax, 4",
         "add eax, 0x4",
         "add eax, ebx"
     };
-    Gadget binaryOpGadgets[numGadgets];
-    for(int i = 0 ; i < numGadgets ; i++){
+    Gadget binaryOpGadgets[numBinaryOpGadgets];
+    for(int i = 0 ; i < numBinaryOpGadgets ; i++){
         binaryOpGadgets[i] = createGadget(BINARY_OP,binaryOpGadgetsStrings[i]);   
     }
 
-    numGadgets = 3;
+    int numMoveRegGadgets = 3;
     char* moveRegGadgetsStrings[3] = {
         "mov eax, ecx",
         "mov eax, edx",
         "mov eax, ebx"
     };
-    Gadget moveRegGadgets[numGadgets];
-    for(int i = 0 ; i < numGadgets ; i++){
+    Gadget moveRegGadgets[numMoveRegGadgets];
+    for(int i = 0 ; i < numMoveRegGadgets ; i++){
         moveRegGadgets[i] = createGadget(MOVE_REG,moveRegGadgetsStrings[i]);   
     }
 
-    return 0;
+    Gadgets gadgets = {
+        numLoadConstGadgets,
+        loadConstGadgets,
+        numBinaryOpGadgets,
+        binaryOpGadgets,
+        numMoveRegGadgets,
+        moveRegGadgets
+    };
+
+    return gadgets;
 }
