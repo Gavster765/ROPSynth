@@ -38,16 +38,16 @@ Gadgets loadGadgets(){
         loadConstGadgets[i] = createGadget(LOAD_CONST,loadConstGadgetsStrings[i]);   
     }
 
-    int numBinaryOpGadgets = 4;
-    char* binaryOpGadgetsStrings[4] = {
+    int numArithOpGadgets = 4;
+    char* arithOpGadgetsStrings[4] = {
         "sub eax, ecx",
         "add eax, 4",
         "add eax, 0x4",
         "add eax, ebx"
     };
-    Gadget binaryOpGadgets[numBinaryOpGadgets];
-    for(int i = 0 ; i < numBinaryOpGadgets ; i++){
-        binaryOpGadgets[i] = createGadget(BINARY_OP,binaryOpGadgetsStrings[i]);   
+    Gadget arithOpGadgets[numArithOpGadgets];
+    for(int i = 0 ; i < numArithOpGadgets ; i++){
+        arithOpGadgets[i] = createGadget(ARITH_OP,arithOpGadgetsStrings[i]);   
     }
 
     int numMoveRegGadgets = 3;
@@ -64,8 +64,8 @@ Gadgets loadGadgets(){
     Gadgets gadgets = {
         numLoadConstGadgets,
         loadConstGadgets,
-        numBinaryOpGadgets,
-        binaryOpGadgets,
+        numArithOpGadgets,
+        arithOpGadgets,
         numMoveRegGadgets,
         moveRegGadgets
     };

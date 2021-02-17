@@ -1,27 +1,8 @@
 typedef enum {
     LOAD_CONST,
     MOVE_REG,
-    BINARY_OP
+    ARITH_OP
 } GadgetType;
-
-// typedef struct LoadConst {
-//     char* out;
-//     int value;
-// } LoadConst;
-
-// typedef struct BinOp {
-//     char* out;
-//     char opcode;
-//     char* operand1;
-//     char* operand2;
-// } BinOp;
-
-// // Ect as intermediate step - use switch on type?
-// typedef struct Type {
-//     GadgetType type;  // Type of gadget
-//     LoadConst loadConst;
-//     BinOp binOp;
-// } Type;
 
 typedef struct Gadget {
     GadgetType type;  // Type of gadget
@@ -34,8 +15,8 @@ typedef struct Gadget {
 typedef struct Gadgets {
     int numLoadConstGadgets;
     Gadget* loadConstGadgets;
-    int numBinaryOpGadgets;
-    Gadget* binaryOpGadgets;
+    int numArithOpGadgets;
+    Gadget* arithOpGadgets;
     int numMoveRegGadgets;
     Gadget* moveRegGadgets;
 } Gadgets;

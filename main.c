@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "gadgets.h"
+// #include "gadgets.h"
 #include "utils.h"
+#include "psuedo.h"
 
 typedef struct Var {
     char* name;
@@ -18,6 +19,7 @@ int main(){
         "Add x, y"
     };
     Var vars[progLines];
+    Psuedo psuedoInst[progLines];
 
     for (int i = 0 ; i < progLines ; i++){
         char* line = strdup(prog[i]);
@@ -29,9 +31,31 @@ int main(){
         if(strcmp(opcode,"Var") == 0){
             Var newVar = {
                 operandList[0],
+                // atoi(operandList[1])
+            };
+            LoadConst newConst = {
+                operandList[0],
                 atoi(operandList[1])
             };
+            Psuedo p = {
+                LOAD_CONST,
+                .loadConst = newConst
+            };
             vars[i] = newVar;  // Use hastable? Also probs shouldn't save value yet??
+            psuedoInst[i] = p;
+        }
+        else if(strcmp(opcode,"Add") == 0){
+            ArithOp newArith = {
+                '+',
+                operandList[0],
+                operandList[0],
+                operandList[1]
+            };
+            Psuedo p = {
+                ARITH_OP,
+                .arithOp = newArith
+            };
+            psuedoInst[i] = p;
         }
     }
     printf("%d %d\n",vars[0].value,vars[1].value);
