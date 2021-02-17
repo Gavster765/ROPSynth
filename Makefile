@@ -1,2 +1,2 @@
 all:
-	clang -g gadgets.c main.c -o main.out
+	clang -g utils.c gadgets.c main.c -o main

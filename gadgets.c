@@ -2,31 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include "gadgets.h"
-
-// Remove all occurances of c from str
-void removeChars(char* str, char c) {
-    char *pr = str, *pw = str;
-    while (*pr) {
-        *pw = *pr++;
-        pw += (*pw != c);
-    }
-    *pw = '\0';
-}
+#include "utils.h"
 
 Gadget createGadget(GadgetType type, const char* assembly){
     char* line = strdup(assembly);  // Make string writable
     char* opcode = strtok(line, " ");  // Peel off opcode
     char* operands = strtok(NULL, "");  // Save all operands
-    char* operand = strtok(operands, ",");
     char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
-    int numOperands = 0;
-    // Iterate though operands 
-    while(operand != NULL){
-        removeChars(operand,' ');
-        operandList[numOperands] = operand;
-        numOperands++;
-        operand = strtok(NULL, ",");
-    }
+    int numOperands = getOperands(operandList, operands);
 
     Gadget gadget = {
         type,

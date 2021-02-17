@@ -4,6 +4,25 @@ typedef enum {
     BINARY_OP
 } GadgetType;
 
+// typedef struct LoadConst {
+//     char* out;
+//     int value;
+// } LoadConst;
+
+// typedef struct BinOp {
+//     char* out;
+//     char opcode;
+//     char* operand1;
+//     char* operand2;
+// } BinOp;
+
+// // Ect as intermediate step - use switch on type?
+// typedef struct Type {
+//     GadgetType type;  // Type of gadget
+//     LoadConst loadConst;
+//     BinOp binOp;
+// } Type;
+
 typedef struct Gadget {
     GadgetType type;  // Type of gadget
     const char* assembly;  // Actual string
@@ -20,8 +39,6 @@ typedef struct Gadgets {
     int numMoveRegGadgets;
     Gadget* moveRegGadgets;
 } Gadgets;
-
-void removeChars(char* str, char c);
 
 Gadget createGadget(GadgetType type, const char* assembly);
 
