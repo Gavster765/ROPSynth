@@ -3,14 +3,14 @@
 #include <stdlib.h>
 // #include "gadgets.h"
 #include "utils.h"
-#include "psuedo.h"
+#include "pseudo.h"
 
 typedef struct Var {
     char* name;
     int value;
 } Var;
 
-void createPsuedo(int progLines, char** prog, Var* vars, Psuedo* psuedoInst) {
+void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
     for (int i = 0 ; i < progLines ; i++){
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
@@ -27,12 +27,12 @@ void createPsuedo(int progLines, char** prog, Var* vars, Psuedo* psuedoInst) {
                     operandList[0],
                     atoi(operandList[1])
                 };
-                Psuedo p = {
+                Pseudo p = {
                     LOAD_CONST,
                     .loadConst = newConst
                 };
                 vars[i] = newVar;  // Use hastable? Also probs shouldn't save value yet??
-                psuedoInst[i] = p;
+                pseudoInst[i] = p;
             }
             else if(strcmp(opcode,"Add") == 0){
                 ArithOp newArith = {
@@ -41,11 +41,11 @@ void createPsuedo(int progLines, char** prog, Var* vars, Psuedo* psuedoInst) {
                     operandList[0],
                     operandList[1]
                 };
-                Psuedo p = {
+                Pseudo p = {
                     ARITH_OP,
                     .arithOp = newArith
                 };
-                psuedoInst[i] = p;
+                pseudoInst[i] = p;
             }
         }
 }
@@ -59,11 +59,11 @@ int main(){
         "Add x, y"
     };
     Var vars[progLines];
-    Psuedo psuedoInst[progLines];
+    Pseudo pseudoInst[progLines];
     
-    createPsuedo(progLines, prog, vars, psuedoInst);
+    createPseudo(progLines, prog, vars, pseudoInst);
     
-    // printf("%d %d\n",vars[0].value,vars[1].value);
-    // printf("%d\n",psuedoInst[0].type);
+    printf("%d %d\n",vars[0].value,vars[1].value);
+    printf("%d\n",pseudoInst[0].type);
     return 0;
 }
