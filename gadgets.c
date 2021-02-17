@@ -4,8 +4,9 @@
 #include "gadgets.h"
 #include "utils.h"
 
-Gadget createGadget(GadgetType type, const char* assembly){
-    char* line = strdup(assembly);  // Make string writable
+Gadget createGadget(GadgetType type, char* assembly){
+    char* assm = strdup(assembly);  // Make string writable
+    char* line = strdup(assembly);
     char* opcode = strtok(line, " ");  // Peel off opcode
     char* operands = strtok(NULL, "");  // Save all operands
     char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
@@ -13,7 +14,7 @@ Gadget createGadget(GadgetType type, const char* assembly){
 
     Gadget gadget = {
         type,
-        assembly,
+        assm,
         opcode,
         numOperands,
         operandList
@@ -22,44 +23,47 @@ Gadget createGadget(GadgetType type, const char* assembly){
 }
 
 Gadgets loadGadgets(){
-    int numLoadConstGadgets = 8;
-    char* loadConstGadgetsStrings[8] = {
-        "pop rax",
-        "pop rcx",
-        "pop rdx",
-        "pop rbx",
-        "pop rsp",
-        "pop rbp",
-        "pop rsi",
-        "pop rdi"
-    };
+    int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets;
+    const int max = 20;
+    char line[max];
+    FILE *f = fopen("gadgets.txt", "r");
+    
+    fscanf(f, "%d,%d,%d\n",&numLoadConstGadgets, &numArithOpGadgets, &numMoveRegGadgets);
     Gadget* loadConstGadgets = malloc(sizeof(Gadget) * numLoadConstGadgets);
-    for(int i = 0 ; i < numLoadConstGadgets ; i++){
-        loadConstGadgets[i] = createGadget(LOAD_CONST,loadConstGadgetsStrings[i]);   
-    }
-
-    int numArithOpGadgets = 4;
-    char* arithOpGadgetsStrings[4] = {
-        "sub rax, rcx",
-        "add rax, 4",
-        "add rax, 0x4",
-        "add rax, rbx"
-    };
     Gadget* arithOpGadgets = malloc(sizeof(Gadget) * numArithOpGadgets);
-    for(int i = 0 ; i < numArithOpGadgets ; i++){
-        arithOpGadgets[i] = createGadget(ARITH_OP,arithOpGadgetsStrings[i]);   
-    }
-
-    int numMoveRegGadgets = 3;
-    char* moveRegGadgetsStrings[3] = {
-        "mov rax, rcx",
-        "mov rax, rdx",
-        "mov rax, rbx"
-    };
     Gadget* moveRegGadgets = malloc(sizeof(Gadget) * numMoveRegGadgets);
-    for(int i = 0 ; i < numMoveRegGadgets ; i++){
-        moveRegGadgets[i] = createGadget(MOVE_REG,moveRegGadgetsStrings[i]);   
+    
+    Gadget* curr;
+    int count;
+    GadgetType type;
+    fgets(line, max , f);
+    while (!feof(f)){
+        line[strcspn(line, "\n")] = '\0';
+
+        if(strcmp(line,"") == 0){
+        }
+        else if(strcmp(line,"loadConst") == 0){
+            curr = loadConstGadgets;
+            type = LOAD_CONST;
+            count = 0;
+        }
+        else if(strcmp(line,"arithOp") == 0){
+            curr = arithOpGadgets;
+            type = ARITH_OP;
+            count = 0;
+        }
+        else if(strcmp(line,"moveReg") == 0){
+            curr = moveRegGadgets;
+            type = MOVE_REG;
+            count = 0;
+        }
+        else {
+            curr[count] = createGadget(type, line);
+            count++;
+        }
+        fgets(line, max , f);
     }
+    fclose(f);
 
     Gadgets gadgets = {
         numLoadConstGadgets,
