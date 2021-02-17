@@ -24,39 +24,39 @@ Gadget createGadget(GadgetType type, const char* assembly){
 Gadgets loadGadgets(){
     int numLoadConstGadgets = 8;
     char* loadConstGadgetsStrings[8] = {
-        "pop eax",
-        "pop ecx",
-        "pop edx",
-        "pop ebx",
-        "pop esp",
-        "pop ebp",
-        "pop esi",
-        "pop edi"
+        "pop rax",
+        "pop rcx",
+        "pop rdx",
+        "pop rbx",
+        "pop rsp",
+        "pop rbp",
+        "pop rsi",
+        "pop rdi"
     };
-    Gadget loadConstGadgets[numLoadConstGadgets];
+    Gadget* loadConstGadgets = malloc(sizeof(Gadget) * numLoadConstGadgets);
     for(int i = 0 ; i < numLoadConstGadgets ; i++){
         loadConstGadgets[i] = createGadget(LOAD_CONST,loadConstGadgetsStrings[i]);   
     }
 
     int numArithOpGadgets = 4;
     char* arithOpGadgetsStrings[4] = {
-        "sub eax, ecx",
-        "add eax, 4",
-        "add eax, 0x4",
-        "add eax, ebx"
+        "sub rax, rcx",
+        "add rax, 4",
+        "add rax, 0x4",
+        "add rax, rbx"
     };
-    Gadget arithOpGadgets[numArithOpGadgets];
+    Gadget* arithOpGadgets = malloc(sizeof(Gadget) * numArithOpGadgets);
     for(int i = 0 ; i < numArithOpGadgets ; i++){
         arithOpGadgets[i] = createGadget(ARITH_OP,arithOpGadgetsStrings[i]);   
     }
 
     int numMoveRegGadgets = 3;
     char* moveRegGadgetsStrings[3] = {
-        "mov eax, ecx",
-        "mov eax, edx",
-        "mov eax, ebx"
+        "mov rax, rcx",
+        "mov rax, rdx",
+        "mov rax, rbx"
     };
-    Gadget moveRegGadgets[numMoveRegGadgets];
+    Gadget* moveRegGadgets = malloc(sizeof(Gadget) * numMoveRegGadgets);
     for(int i = 0 ; i < numMoveRegGadgets ; i++){
         moveRegGadgets[i] = createGadget(MOVE_REG,moveRegGadgetsStrings[i]);   
     }
