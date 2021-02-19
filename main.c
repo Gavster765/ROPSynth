@@ -66,14 +66,25 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
         }
 }
 
-// Assume can only load const with pop for now - DELETE?
-// void findPossibleLoadRegisters(Var var, Gadgets gadgets){
-//     for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
-//         var.regs[i] = gadgets.loadConstGadgets[i].operands[0];
-//     }
-// }
+// return a list of registers currently in use
+char** usedRegisters(Vars* vars){
+    char** usedRegs = malloc(vars->count * 4);
+    for (int i = 0 ; i < vars->count ; i++) {
+        usedRegs[i] = vars->vars[i]->reg;
+    }
+    return usedRegs;
+}
 
-char* checkRegisterPossible(Var* var, char* reg, Gadgets gadgets){
+bool exists(char* reg, char** usedRegs, int count){
+    for (int i = 0 ; i < count ; i++){
+        if(strcmp(usedRegs[i],reg) == 0){
+            return true;
+        }
+    }
+    return false;
+}
+
+char* checkRegisterPossible(Var* var, char* reg, char** usedRegs, int count, Gadgets gadgets){
     // Already in correct register
     if(strcmp(var->reg,reg) == 0){
         return "";  // No change needed
@@ -82,7 +93,8 @@ char* checkRegisterPossible(Var* var, char* reg, Gadgets gadgets){
     else if(strcmp(var->reg,"new") == 0){
         for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
             Gadget loadGadget = gadgets.loadConstGadgets[i];
-            if (strcmp(loadGadget.operands[0],reg) == 0){
+            if (!exists(reg,usedRegs,count) &&
+                strcmp(loadGadget.operands[0],reg) == 0){
                 return loadGadget.assembly;
             }
         }
@@ -100,12 +112,13 @@ char* checkRegisterPossible(Var* var, char* reg, Gadgets gadgets){
 void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
     Var* a = findVar(inst.operand1,vars);
     Var* b = findVar(inst.operand2,vars);
+    char** usedRegs = usedRegisters(vars);
 
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
         Gadget gadget = gadgets.arithOpGadgets[i];
         if (strcmp(gadget.opcode,"add") == 0) {
-            char* setupA = checkRegisterPossible(a, gadget.operands[0], gadgets); 
-            char* setupB = checkRegisterPossible(b, gadget.operands[1], gadgets);
+            char* setupA = checkRegisterPossible(a, gadget.operands[0], usedRegs, vars->count, gadgets); 
+            char* setupB = checkRegisterPossible(b, gadget.operands[1], usedRegs, vars->count, gadgets);
             if (setupA != NULL && setupB != NULL){
                 // Set new register - could be the same if unchanged
                 strcpy(a->reg, gadget.operands[0]);
@@ -116,18 +129,9 @@ void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
     }
 }
 
-// return a list of registers currently in use
-// char** usedRegisters(int num, Var* vars){
-//     char* usedRegs[num];
-//     for (int i = 0 ; i < num ; i++) {
-//         usedRegs[i] = vars[i].reg;
-//     }
-//     return usedRegs;
-// }
-
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
-        // char** usedRegs = usedRegisters(progLines,)
+        
         switch (pseudoInst[i].type){
             case LOAD_CONST:
             {
