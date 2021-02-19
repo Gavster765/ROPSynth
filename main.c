@@ -8,20 +8,25 @@
 
 // Move var and related to utils - consider changing data structure
 typedef struct Var {
-    char* name;
     int value;
-    char* reg;
+    char reg[4];
+    char name[];
 } Var;
 
-Var findVar(char* name, Var* vars, int num){
-    for (int i = 0 ; i < num ; i++){
-        if(strcmp(vars[i].name, name) == 0){
-            return vars[i];
+typedef struct Vars {
+    int count;
+    Var* vars[];
+} Vars;
+
+Var* findVar(char* name, Vars* vars){
+    for (int i = 0 ; i < vars->count ; i++){
+        if(strcmp(vars->vars[i]->name, name) == 0){
+            return vars->vars[i];
         }
     }
 }
 
-void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
+void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     for (int i = 0 ; i < progLines ; i++){
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
@@ -30,12 +35,9 @@ void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
             int numOperands = getOperands(operandList, operands);
             
             if(strcmp(opcode,"Var") == 0){
-                Var newVar = {
-                    operandList[0],
-                    // atoi(operandList[1])
-                    .reg  = malloc(3*sizeof(char))
-                };
-                strcpy(newVar.reg,"new");
+                Var *newVar = malloc(sizeof(Var) + strlen(operandList[0]) + 1);
+                strcpy(newVar->reg,"new");
+                strcpy(newVar->name, operandList[0]);
                 LoadConst newConst = {
                     operandList[0],
                     atoi(operandList[1])
@@ -44,7 +46,8 @@ void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
                     LOAD_CONST,
                     .loadConst = newConst
                 };
-                vars[i] = newVar;  // Use hastable? Also probs shouldn't save value yet??
+                vars->vars[vars->count] = newVar;  // Use hastable? Also probs shouldn't save value yet??
+                vars->count++;
                 pseudoInst[i] = p;
             }
             else if(strcmp(opcode,"Add") == 0){
@@ -70,13 +73,13 @@ void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
 //     }
 // }
 
-char* checkRegisterPossible(Var var, char* reg, Gadgets gadgets){
+char* checkRegisterPossible(Var* var, char* reg, Gadgets gadgets){
     // Already in correct register
-    if(strcmp(var.reg,reg) == 0){
+    if(strcmp(var->reg,reg) == 0){
         return "";  // No change needed
     }
     // Unloaded var
-    else if(strcmp(var.reg,"new") == 0){
+    else if(strcmp(var->reg,"new") == 0){
         for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
             Gadget loadGadget = gadgets.loadConstGadgets[i];
             if (strcmp(loadGadget.operands[0],reg) == 0){
@@ -93,10 +96,10 @@ char* checkRegisterPossible(Var var, char* reg, Gadgets gadgets){
     return NULL;
 }
 
-// Create type a+a+b
-void synthesiseAdd(ArithOp inst, Var* vars, Gadgets gadgets){
-    Var a = findVar(inst.operand1,vars,3);
-    Var b = findVar(inst.operand2,vars,3);
+// Create type a=a+b
+void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
+    Var* a = findVar(inst.operand1,vars);
+    Var* b = findVar(inst.operand2,vars);
 
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
         Gadget gadget = gadgets.arithOpGadgets[i];
@@ -105,16 +108,26 @@ void synthesiseAdd(ArithOp inst, Var* vars, Gadgets gadgets){
             char* setupB = checkRegisterPossible(b, gadget.operands[1], gadgets);
             if (setupA != NULL && setupB != NULL){
                 // Set new register - could be the same if unchanged
-                a.reg = gadget.operands[0];
-                b.reg = gadget.operands[1];
+                strcpy(a->reg, gadget.operands[0]);
+                strcpy(b->reg, gadget.operands[1]);
                 printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
             }
         }
     }
 }
 
-void translatePseudo(int progLines, Var* vars, Pseudo* pseudoInst, Gadgets gadgets){
+// return a list of registers currently in use
+// char** usedRegisters(int num, Var* vars){
+//     char* usedRegs[num];
+//     for (int i = 0 ; i < num ; i++) {
+//         usedRegs[i] = vars[i].reg;
+//     }
+//     return usedRegs;
+// }
+
+void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
+        // char** usedRegs = usedRegisters(progLines,)
         switch (pseudoInst[i].type){
             case LOAD_CONST:
             {
@@ -145,10 +158,11 @@ int main(){
         "Var x, 1",
         "Var y, 2",
         "Add x, y",
-        "Var z",
+        "Var z, 3",
         "Add x, z"
     };
-    Var vars[progLines];
+    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
+    vars->count = 0;
     Pseudo pseudoInst[progLines];
     
     createPseudo(progLines, prog, vars, pseudoInst);
