@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-// #include "gadgets.h"
 #include "utils.h"
 #include "pseudo.h"
 
@@ -68,11 +67,19 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
 // return a list of registers currently in use
 char** usedRegisters(Vars* vars){
-    char** usedRegs = malloc(vars->count * 4);
+    char** usedRegs = malloc(vars->count * sizeof(char*));
     for (int i = 0 ; i < vars->count ; i++) {
-        usedRegs[i] = vars->vars[i]->reg;
+        usedRegs[i] = malloc(4);
+        strcpy(usedRegs[i], vars->vars[i]->reg);
     }
     return usedRegs;
+}
+
+void freeUsedRegs(char** used, int count){
+    for (int i = 0 ; i < count ; i++) {
+        free(used[i]);    
+    }
+    free(used);
 }
 
 bool exists(char* reg, char** usedRegs, int count){
@@ -108,17 +115,31 @@ char* checkRegisterPossible(Var* var, char* reg, char** usedRegs, int count, Gad
     return NULL;
 }
 
+void addRegToUsed(char** used, char* reg, int count){
+    if(!exists(reg,used,count)){
+        for (int i = 0 ; i < count ; i++) {
+            if(strcmp(used[i],"new") == 0) {
+                strcpy(used[i],reg);
+                return;
+            }
+        }
+    }
+}
+
 // Create type a=a+b
 void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
     Var* a = findVar(inst.operand1,vars);
     Var* b = findVar(inst.operand2,vars);
+    int count = vars->count;
     char** usedRegs = usedRegisters(vars);
 
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
+        char** tmpUsedRegs = usedRegisters(vars);
         Gadget gadget = gadgets.arithOpGadgets[i];
         if (strcmp(gadget.opcode,"add") == 0) {
-            char* setupA = checkRegisterPossible(a, gadget.operands[0], usedRegs, vars->count, gadgets); 
-            char* setupB = checkRegisterPossible(b, gadget.operands[1], usedRegs, vars->count, gadgets);
+            char* setupA = checkRegisterPossible(a, gadget.operands[0], tmpUsedRegs, count, gadgets); 
+            addRegToUsed(tmpUsedRegs,gadget.operands[0],count);
+            char* setupB = checkRegisterPossible(b, gadget.operands[1], tmpUsedRegs, count, gadgets);
             if (setupA != NULL && setupB != NULL){
                 // Set new register - could be the same if unchanged
                 strcpy(a->reg, gadget.operands[0]);
@@ -126,7 +147,9 @@ void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
                 printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
             }
         }
+        freeUsedRegs(tmpUsedRegs, count);
     }
+    freeUsedRegs(usedRegs, count);
 }
 
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
