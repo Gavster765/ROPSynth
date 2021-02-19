@@ -12,9 +12,10 @@ pop rdi
 
 arithOp
 sub rax, rcx
+add rax, rbx
+add rcx, rdx
 add rax, 4
 add rax, 0x4
-add rax, rbx
 
 moveReg
 mov rax, rcx

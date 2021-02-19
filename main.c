@@ -6,10 +6,11 @@
 #include "utils.h"
 #include "pseudo.h"
 
+// Move var and related to utils - consider changing data structure
 typedef struct Var {
     char* name;
     int value;
-    char** regs;
+    char* reg;
 } Var;
 
 Var findVar(char* name, Var* vars, int num){
@@ -32,8 +33,9 @@ void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
                 Var newVar = {
                     operandList[0],
                     // atoi(operandList[1])
-                    .regs = malloc(20*3*sizeof(char))
+                    .reg  = malloc(3*sizeof(char))
                 };
+                strcpy(newVar.reg,"new");
                 LoadConst newConst = {
                     operandList[0],
                     atoi(operandList[1])
@@ -61,23 +63,34 @@ void createPseudo(int progLines, char** prog, Var* vars, Pseudo* pseudoInst) {
         }
 }
 
-// Assume can only load const with pop for now
-void findPossibleLoadRegisters(Var var, Gadgets gadgets){
-    for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
-        var.regs[i] = gadgets.loadConstGadgets[i].operands[0];
-    }
-}
+// Assume can only load const with pop for now - DELETE?
+// void findPossibleLoadRegisters(Var var, Gadgets gadgets){
+//     for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+//         var.regs[i] = gadgets.loadConstGadgets[i].operands[0];
+//     }
+// }
 
-bool checkRegisterPossible(Var var, char* reg){
-    for (int i = 0 ; i < 20 ; i++){
-        if (var.regs[i] == NULL){
-            return false;
-        }
-        if (strcmp(var.regs[i],reg) == 0) {
-            return true;
-        }
+char* checkRegisterPossible(Var var, char* reg, Gadgets gadgets){
+    // Already in correct register
+    if(strcmp(var.reg,reg) == 0){
+        return "";  // No change needed
     }
-    return false;
+    // Unloaded var
+    else if(strcmp(var.reg,"new") == 0){
+        for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+            Gadget loadGadget = gadgets.loadConstGadgets[i];
+            if (strcmp(loadGadget.operands[0],reg) == 0){
+                return loadGadget.assembly;
+            }
+        }
+        return NULL;  // Load not possible without move TODO
+    }
+    // Loaded but in wrong register
+    else {
+        // Move??
+        return NULL;
+    }
+    return NULL;
 }
 
 // Create type a+a+b
@@ -88,10 +101,14 @@ void synthesiseAdd(ArithOp inst, Var* vars, Gadgets gadgets){
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
         Gadget gadget = gadgets.arithOpGadgets[i];
         if (strcmp(gadget.opcode,"add") == 0) {
-            if( checkRegisterPossible(a, gadget.operands[0]) && 
-                checkRegisterPossible(b, gadget.operands[1]) ) {
-                    printf("%s\n",gadget.assembly);
-                }
+            char* setupA = checkRegisterPossible(a, gadget.operands[0], gadgets); 
+            char* setupB = checkRegisterPossible(b, gadget.operands[1], gadgets);
+            if (setupA != NULL && setupB != NULL){
+                // Set new register - could be the same if unchanged
+                a.reg = gadget.operands[0];
+                b.reg = gadget.operands[1];
+                printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
+            }
         }
     }
 }
@@ -101,9 +118,9 @@ void translatePseudo(int progLines, Var* vars, Pseudo* pseudoInst, Gadgets gadge
         switch (pseudoInst[i].type){
             case LOAD_CONST:
             {
-                LoadConst inst = pseudoInst[i].loadConst;
-                Var var = findVar(inst.out,vars,progLines);
-                findPossibleLoadRegisters(var, gadgets);
+                // LoadConst inst = pseudoInst[i].loadConst;
+                // Var var = findVar(inst.out,vars,progLines);
+                // findPossibleLoadRegisters(var, gadgets);
                 break;
             }
             case ARITH_OP:
@@ -123,11 +140,13 @@ void translatePseudo(int progLines, Var* vars, Pseudo* pseudoInst, Gadgets gadge
 }
 
 int main(){
-    int progLines = 3;
-    char* prog[3] = {
+    const int progLines = 5;
+    char* prog[progLines] = {
         "Var x, 1",
         "Var y, 2",
-        "Add x, y"
+        "Add x, y",
+        "Var z",
+        "Add x, z"
     };
     Var vars[progLines];
     Pseudo pseudoInst[progLines];
