@@ -114,20 +114,24 @@ char* checkRegisterPossible(Var* var, char* dest, char** usedRegs, int count, Ga
     else if(strcmp(var->reg,"new") == 0){
         for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
             Gadget loadGadget = gadgets.loadConstGadgets[i];
-            char* gadgetDest = loadGadget.operands[0];
             if (exists(dest,usedRegs,count)){
                 return NULL;  // Reg in use - would clobber value - move first?
             }
-            else if (strcmp(gadgetDest,dest) == 0){
+            else if (strcmp(loadGadget.operands[0],dest) == 0){
                 return loadGadget.assembly;
             }
-            else if (!exists(gadgetDest,usedRegs,count)){
+        }
+        for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+            Gadget loadGadget = gadgets.loadConstGadgets[i];
+            char* gadgetDest = loadGadget.operands[0];
+            if (!exists(gadgetDest,usedRegs,count)){
                 strcpy(var->reg,gadgetDest);  // Temporially load
                 char* possMove = moveReg(var, dest, usedRegs, count, gadgets);
                 strcpy(var->reg,"new");  // Undo temporary load
                 if (possMove != NULL){
+                    // WARNING memory leak!
                     char* assembly = malloc(strlen(loadGadget.assembly)
-                                             + strlen(possMove) + 1);
+                                                + strlen(possMove) + 1);
                     assembly[0] = '\0';                                             
                     strcat(assembly,loadGadget.assembly);
                     strcat(assembly,"\n");
