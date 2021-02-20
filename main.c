@@ -91,7 +91,10 @@ bool exists(char* reg, char** usedRegs, int count){
     return false;
 }
 
-char* moveReg(Var* var, char* dest, char** usedRegs, Gadgets gadgets){
+char* moveReg(Var* var, char* dest, char** usedRegs, int count, Gadgets gadgets){
+    if (exists(dest, usedRegs, count)){
+        return NULL;  // Reg in use - would clobber value
+    }
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
         if (strcmp(dest, moveGadget.operands[0]) == 0 &&
@@ -128,7 +131,7 @@ char* checkRegisterPossible(Var* var, char* dest, char** usedRegs, int count, Ga
         // try to match with src <- even if requires a move?
 
 
-        return moveReg(var, dest, usedRegs, gadgets);
+        return moveReg(var, dest, usedRegs, count, gadgets);
     }
     return NULL;
 }
