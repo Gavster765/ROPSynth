@@ -91,17 +91,28 @@ bool exists(char* reg, char** usedRegs, int count){
     return false;
 }
 
-char* checkRegisterPossible(Var* var, char* reg, char** usedRegs, int count, Gadgets gadgets){
+char* moveReg(Var* var, char* dest, char** usedRegs, Gadgets gadgets){
+    for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
+        Gadget moveGadget = gadgets.moveRegGadgets[i];
+        if (strcmp(dest, moveGadget.operands[0]) == 0 &&
+            strcmp(var->reg, moveGadget.operands[1]) == 0) {
+                return moveGadget.assembly;
+        }
+    }
+    return NULL;
+}
+
+char* checkRegisterPossible(Var* var, char* dest, char** usedRegs, int count, Gadgets gadgets){
     // Already in correct register
-    if(strcmp(var->reg,reg) == 0){
+    if(strcmp(var->reg,dest) == 0){
         return "";  // No change needed
     }
     // Unloaded var
     else if(strcmp(var->reg,"new") == 0){
         for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
             Gadget loadGadget = gadgets.loadConstGadgets[i];
-            if (!exists(reg,usedRegs,count) &&
-                strcmp(loadGadget.operands[0],reg) == 0){
+            if (!exists(dest,usedRegs,count) &&
+                strcmp(loadGadget.operands[0],dest) == 0){
                 return loadGadget.assembly;
             }
         }
@@ -109,8 +120,15 @@ char* checkRegisterPossible(Var* var, char* reg, char** usedRegs, int count, Gad
     }
     // Loaded but in wrong register
     else {
-        // Move??
-        return NULL;
+        // Reg assigned but not correct
+        // if (new) // merge
+        //     generate list of all poss loads ??s
+        
+        // get moves with correct dest 
+        // try to match with src <- even if requires a move?
+
+
+        return moveReg(var, dest, usedRegs, gadgets);
     }
     return NULL;
 }
@@ -145,6 +163,9 @@ void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
                 strcpy(a->reg, gadget.operands[0]);
                 strcpy(b->reg, gadget.operands[1]);
                 printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
+                freeUsedRegs(tmpUsedRegs, count);
+                freeUsedRegs(usedRegs, count);
+                return;
             }
         }
         freeUsedRegs(tmpUsedRegs, count);
