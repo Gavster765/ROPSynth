@@ -93,7 +93,7 @@ bool exists(char* reg, char** usedRegs, int count){
 
 char* moveReg(Var* var, char* dest, char** usedRegs, int count, Gadgets gadgets){
     if (exists(dest, usedRegs, count)){
-        return NULL;  // Reg in use - would clobber value
+        return NULL;  // Reg in use - would clobber value - move first?
     }
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
@@ -114,9 +114,27 @@ char* checkRegisterPossible(Var* var, char* dest, char** usedRegs, int count, Ga
     else if(strcmp(var->reg,"new") == 0){
         for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
             Gadget loadGadget = gadgets.loadConstGadgets[i];
-            if (!exists(dest,usedRegs,count) &&
-                strcmp(loadGadget.operands[0],dest) == 0){
+            char* gadgetDest = loadGadget.operands[0];
+            if (exists(dest,usedRegs,count)){
+                return NULL;  // Reg in use - would clobber value - move first?
+            }
+            else if (strcmp(gadgetDest,dest) == 0){
                 return loadGadget.assembly;
+            }
+            else if (!exists(gadgetDest,usedRegs,count)){
+                strcpy(var->reg,gadgetDest);  // Temporially load
+                char* possMove = moveReg(var, dest, usedRegs, count, gadgets);
+                strcpy(var->reg,"new");  // Undo temporary load
+                if (possMove != NULL){
+                    char* assembly = malloc(strlen(loadGadget.assembly)
+                                             + strlen(possMove) + 1);
+                    assembly[0] = '\0';                                             
+                    strcat(assembly,loadGadget.assembly);
+                    strcat(assembly,"\n");
+                    strcat(assembly,possMove);
+                    return assembly;
+                }
+
             }
         }
         return NULL;  // Load not possible without move TODO
@@ -148,7 +166,7 @@ void addRegToUsed(char** used, char* reg, int count){
 }
 
 // Create type a=a+b
-void synthesiseAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
+void synthesizeAdd(ArithOp inst, Vars* vars, Gadgets gadgets){
     Var* a = findVar(inst.operand1,vars);
     Var* b = findVar(inst.operand2,vars);
     int count = vars->count;
@@ -192,7 +210,7 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 ArithOp inst = pseudoInst[i].arithOp;
                 switch (inst.opcode){
                     case '+': 
-                        synthesiseAdd(inst, vars, gadgets);
+                        synthesizeAdd(inst, vars, gadgets);
                         break;
                 }
                 break;

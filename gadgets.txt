@@ -1,10 +1,9 @@
-8,3,5
+7,3,5
 
 loadConst
 pop rax
 pop rcx
 pop rdx
-pop rbx
 pop rsp
 pop rbp
 pop rsi
@@ -20,4 +19,4 @@ mov rcx, rax
 mov rax, rcx
 mov rax, rdx
 mov rax, rbx
-mov rbx, rax
+mov rbx, rsp

@@ -36,11 +36,12 @@ Gadgets loadGadgets(){
     Gadget* curr;
     int count;
     GadgetType type;
-    fgets(line, max , f);
     while (!feof(f)){
+        fgets(line, max , f);
         line[strcspn(line, "\n")] = '\0';
 
         if(strcmp(line,"") == 0){
+            continue;
         }
         else if(strcmp(line,"loadConst") == 0){
             curr = loadConstGadgets;
@@ -61,7 +62,6 @@ Gadgets loadGadgets(){
             curr[count] = createGadget(type, line);
             count++;
         }
-        fgets(line, max , f);
     }
     fclose(f);
 
