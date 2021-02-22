@@ -93,6 +93,19 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 pseudoInst[i] = p;
             }
+            else if(strcmp(opcode,"Sub") == 0){  // TODO - combine with above as very similar?
+                ArithOp newArith = {
+                    '-',
+                    operandList[0],
+                    operandList[0],
+                    operandList[1]
+                };
+                Pseudo p = {
+                    ARITH_OP,
+                    .arithOp = newArith
+                };
+                pseudoInst[i] = p;
+            }
         }
 }
 
@@ -151,7 +164,7 @@ char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
             !exists(moveGadget.operands[0], usedRegs, vars->count)) {
                 Var* var = findVarByReg(src, vars);
                 strcpy(var->reg, moveGadget.operands[0]);
-                removeRegFromUsed(usedRegs, src, vars->count);  // Not required atm
+                removeRegFromUsed(usedRegs, src, vars->count);
                 addRegToUsed(usedRegs, var->reg, vars->count);
                 return moveGadget.assembly;
         }
@@ -251,9 +264,10 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
 }
 
 // Create type a=a+b
-void synthesizeAdd(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
+void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     int count = vars->count;
+    char op = inst.opcode;
 
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
         char** usedRegs = usedRegisters(vars);
@@ -261,15 +275,14 @@ void synthesizeAdd(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         Var* a = findVar(inst.operand1,tmpVars);
         Var* b = findVar(inst.operand2,tmpVars);
         Gadget gadget = gadgets.arithOpGadgets[i];
-        if (strcmp(gadget.opcode,"add") == 0) {
+
+        if ( (op == '+' &&  strcmp(gadget.opcode,"add") == 0) ||
+             (op == '-' &&  strcmp(gadget.opcode,"sub") == 0)  ) {
             char* setupA = checkRegisterPossible(a, gadget.operands[0], &usedRegs, &tmpVars, gadgets); 
-            // addRegToUsed(usedRegs,gadget.operands[0],count);
             // WARNING may have moved value from add dest to add src - could now be stuck when other moves where possible
             char* setupB = checkRegisterPossible(b, gadget.operands[1], &usedRegs, &tmpVars, gadgets);
             if (setupA != NULL && setupB != NULL){
                 // Set new register - could be the same if unchanged
-                // strcpy(a->reg, gadget.operands[0]);
-                // strcpy(b->reg, gadget.operands[1]);
                 *varsPtr = tmpVars;
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
@@ -295,12 +308,7 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             }
             case ARITH_OP:
             {
-                ArithOp inst = pseudoInst[i].arithOp;
-                switch (inst.opcode){
-                    case '+': 
-                        synthesizeAdd(inst, &vars, gadgets);
-                        break;
-                }
+                synthesizeArith(pseudoInst[i].arithOp, &vars, gadgets);
                 break;
             }
             default:
@@ -316,7 +324,7 @@ int main(){
         "Var y, 2",
         "Add x, y",
         "Var z, 3",
-        "Add x, z"
+        "Sub x, z"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;
