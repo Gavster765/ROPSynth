@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include "utils.h"
 #include "pseudo.h"
-#include "var.h"
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     for (int i = 0 ; i < progLines ; i++){
@@ -66,54 +65,6 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
 
         }
-}
-
-bool exists(char* reg, char** usedRegs, int count){
-    for (int i = 0 ; i < count ; i++){
-        if(strcmp(usedRegs[i],reg) == 0){
-            return true;
-        }
-    }
-    return false;
-}
-
-// return a list of registers currently in use
-char** usedRegisters(Vars* vars){
-    char** usedRegs = malloc(vars->count * sizeof(char*));
-    for (int i = 0 ; i < vars->count ; i++) {
-        usedRegs[i] = malloc(4);
-        strcpy(usedRegs[i], vars->vars[i]->reg);
-    }
-    return usedRegs;
-}
-
-void freeUsedRegs(char** usedRegs, int count){
-    for (int i = 0 ; i < count ; i++) {
-        free(usedRegs[i]);    
-    }
-    free(usedRegs);
-}
-
-void addRegToUsed(char** used, char* reg, int count){
-    if(!exists(reg,used,count)){
-        for (int i = 0 ; i < count ; i++) {
-            if(strcmp(used[i],"new") == 0) {
-                strcpy(used[i],reg);
-                return;
-            }
-        }
-    }
-}
-
-void removeRegFromUsed(char** used, char* reg, int count){
-    if(exists(reg,used,count)){
-        for (int i = 0 ; i < count ; i++) {
-            if(strcmp(used[i],reg) == 0) {
-                strcpy(used[i],"new");
-                return;
-            }
-        }
-    }
 }
 
 char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
