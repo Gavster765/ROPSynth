@@ -2,8 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#include "gadgets.h"
 #include "utils.h"
 #include "pseudo.h"
+#include "var.h"
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     for (int i = 0 ; i < progLines ; i++){

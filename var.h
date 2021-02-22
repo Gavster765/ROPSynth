@@ -1,3 +1,6 @@
+#ifndef VAR_H
+#define VAR_H
+
 // Consider changing data structure
 typedef struct Var {
     int value;
@@ -17,3 +20,5 @@ Var* findVarByReg(char* reg, Vars* vars);
 Vars* copyVars(Vars* vars);
 void freeVars(Vars* vars);
 void deleteStaleVars(int line, Vars* vars);
+
+#endif /* VAR_H */
