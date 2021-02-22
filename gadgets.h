@@ -6,7 +6,7 @@ typedef enum {
 
 typedef struct Gadget {
     GadgetType type;  // Type of gadget
-    const char* assembly;  // Actual string
+    char* assembly;  // Actual string
     char* opcode;
     int numOperands;
     char** operands;
@@ -21,6 +21,6 @@ typedef struct Gadgets {
     Gadget* moveRegGadgets;
 } Gadgets;
 
-Gadget createGadget(GadgetType type, const char* assembly);
+Gadget createGadget(GadgetType type, char* assembly);
 
 Gadgets loadGadgets();
