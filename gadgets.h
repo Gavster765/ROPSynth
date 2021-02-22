@@ -1,3 +1,6 @@
+#ifndef GADGET_H
+#define GADGET_H
+
 typedef enum {
     LOAD_CONST,
     MOVE_REG,
@@ -24,3 +27,5 @@ typedef struct Gadgets {
 Gadget createGadget(GadgetType type, char* assembly);
 
 Gadgets loadGadgets();
+
+#endif /* GADGET_H */

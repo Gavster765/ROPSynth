@@ -2,70 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#include "gadgets.h"
 #include "utils.h"
 #include "pseudo.h"
-
-// Move var and related to utils - consider changing data structure
-typedef struct Var {
-    int value;
-    int lifeSpan;  // from this line on don't need var
-    char reg[4];
-    char name[];
-} Var;
-
-typedef struct Vars {
-    int count;
-    Var* vars[];
-} Vars;
-
-Var* findVar(char* name, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (strcmp(vars->vars[i]->name, name) == 0) {
-            return vars->vars[i];
-        }
-    }
-    return NULL;
-}
-
-Var* findVarByReg(char* reg, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (strcmp(vars->vars[i]->reg, reg) == 0) {
-            return vars->vars[i];
-        }
-    }
-    return NULL;
-}
-
-void deleteStaleVars(int line, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (vars->vars[i]->lifeSpan == line){
-            strcpy(vars->vars[i]->reg, "new");
-        }
-    }
-}
-
-Vars* copyVars(Vars* vars){
-    Vars* copy = malloc(sizeof(Vars) + sizeof(Var*)*vars->count);
-    copy->count = vars->count;
-    for (int i = 0 ; i < vars->count ; i++){
-        Var* var = vars->vars[i];
-        Var *newVar = malloc(sizeof(Var) + strlen(var->name) + 1);
-        strcpy(newVar->name, var->name);
-        strcpy(newVar->reg, var->reg);
-        newVar->value = var->value;
-        newVar->lifeSpan = var->lifeSpan;
-
-        copy->vars[i] = newVar;
-    }
-    return copy;
-}
-
-void freeVars(Vars* vars){
-    for (int i = 0 ; i < vars->count ; i++){
-        free(vars->vars[i]);
-    }
-    free(vars);
-}
+#include "var.h"
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     for (int i = 0 ; i < progLines ; i++){
@@ -88,17 +29,24 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     LOAD_CONST,
                     .loadConst = newConst
                 };
-                vars->vars[vars->count] = newVar;  // Use hastable? Also probs shouldn't save value yet??
+                vars->vars[vars->count] = newVar;  // Use hastable?
                 vars->count++;
                 pseudoInst[i] = p;
             }
-            else if(strcmp(opcode,"Add") == 0){
+            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0){
                 ArithOp newArith = {
-                    '+',
-                    operandList[0],
-                    operandList[0],
-                    operandList[1]
+                    .out = operandList[0],
+                    .operand1 = operandList[0],
+                    .operand2 = operandList[1]
                 };
+
+                if(strcmp(opcode,"Add") == 0) {
+                    newArith.opcode = '+';
+                }
+                else if(strcmp(opcode,"Sub") == 0) {
+                    newArith.opcode = '-';
+                }
+
                 Pseudo p = {
                     ARITH_OP,
                     .arithOp = newArith
@@ -108,73 +56,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 findVar(operandList[0], vars)->lifeSpan = i+1;
                 findVar(operandList[1], vars)->lifeSpan = i+1;
             }
-            else if(strcmp(opcode,"Sub") == 0){  // TODO - combine with above as very similar?
-                ArithOp newArith = {
-                    '-',
-                    operandList[0],
-                    operandList[0],
-                    operandList[1]
-                };
-                Pseudo p = {
-                    ARITH_OP,
-                    .arithOp = newArith
-                };
-                pseudoInst[i] = p;
-                
-                findVar(operandList[0], vars)->lifeSpan = i+1;
-                findVar(operandList[1], vars)->lifeSpan = i+1;
-            }
-
-
         }
-}
-
-bool exists(char* reg, char** usedRegs, int count){
-    for (int i = 0 ; i < count ; i++){
-        if(strcmp(usedRegs[i],reg) == 0){
-            return true;
-        }
-    }
-    return false;
-}
-
-// return a list of registers currently in use
-char** usedRegisters(Vars* vars){
-    char** usedRegs = malloc(vars->count * sizeof(char*));
-    for (int i = 0 ; i < vars->count ; i++) {
-        usedRegs[i] = malloc(4);
-        strcpy(usedRegs[i], vars->vars[i]->reg);
-    }
-    return usedRegs;
-}
-
-void freeUsedRegs(char** usedRegs, int count){
-    for (int i = 0 ; i < count ; i++) {
-        free(usedRegs[i]);    
-    }
-    free(usedRegs);
-}
-
-void addRegToUsed(char** used, char* reg, int count){
-    if(!exists(reg,used,count)){
-        for (int i = 0 ; i < count ; i++) {
-            if(strcmp(used[i],"new") == 0) {
-                strcpy(used[i],reg);
-                return;
-            }
-        }
-    }
-}
-
-void removeRegFromUsed(char** used, char* reg, int count){
-    if(exists(reg,used,count)){
-        for (int i = 0 ; i < count ; i++) {
-            if(strcmp(used[i],reg) == 0) {
-                strcpy(used[i],"new");
-                return;
-            }
-        }
-    }
 }
 
 char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
@@ -356,7 +238,5 @@ int main(){
     Gadgets gadgets = loadGadgets();
     translatePseudo(progLines, vars, pseudoInst, gadgets);
 
-    // printf("%d %d\n",vars[0].value,vars[1].value);
-    // printf("%d\n",pseudoInst[0].type);
     return 0;
 }
