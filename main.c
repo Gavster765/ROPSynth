@@ -4,68 +4,7 @@
 #include <stdbool.h>
 #include "utils.h"
 #include "pseudo.h"
-
-// Move var and related to utils - consider changing data structure
-typedef struct Var {
-    int value;
-    int lifeSpan;  // from this line on don't need var
-    char reg[4];
-    char name[];
-} Var;
-
-typedef struct Vars {
-    int count;
-    Var* vars[];
-} Vars;
-
-Var* findVar(char* name, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (strcmp(vars->vars[i]->name, name) == 0) {
-            return vars->vars[i];
-        }
-    }
-    return NULL;
-}
-
-Var* findVarByReg(char* reg, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (strcmp(vars->vars[i]->reg, reg) == 0) {
-            return vars->vars[i];
-        }
-    }
-    return NULL;
-}
-
-void deleteStaleVars(int line, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (vars->vars[i]->lifeSpan == line){
-            strcpy(vars->vars[i]->reg, "new");
-        }
-    }
-}
-
-Vars* copyVars(Vars* vars){
-    Vars* copy = malloc(sizeof(Vars) + sizeof(Var*)*vars->count);
-    copy->count = vars->count;
-    for (int i = 0 ; i < vars->count ; i++){
-        Var* var = vars->vars[i];
-        Var *newVar = malloc(sizeof(Var) + strlen(var->name) + 1);
-        strcpy(newVar->name, var->name);
-        strcpy(newVar->reg, var->reg);
-        newVar->value = var->value;
-        newVar->lifeSpan = var->lifeSpan;
-
-        copy->vars[i] = newVar;
-    }
-    return copy;
-}
-
-void freeVars(Vars* vars){
-    for (int i = 0 ; i < vars->count ; i++){
-        free(vars->vars[i]);
-    }
-    free(vars);
-}
+#include "var.h"
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     for (int i = 0 ; i < progLines ; i++){
