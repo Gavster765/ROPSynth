@@ -8,6 +8,7 @@
 // Move var and related to utils - consider changing data structure
 typedef struct Var {
     int value;
+    int lifeSpan;  // from this line on don't need var
     char reg[4];
     char name[];
 } Var;
@@ -17,22 +18,30 @@ typedef struct Vars {
     Var* vars[];
 } Vars;
 
-Var* findVar(char* name, Vars* vars){
-    for (int i = 0 ; i < vars->count ; i++){
-        if(strcmp(vars->vars[i]->name, name) == 0){
+Var* findVar(char* name, Vars* vars) {
+    for (int i = 0 ; i < vars->count ; i++) {
+        if (strcmp(vars->vars[i]->name, name) == 0) {
             return vars->vars[i];
         }
     }
     return NULL;
 }
 
-Var* findVarByReg(char* reg, Vars* vars){
-    for (int i = 0 ; i < vars->count ; i++){
-        if(strcmp(vars->vars[i]->reg, reg) == 0){
+Var* findVarByReg(char* reg, Vars* vars) {
+    for (int i = 0 ; i < vars->count ; i++) {
+        if (strcmp(vars->vars[i]->reg, reg) == 0) {
             return vars->vars[i];
         }
     }
     return NULL;
+}
+
+void deleteStaleVars(int line, Vars* vars) {
+    for (int i = 0 ; i < vars->count ; i++) {
+        if (vars->vars[i]->lifeSpan == line){
+            strcpy(vars->vars[i]->reg, "new");
+        }
+    }
 }
 
 Vars* copyVars(Vars* vars){
@@ -44,6 +53,8 @@ Vars* copyVars(Vars* vars){
         strcpy(newVar->name, var->name);
         strcpy(newVar->reg, var->reg);
         newVar->value = var->value;
+        newVar->lifeSpan = var->lifeSpan;
+
         copy->vars[i] = newVar;
     }
     return copy;
@@ -68,6 +79,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 Var *newVar = malloc(sizeof(Var) + strlen(operandList[0]) + 1);
                 strcpy(newVar->reg,"new");
                 strcpy(newVar->name, operandList[0]);
+                newVar->lifeSpan = i+1;
                 LoadConst newConst = {
                     operandList[0],
                     atoi(operandList[1])
@@ -92,6 +104,9 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .arithOp = newArith
                 };
                 pseudoInst[i] = p;
+
+                findVar(operandList[0], vars)->lifeSpan = i+1;
+                findVar(operandList[1], vars)->lifeSpan = i+1;
             }
             else if(strcmp(opcode,"Sub") == 0){  // TODO - combine with above as very similar?
                 ArithOp newArith = {
@@ -105,7 +120,12 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .arithOp = newArith
                 };
                 pseudoInst[i] = p;
+                
+                findVar(operandList[0], vars)->lifeSpan = i+1;
+                findVar(operandList[1], vars)->lifeSpan = i+1;
             }
+
+
         }
 }
 
@@ -298,6 +318,8 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
         
+        deleteStaleVars(i, vars);
+
         switch (pseudoInst[i].type){
             case LOAD_CONST:
             {
