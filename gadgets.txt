@@ -18,5 +18,5 @@ moveReg
 mov rcx, rax
 mov rax, rcx
 mov rax, rdx
-mov rax, rbx
+mov rdi, rbx
 mov rbx, rsp
