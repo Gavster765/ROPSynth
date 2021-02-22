@@ -29,17 +29,24 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     LOAD_CONST,
                     .loadConst = newConst
                 };
-                vars->vars[vars->count] = newVar;  // Use hastable? Also probs shouldn't save value yet??
+                vars->vars[vars->count] = newVar;  // Use hastable?
                 vars->count++;
                 pseudoInst[i] = p;
             }
-            else if(strcmp(opcode,"Add") == 0){
+            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0){
                 ArithOp newArith = {
-                    '+',
-                    operandList[0],
-                    operandList[0],
-                    operandList[1]
+                    .out = operandList[0],
+                    .operand1 = operandList[0],
+                    .operand2 = operandList[1]
                 };
+
+                if(strcmp(opcode,"Add") == 0) {
+                    newArith.opcode = '+';
+                }
+                else if(strcmp(opcode,"Sub") == 0) {
+                    newArith.opcode = '-';
+                }
+
                 Pseudo p = {
                     ARITH_OP,
                     .arithOp = newArith
@@ -49,24 +56,6 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 findVar(operandList[0], vars)->lifeSpan = i+1;
                 findVar(operandList[1], vars)->lifeSpan = i+1;
             }
-            else if(strcmp(opcode,"Sub") == 0){  // TODO - combine with above as very similar?
-                ArithOp newArith = {
-                    '-',
-                    operandList[0],
-                    operandList[0],
-                    operandList[1]
-                };
-                Pseudo p = {
-                    ARITH_OP,
-                    .arithOp = newArith
-                };
-                pseudoInst[i] = p;
-                
-                findVar(operandList[0], vars)->lifeSpan = i+1;
-                findVar(operandList[1], vars)->lifeSpan = i+1;
-            }
-
-
         }
 }
 
@@ -249,7 +238,5 @@ int main(){
     Gadgets gadgets = loadGadgets();
     translatePseudo(progLines, vars, pseudoInst, gadgets);
 
-    // printf("%d %d\n",vars[0].value,vars[1].value);
-    // printf("%d\n",pseudoInst[0].type);
     return 0;
 }
