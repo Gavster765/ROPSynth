@@ -5,7 +5,8 @@ typedef enum {
     LOAD_CONST,
     MOVE_REG,
     ARITH_OP,
-    COMP  // TODO - move as only a pseudo type??
+    COMP , // TODO - move as only a pseudo type??
+    NONE // TODO - move
 } GadgetType;
 
 typedef struct Gadget {

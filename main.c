@@ -9,6 +9,8 @@
 #include "var.h"
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
+    Comp *currIf;  // Currently open if - TODO nested?
+    
     for (int i = 0 ; i < progLines ; i++){
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
@@ -60,12 +62,23 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 Comp c = {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
-                    .operand2 = operandList[2]
+                    .operand2 = operandList[2],
+                    .end = i+1  // Default end to next line
                 };
+
 
                 Pseudo p = {
                     .type = COMP,
                     .comp = c
+                };
+                pseudoInst[i] = p;
+                currIf = &pseudoInst[i].comp;
+            }
+            else if(strcmp(opcode,"End") == 0) {
+                currIf->end = i;
+
+                Pseudo p = {
+                    .type = NONE
                 };
                 pseudoInst[i] = p;
             }
@@ -213,7 +226,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
         deleteStaleVars(i, vars);
-
+        
         switch (pseudoInst[i].type){
             case LOAD_CONST: {
                 LoadConst inst = pseudoInst[i].loadConst;
@@ -254,7 +267,7 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 }
 
                 if(!valid){
-                    i++;  // Skip next line
+                    i = inst.end;  // Skip next line
                 }
 
                 break;
@@ -267,14 +280,16 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    const int progLines = 6;
+    const int progLines = 8;
     char* prog[progLines] = {
         "Var x 1",
         "Var y 2",
         "Add x y",
         "Var z 3",
         "If x >= z",
-        "Sub x z"
+        "Sub x z",
+        "Add x y",
+        "End"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;
