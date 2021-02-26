@@ -58,13 +58,13 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             }
             else if(strcmp(opcode,"If") == 0) {
                 Comp c = {
-                    .opcode = *operandList[1],
+                    .opcode = operandList[1],
                     .operand1 = operandList[0],
                     .operand2 = operandList[2]
                 };
 
                 Pseudo p = {
-                    COMP,
+                    .type = COMP,
                     .comp = c
                 };
                 pseudoInst[i] = p;
@@ -240,13 +240,17 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 Var* b = findVar(inst.operand2, vars);
                 bool valid = false;  // result of if
 
-                switch (inst.opcode) {
-                    case '>':
-                        if(a->value > b->value) valid = true;
-                        break;
-                    case '<':
-                        if(a->value < b->value) valid = true;
-                        break;
+                if(strcmp(inst.opcode, "<") == 0){
+                    if(a->value < b->value) valid = true;
+                }
+                else if(strcmp(inst.opcode, ">") == 0){
+                    if(a->value > b->value) valid = true;
+                }
+                else if(strcmp(inst.opcode, "<=") == 0){
+                    if(a->value <= b->value) valid = true;
+                }
+                else if(strcmp(inst.opcode, ">=") == 0){
+                    if(a->value >= b->value) valid = true;
                 }
 
                 if(!valid){
@@ -269,7 +273,7 @@ int main(){
         "Var y 2",
         "Add x y",
         "Var z 3",
-        "If x < z",
+        "If x >= z",
         "Sub x z"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);

@@ -13,7 +13,7 @@ typedef struct ArithOp {
 } ArithOp;
 
 typedef struct Comp {
-    char opcode;
+    char* opcode;
     char* operand1;
     char* operand2;
 } Comp;
