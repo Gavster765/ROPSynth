@@ -232,11 +232,11 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 int main(){
     const int progLines = 5;
     char* prog[progLines] = {
-        "Var x, 1",
-        "Var y, 2",
-        "Add x, y",
-        "Var z, 3",
-        "Sub x, z"
+        "Var x 1",
+        "Var y 2",
+        "Add x y",
+        "Var z 3",
+        "Sub x z"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;

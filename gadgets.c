@@ -10,7 +10,7 @@ Gadget createGadget(GadgetType type, char* assembly){
     char* opcode = strtok(line, " ");  // Peel off opcode
     char* operands = strtok(NULL, "");  // Save all operands
     char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
-    int numOperands = getOperands(operandList, operands);
+    int numOperands = getGadgetOperands(operandList, operands);
 
     Gadget gadget = {
         type,

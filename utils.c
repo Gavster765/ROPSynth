@@ -14,7 +14,7 @@ void removeChars(char* str, char c) {
     *pw = '\0';
 }
 
-int getOperands(char** operandList, char* operandString) {
+int getGadgetOperands(char** operandList, char* operandString) {
     char* operands = strdup(operandString);
     char* operand = strtok(operands, ",");
     int numOperands = 0;
@@ -27,6 +27,21 @@ int getOperands(char** operandList, char* operandString) {
     }
     return numOperands;
 }
+
+int getOperands(char** operandList, char* operandString) {
+    char* operands = strdup(operandString);
+    char* operand = strtok(operands, " ");
+    int numOperands = 0;
+    // Iterate though operands 
+    while(operand != NULL){
+        removeChars(operand,' ');
+        operandList[numOperands] = operand;
+        numOperands++;
+        operand = strtok(NULL, " ");
+    }
+    return numOperands;
+}
+
 
 bool exists(char* reg, char** usedRegs, int count){
     for (int i = 0 ; i < count ; i++){

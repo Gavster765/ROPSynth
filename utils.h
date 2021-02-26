@@ -3,6 +3,7 @@
 
 void removeChars(char* str, char c);
 
+int getGadgetOperands(char** operandList, char* operandString);
 int getOperands(char** operandList, char* operandString);
 
 bool exists(char* reg, char** usedRegs, int count);
