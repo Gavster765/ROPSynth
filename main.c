@@ -223,14 +223,29 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
                 synthesizeArith(inst, &vars, gadgets);
-                switch (inst.opcode)
-                {
+                switch (inst.opcode) {
                     case '+':
                         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
                         break;
                     
                     case '-':
                         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
+                        break;
+                }
+                break;
+            }
+            case COMP: {
+                Comp inst = pseudoInst[i].comp;
+                Var* a = findVar(inst.operand1, vars);
+                Var* b = findVar(inst.operand2, vars);
+                switch (inst.opcode) {
+                    case '>':
+                        if(a->value > b->value){
+                            continue;
+                        }
+                        else {
+                            i++;  // Skip next line
+                        }
                         break;
                 }
                 break;
