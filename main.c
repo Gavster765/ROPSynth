@@ -199,25 +199,33 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
 
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
-        
         deleteStaleVars(i, vars);
 
         switch (pseudoInst[i].type){
-            case LOAD_CONST:
-            {
-                // LoadConst inst = pseudoInst[i].loadConst;
-                // Var var = findVar(inst.out,vars,progLines);
-                // findPossibleLoadRegisters(var, gadgets);
+            case LOAD_CONST: {
+                LoadConst inst = pseudoInst[i].loadConst;
+                findVar(inst.out,vars)->value = inst.value;
                 break;
             }
-            case ARITH_OP:
-            {
-                synthesizeArith(pseudoInst[i].arithOp, &vars, gadgets);
+            case ARITH_OP: {
+                ArithOp inst = pseudoInst[i].arithOp;
+                synthesizeArith(inst, &vars, gadgets);
+                switch (inst.opcode)
+                {
+                    case '+':
+                        findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
+                        break;
+                    
+                    case '-':
+                        findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
+                        break;
+                }
                 break;
             }
             default:
                 break;
         }
+        // printf("%d %d %d\n",findVar("x",vars)->value,findVar("y",vars)->value,findVar("z",vars)->value);
     }
 }
 
@@ -237,6 +245,6 @@ int main(){
     createPseudo(progLines, prog, vars, pseudoInst);
     Gadgets gadgets = loadGadgets();
     translatePseudo(progLines, vars, pseudoInst, gadgets);
-
+    
     return 0;
 }
