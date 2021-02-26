@@ -238,16 +238,21 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 Comp inst = pseudoInst[i].comp;
                 Var* a = findVar(inst.operand1, vars);
                 Var* b = findVar(inst.operand2, vars);
+                bool valid = false;  // result of if
+
                 switch (inst.opcode) {
                     case '>':
-                        if(a->value > b->value){
-                            continue;
-                        }
-                        else {
-                            i++;  // Skip next line
-                        }
+                        if(a->value > b->value) valid = true;
+                        break;
+                    case '<':
+                        if(a->value < b->value) valid = true;
                         break;
                 }
+
+                if(!valid){
+                    i++;  // Skip next line
+                }
+
                 break;
             }
             default:
@@ -264,7 +269,7 @@ int main(){
         "Var y 2",
         "Add x y",
         "Var z 3",
-        "If x > z",
+        "If x < z",
         "Sub x z"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
