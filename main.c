@@ -22,11 +22,11 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 strcpy(newVar->name, operandList[0]);
                 newVar->lifeSpan = i+1;
                 LoadConst newConst = {
-                    operandList[0],
-                    atoi(operandList[1])
+                    .out = operandList[0],
+                    .value = atoi(operandList[1])
                 };
                 Pseudo p = {
-                    LOAD_CONST,
+                    .type = LOAD_CONST,
                     .loadConst = newConst
                 };
                 vars->vars[vars->count] = newVar;  // Use hastable?
@@ -48,13 +48,26 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 }
 
                 Pseudo p = {
-                    ARITH_OP,
+                    .type = ARITH_OP,
                     .arithOp = newArith
                 };
                 pseudoInst[i] = p;
 
                 findVar(operandList[0], vars)->lifeSpan = i+1;
                 findVar(operandList[1], vars)->lifeSpan = i+1;
+            }
+            else if(strcmp(opcode,"If") == 0) {
+                Comp c = {
+                    .opcode = *operandList[1],
+                    .operand1 = operandList[0],
+                    .operand2 = operandList[2]
+                };
+
+                Pseudo p = {
+                    COMP,
+                    .comp = c
+                };
+                pseudoInst[i] = p;
             }
         }
 }
@@ -230,12 +243,13 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    const int progLines = 5;
+    const int progLines = 6;
     char* prog[progLines] = {
         "Var x 1",
         "Var y 2",
         "Add x y",
         "Var z 3",
+        "If x > z",
         "Sub x z"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);

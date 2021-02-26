@@ -12,8 +12,15 @@ typedef struct ArithOp {
     char* operand2;
 } ArithOp;
 
+typedef struct Comp {
+    char opcode;
+    char* operand1;
+    char* operand2;
+} Comp;
+
 typedef struct Pseudo {
-    GadgetType  type;  // Type of pseudo instruction
+    GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
     ArithOp arithOp;
+    Comp comp;
 } Pseudo;
