@@ -10,6 +10,7 @@
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
+    bool loop = false;
     
     for (int i = 0 ; i < progLines ; i++){
             char* line = strdup(prog[i]);
@@ -96,6 +97,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 
                 pseudoInst[i] = p;
+                loop = false;
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"Else") == 0) {
@@ -115,11 +117,38 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 pseudoInst[i] = p;
                 currIf = &pseudoInst[i].comp;
             }
+            else if(strcmp(opcode,"While") == 0) {
+                // WARNING TODO lifespan can still end before end of loop
+                findVar(operandList[0], vars)->lifeSpan = i+1;
+                findVar(operandList[2], vars)->lifeSpan = i+1;
+                Comp c = {
+                    .opcode = operandList[1],
+                    .operand1 = operandList[0],
+                    .operand2 = operandList[2],
+                    .start = i,
+                    .end = i+1,  // Default end to next line
+                    .joinedIf = currIf
+                };
+                
+                Pseudo p = {
+                    .type = COMP,
+                    .comp = c
+                };
+                
+                pseudoInst[i] = p;
+                loop = true;
+                currIf = &pseudoInst[i].comp;
+            }
             else if(strcmp(opcode,"End") == 0) {
                 currIf->end = i;
-                // REMOVE?
+                End e = {.loop = NULL};
+                if (loop) {
+                    e.loop = currIf;
+                }
+
                 Pseudo p = {
-                    .type = NONE
+                    .type = END,
+                    .end = e
                 };
                 pseudoInst[i] = p;
             }
@@ -329,6 +358,14 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 
                 break;
             }
+            case END: {
+                End inst = pseudoInst[i].end;
+
+                if (inst.loop != NULL && inst.loop->valid) {
+                    i = inst.loop->start - 1;  // Go back to loop start
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -337,19 +374,29 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    const int progLines = 11;
-    char* prog[progLines] = {
-        "Var x 1",
-        "Var y 2",
-        "Add x y",
-        "Var z 3",
+    // const int progLines = 11;
+    // char* prog[progLines] = {
+    //     "Var x 1",
+    //     "Var y 2",
+    //     "Add x y",
+    //     "Var z 3",
 
-        "If x > z",
-            "Sub x z",
-        "ElseIf x < z",
-            "Add x y",
-        "Else",
-            "Add x z",
+    //     "If x > z",
+    //         "Sub x z",
+    //     "ElseIf x < z",
+    //         "Add x y",
+    //     "Else",
+    //         "Add x z",
+    //     "End"
+    // };
+    const int progLines = 6;
+    char* prog[progLines] = {
+        "Var x 3",
+        "Var y 1",
+        "Var z 0",
+
+        "While x > z",
+            "Sub x y",
         "End"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
