@@ -59,6 +59,9 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 findVar(operandList[1], vars)->lifeSpan = i+1;
             }
             else if(strcmp(opcode,"If") == 0) {
+                findVar(operandList[0], vars)->lifeSpan = i+1;
+                findVar(operandList[2], vars)->lifeSpan = i+1;
+                
                 Comp c = {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
@@ -75,6 +78,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"ElseIf") == 0) {
+                findVar(operandList[0], vars)->lifeSpan = i+1;
+                findVar(operandList[2], vars)->lifeSpan = i+1;
                 currIf->end = i;
                 
                 Comp c = {
