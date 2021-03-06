@@ -74,13 +74,27 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 pseudoInst[i] = p;
                 currIf = &pseudoInst[i].comp;
             }
+            else if(strcmp(opcode,"ElseIf") == 0) {
+                currIf->end = i;
+                
+                Comp c = {
+                    .opcode = operandList[1],
+                    .operand1 = operandList[0],
+                    .operand2 = operandList[2],
+                    .end = i+1,  // Default end to next line
+                    .joinedIf = currIf
+                };
+                
+                Pseudo p = {
+                    .type = COMP,
+                    .comp = c
+                };
+                
+                pseudoInst[i] = p;
+                currIf = &pseudoInst[i].comp;
+            }
             else if(strcmp(opcode,"Else") == 0) {
                 currIf->end = i;
-                // REMOVE ?
-                Pseudo blank = {
-                    .type = NONE
-                };
-                pseudoInst[i] = blank;
                 
                 Comp c = {
                     .opcode = "",
@@ -274,11 +288,16 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 
                 Var* a = findVar(inst->operand1, vars);
                 Var* b = findVar(inst->operand2, vars);
-                inst->valid = false;  // result of if
+                inst->valid = false;  // result of if is assumed false
+                bool skip = false;  // Can skip valid else ifs
                 
                 if(inst->joinedIf != NULL && inst->joinedIf->valid) {
-                    ;  // Skip else as if was true
+                    inst-> valid = true;  // Propagate validity to also skip chained elses
+                    skip = true;  // Skip since previous if was true
                 } 
+                else if(strcmp(inst->opcode, "==") == 0){
+                    if(a->value == b->value) inst->valid  = true;
+                }
                 else if(strcmp(inst->opcode, "<") == 0){
                     if(a->value < b->value) inst->valid  = true;
                 }
@@ -299,8 +318,8 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 }
 
 
-                if(!inst->valid){
-                    i = inst->end;  // Skip next line
+                if(!inst->valid || skip){
+                    i = inst->end - 1;  // Skip to end of loop (sub one because of loop inc)
                 }
 
                 break;
@@ -313,16 +332,19 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    const int progLines = 9;
+    const int progLines = 11;
     char* prog[progLines] = {
         "Var x 1",
         "Var y 2",
         "Add x y",
         "Var z 3",
+
         "If x > z",
-        "Sub x z",
+            "Sub x z",
+        "ElseIf x < z",
+            "Add x y",
         "Else",
-        "Add x z",
+            "Add x z",
         "End"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
