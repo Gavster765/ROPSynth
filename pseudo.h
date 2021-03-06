@@ -17,7 +17,8 @@ typedef struct Comp {
     char* operand1;
     char* operand2;
     int end;
-    bool not;
+    bool valid;
+    struct Comp* joinedIf;
 } Comp;
 
 typedef struct Pseudo {

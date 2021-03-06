@@ -64,7 +64,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .operand1 = operandList[0],
                     .operand2 = operandList[2],
                     .end = i+1,  // Default end to next line
-                    .not = false
+                    .joinedIf = NULL
                 };
 
                 Pseudo p = {
@@ -75,12 +75,17 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"Else") == 0) {
+                currIf->end = i;
+                // REMOVE ?
+                Pseudo blank = {
+                    .type = NONE
+                };
+                pseudoInst[i] = blank;
+                
                 Comp c = {
-                    .opcode = currIf->opcode,
-                    .operand1 = currIf->operand1,
-                    .operand2 = currIf->operand2,
+                    .opcode = "",
                     .end = i+1,  // Default end to next line
-                    .not = true
+                    .joinedIf = currIf
                 };
                 
                 Pseudo p = {
@@ -93,7 +98,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             }
             else if(strcmp(opcode,"End") == 0) {
                 currIf->end = i;
-
+                // REMOVE?
                 Pseudo p = {
                     .type = NONE
                 };
@@ -265,26 +270,37 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 break;
             }
             case COMP: {
-                Comp inst = pseudoInst[i].comp;
-                Var* a = findVar(inst.operand1, vars);
-                Var* b = findVar(inst.operand2, vars);
-                bool valid = false;  // result of if
+                Comp* inst = &pseudoInst[i].comp;
 
-                if(strcmp(inst.opcode, "<") == 0){
-                    if((a->value < b->value) ^ inst.not) valid = true;
+                Var* a = findVar(inst->operand1, vars);
+                Var* b = findVar(inst->operand2, vars);
+                inst->valid = false;  // result of if
+                
+                if(inst->joinedIf != NULL && inst->joinedIf->valid) {
+                    ;  // Skip else as if was true
+                } 
+                else if(strcmp(inst->opcode, "<") == 0){
+                    if(a->value < b->value) inst->valid  = true;
                 }
-                else if(strcmp(inst.opcode, ">") == 0){
-                    if((a->value > b->value) ^ inst.not) valid = true;
+                else if(strcmp(inst->opcode, ">") == 0){
+                    if(a->value > b->value) inst->valid  = true;
                 }
-                else if(strcmp(inst.opcode, "<=") == 0){
-                    if((a->value <= b->value) ^ inst.not) valid = true;
+                else if(strcmp(inst->opcode, "<=") == 0){
+                    if(a->value <= b->value) inst->valid  = true;
                 }
-                else if(strcmp(inst.opcode, ">=") == 0){
-                    if((a->value >= b->value) ^ inst.not) valid = true;
+                else if(strcmp(inst->opcode, ">=") == 0){
+                    if(a->value >= b->value) inst->valid  = true;
+                }
+                else if(strcmp(inst->opcode, "") == 0){
+                    inst->valid  = true;  // Else
+                }
+                else {
+                    printf("Unknown operation\n");
                 }
 
-                if(!valid){
-                    i = inst.end;  // Skip next line
+
+                if(!inst->valid){
+                    i = inst->end;  // Skip next line
                 }
 
                 break;
@@ -297,7 +313,7 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    const int progLines = 10;
+    const int progLines = 9;
     char* prog[progLines] = {
         "Var x 1",
         "Var y 2",
@@ -305,8 +321,7 @@ int main(){
         "Var z 3",
         "If x > z",
         "Sub x z",
-        "End",
-        "Else",  // Need to jump over after if block...
+        "Else",
         "Add x z",
         "End"
     };
