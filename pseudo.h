@@ -17,6 +17,7 @@ typedef struct Comp {
     char* operand1;
     char* operand2;
     int end;
+    bool not;
 } Comp;
 
 typedef struct Pseudo {
