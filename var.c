@@ -3,9 +3,11 @@
 #include "var.h"
 
 Var* findVar(char* name, Vars* vars) {
-    for (int i = 0 ; i < vars->count ; i++) {
-        if (strcmp(vars->vars[i]->name, name) == 0) {
-            return vars->vars[i];
+    if (name != NULL) {
+        for (int i = 0 ; i < vars->count ; i++) {
+            if (strcmp(vars->vars[i]->name, name) == 0) {
+                return vars->vars[i];
+            }
         }
     }
     return NULL;
