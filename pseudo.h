@@ -16,13 +16,14 @@ typedef struct Comp {
     char* opcode;
     char* operand1;
     char* operand2;
+    int start;
     int end;
     bool valid;
     struct Comp* joinedIf;
 } Comp;
 
 typedef struct End {
-    int loop;
+    Comp* loop;
 } End;
 
 typedef struct Pseudo {
