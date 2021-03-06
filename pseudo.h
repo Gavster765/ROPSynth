@@ -21,9 +21,14 @@ typedef struct Comp {
     struct Comp* joinedIf;
 } Comp;
 
+typedef struct End {
+    int loop;
+} End;
+
 typedef struct Pseudo {
     GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
     ArithOp arithOp;
     Comp comp;
+    End end;
 } Pseudo;
