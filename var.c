@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "var.h"
 
 Var* findVar(char* name, Vars* vars) {
@@ -20,6 +21,26 @@ Var* findVarByReg(char* reg, Vars* vars) {
         }
     }
     return NULL;
+}
+
+void updateLifespan(char* name, Vars* vars, int currLine, bool loop) {
+    Var* v = findVar(name, vars);
+    if (loop){
+        v->loop = true;
+    }
+    else {
+        v->lifeSpan = currLine+1;
+    }
+}
+
+void updateLoopVars(Vars* vars, int currLine) {
+    for (int i = 0 ; i < vars->count ; i++) {
+        Var* v = vars->vars[i];
+        if (v->loop){
+            v->lifeSpan = currLine+1;
+            v->loop = false;
+        }
+    }
 }
 
 Vars* copyVars(Vars* vars){

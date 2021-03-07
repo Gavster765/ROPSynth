@@ -11,7 +11,7 @@
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
     bool loop = false;
-    
+
     for (int i = 0 ; i < progLines ; i++){
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
@@ -24,6 +24,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 strcpy(newVar->reg,"new");
                 strcpy(newVar->name, operandList[0]);
                 newVar->lifeSpan = i+1;
+                newVar->loop = false;
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1])
@@ -55,13 +56,12 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .arithOp = newArith
                 };
                 pseudoInst[i] = p;
-
-                findVar(operandList[0], vars)->lifeSpan = i+1;
-                findVar(operandList[1], vars)->lifeSpan = i+1;
+                updateLifespan(operandList[0], vars, i, loop);
+                updateLifespan(operandList[1], vars, i, loop);
             }
             else if(strcmp(opcode,"If") == 0) {
-                findVar(operandList[0], vars)->lifeSpan = i+1;
-                findVar(operandList[2], vars)->lifeSpan = i+1;
+                updateLifespan(operandList[0], vars, i, loop);
+                updateLifespan(operandList[2], vars, i, loop);
                 
                 Comp c = {
                     .opcode = operandList[1],
@@ -79,8 +79,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"ElseIf") == 0) {
-                findVar(operandList[0], vars)->lifeSpan = i+1;
-                findVar(operandList[2], vars)->lifeSpan = i+1;
+                updateLifespan(operandList[0], vars, i, loop);
+                updateLifespan(operandList[2], vars, i, loop);
                 currIf->end = i;
                 
                 Comp c = {
@@ -97,7 +97,6 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 
                 pseudoInst[i] = p;
-                loop = false;
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"Else") == 0) {
@@ -118,9 +117,11 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"While") == 0) {
-                // WARNING TODO lifespan can still end before end of loop
-                findVar(operandList[0], vars)->lifeSpan = i+1;
-                findVar(operandList[2], vars)->lifeSpan = i+1;
+                loop = true;
+
+                updateLifespan(operandList[0], vars, i, loop);
+                updateLifespan(operandList[2], vars, i, loop);
+
                 Comp c = {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
@@ -136,14 +137,15 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 
                 pseudoInst[i] = p;
-                loop = true;
                 currIf = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"End") == 0) {
                 currIf->end = i;
                 End e = {.loop = NULL};
                 if (loop) {
+                    updateLoopVars(vars, i);
                     e.loop = currIf;
+                    loop = false;
                 }
 
                 Pseudo p = {
