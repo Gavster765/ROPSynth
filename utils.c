@@ -25,6 +25,12 @@ int getGadgetOperands(char** operandList, char* operandString) {
     // Iterate though operands 
     while(operand != NULL){
         removeChars(operand,' ');
+        // For now ignore length of data read/written
+        int a = strspn(operand, "DWORDPTR[");
+        if (a == 9){
+            memcpy(operand, operand+9, 3);
+            operand[3] = '\0';
+        }
         operandList[numOperands] = operand;
         numOperands++;
         operand = strtok(NULL, ",");
