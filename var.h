@@ -8,6 +8,7 @@ typedef struct Var {
     int value;
     int lifeSpan;  // from this line on don't need var
     bool loop;  // used inside loop so don't kill until loop end
+    bool constant;  // not changed so can be reloaded from stack at will
     char reg[4];
     char name[];
 } Var;
