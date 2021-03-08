@@ -383,10 +383,12 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 switch (inst.opcode) {
                     case '+':
                         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
+                        findVar(inst.operand1,vars)->constant = false;
                         break;
                     
                     case '-':
                         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
+                        findVar(inst.operand1,vars)->constant = false;
                         break;
                     case '*':
                         findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;

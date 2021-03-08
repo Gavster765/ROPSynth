@@ -79,12 +79,17 @@ bool exists(char* reg, char** usedRegs, int count){
     return false;
 }
 
-// return a list of registers currently in use
+// return a list of registers currently in use excluding constants
 char** usedRegisters(Vars* vars){
     char** usedRegs = malloc(vars->count * sizeof(char*));
     for (int i = 0 ; i < vars->count ; i++) {
         usedRegs[i] = malloc(4);
-        strcpy(usedRegs[i], vars->vars[i]->reg);
+        if(vars->vars[i]->constant){
+            strcpy(usedRegs[i], "new");  // Allow constant to be overwritten
+        }
+        else {
+            strcpy(usedRegs[i], vars->vars[i]->reg);
+        }
     }
     return usedRegs;
 }
