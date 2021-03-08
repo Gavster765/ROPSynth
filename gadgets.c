@@ -23,15 +23,19 @@ Gadget createGadget(GadgetType type, char* assembly){
 }
 
 Gadgets loadGadgets(){
-    int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets;
-    const int max = 20;
+    int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets, 
+        numStoreMemGadgets, numLoadMemGadgets;
+    const int max = 30;
     char line[max];
     FILE *f = fopen("gadgets.txt", "r");
     
-    fscanf(f, "%d,%d,%d\n",&numLoadConstGadgets, &numArithOpGadgets, &numMoveRegGadgets);
+    fscanf(f, "%d,%d,%d,%d,%d\n",&numLoadConstGadgets, &numArithOpGadgets, 
+        &numMoveRegGadgets, &numStoreMemGadgets, &numLoadMemGadgets);
     Gadget* loadConstGadgets = malloc(sizeof(Gadget) * numLoadConstGadgets);
     Gadget* arithOpGadgets = malloc(sizeof(Gadget) * numArithOpGadgets);
     Gadget* moveRegGadgets = malloc(sizeof(Gadget) * numMoveRegGadgets);
+    Gadget* storeMemGadgets = malloc(sizeof(Gadget) * numStoreMemGadgets);
+    Gadget* loadMemGadgets = malloc(sizeof(Gadget) * numLoadMemGadgets);
     
     Gadget* curr;
     int count;
@@ -58,6 +62,16 @@ Gadgets loadGadgets(){
             type = MOVE_REG;
             count = 0;
         }
+        else if(strcmp(line,"storeMem") == 0){
+            curr = storeMemGadgets;
+            type = STORE_MEM;
+            count = 0;
+        }
+        else if(strcmp(line,"loadMem") == 0){
+            curr = loadMemGadgets;
+            type = LOAD_MEM;
+            count = 0;
+        }
         else {
             curr[count] = createGadget(type, line);
             count++;
@@ -71,7 +85,11 @@ Gadgets loadGadgets(){
         numArithOpGadgets,
         arithOpGadgets,
         numMoveRegGadgets,
-        moveRegGadgets
+        moveRegGadgets,
+        numStoreMemGadgets,
+        storeMemGadgets,
+        numLoadMemGadgets,
+        loadMemGadgets
     };
 
     return gadgets;

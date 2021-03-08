@@ -23,7 +23,7 @@ mov rbx, rsp
 mov rbx, rcx
 
 storeMem
-mov DWORD PTR[ebx], eax
+mov DWORD PTR[rbx], rax
 
 loadMem
-mov eax, DWORD PTR[eax]
+mov rax, DWORD PTR[rax]
