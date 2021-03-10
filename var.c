@@ -54,6 +54,10 @@ Vars* copyVars(Vars* vars){
         strcpy(newVar->reg, var->reg);
         newVar->value = var->value;
         newVar->lifeSpan = var->lifeSpan;
+        newVar->loop = var->loop;  // Not used?
+        newVar->constant = var->constant;
+        newVar->inMemory = var->inMemory;
+        newVar->memAddress = var->memAddress;
 
         copy->vars[i] = newVar;
     }
