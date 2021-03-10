@@ -180,6 +180,12 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
 // Attempt to free src by moving the store var anywhere it can
 char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
+    char* assembly = storeMem(findVarByReg(src, vars),&usedRegs,&vars,gadgets);
+
+    if (assembly != NULL){
+        return assembly;
+    }
+
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
         if (strcmp(src, moveGadget.operands[1]) == 0 &&
@@ -274,6 +280,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
 char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
+    int count = vars->count;
 
     for (int i = 0 ; i < gadgets.numStoreMemGadgets ; i++) {
         Gadget storeGadget = gadgets.storeMemGadgets[i];
@@ -281,6 +288,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         char* storeData = storeGadget.operands[1];
 
         char* clearReg;
+        char* loadAddr;
 
         if (used(storeAddr,usedRegs,vars->count)) {
             clearReg = moveRegAnywhere(storeAddr, usedRegs, vars, gadgets);
@@ -288,15 +296,26 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         else {
             clearReg = "";
         }
+
+        if (clearReg != NULL) {
+            Var* addressVar = vars->vars[0];
+            loadAddr = loadConstValue(addressVar, storeAddr, usedRegsPtr, varsPtr, gadgets);
+            usedRegs = *usedRegsPtr;
+            vars = *varsPtr;
+        }
+
         char* moveData = moveReg(var, storeData, usedRegs, vars, gadgets);
 
         if (moveData != NULL){
             int len = strlen(storeGadget.assembly) + strlen(clearReg) + strlen(moveData) +
-                    3;
+                    strlen(loadAddr) + 4;
             char* assembly = malloc(len);
-            snprintf(assembly, len, "%s\n%s\n%s",clearReg,moveData,
+            snprintf(assembly, len, "%s\n%s\n%s\n%s",clearReg,loadAddr,moveData,
                     storeGadget.assembly);
-            var->inMemory = true;
+            findVar(var->name, vars)->inMemory = true;
+
+            removeRegFromUsed(usedRegs,storeData,count);
+            removeRegFromUsed(usedRegs,storeAddr,count);
             return assembly;
         }
     }
@@ -578,9 +597,21 @@ int main(){
 
         "Mul x y"
     };
+    // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
     vars->count = 0;
     vars->maxSize = progLines+4;
+
+    Var *addressVar = malloc(sizeof(Var) + 2);
+    strcpy(addressVar->name, "");
+    addressVar->lifeSpan = 0;
+    addressVar->loop = false;
+    addressVar->constant = true;
+    addressVar->inMemory = false;
+    addressVar->address = true;
+
+    vars->vars[0] = addressVar;
+    vars->count = 1;
     Pseudo pseudoInst[progLines];
     
     // Parse program into pseudo instructions

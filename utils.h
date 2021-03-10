@@ -12,5 +12,5 @@ bool used(char* reg, char** usedRegs, int count);
 
 char** usedRegisters(Vars* vars);
 void freeUsedRegs(char** usedRegs, int count);
-void addRegToUsed(char** used, char* reg, int count);
-void removeRegFromUsed(char** used, char* reg, int count);
+void addRegToUsed(char** usedRegs, char* reg, int count);
+void removeRegFromUsed(char** usedRegs, char* reg, int count);
