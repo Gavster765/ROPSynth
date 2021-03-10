@@ -10,6 +10,7 @@ typedef struct Var {
     bool loop;  // used inside loop so don't kill until loop end
     bool constant;  // not changed so can be reloaded from stack at will
     bool inMemory;
+    bool address;  // Marks placeholder variable 
     int memAddress;
     char reg[4];
     char name[];

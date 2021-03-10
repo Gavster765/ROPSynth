@@ -63,6 +63,7 @@ Vars* copyVars(Vars* vars){
         newVar->constant = var->constant;
         newVar->inMemory = var->inMemory;
         newVar->memAddress = var->memAddress;
+        newVar->address = var->address;
 
         copy->vars[i] = newVar;
     }
