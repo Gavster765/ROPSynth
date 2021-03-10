@@ -20,11 +20,17 @@ typedef struct Vars {
     Var* vars[];
 } Vars;
 
+// Methods of finding a var from a given vars structure - return NULL on fail
+
 Var* findVar(char* name, Vars* vars);
 Var* findVarByReg(char* reg, Vars* vars);
 
+// Used during createPseudo phase to calculate variable lifespan
+
 void updateLifespan(char* name, Vars* vars, int currLine, bool loop);
 void updateLoopVars(Vars* vars, int currLine);
+
+// Create and delete copies of vars
 
 Vars* copyVars(Vars* vars);
 void freeVars(Vars* vars);
