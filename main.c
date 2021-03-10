@@ -191,7 +191,10 @@ char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
 }
 
 char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets){
-    // WARNING assumes no move gagdet longer than first
+    if (strcmp(var->reg, dest) == 0){
+        return "";
+    }
+    // WARNING assumes no move gagdet longer than first and MEM LEAK?
     char* assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
     assembly[0] = '\0';    
     if (exists(dest, usedRegs, vars->count)){
@@ -216,6 +219,7 @@ char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets
     return NULL;
 }
 
+// TODO move then load?
 char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -260,16 +264,18 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
     return NULL;  // Load not possible without move TODO
 }
 
-void loadMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+char* loadMem(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
 
     for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
         Gadget loadGadget = gadgets.loadMemGadgets[i];
-        char* dest = loadGadget.operands[0];
+        char* loadDest = loadGadget.operands[0];
         char* srcAddr = loadGadget.operands[1];
         char* clearReg;
-        
+        char* loadAddr;
+        char* move;
+
         // Only gadgets have srcAddr = dest for now .. TODO
         if (exists(srcAddr,usedRegs,vars->count)) {
             clearReg = moveRegAnywhere(srcAddr, usedRegs, vars, gadgets);
@@ -278,23 +284,28 @@ void loadMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             clearReg = "";
         }
 
-        char* loadAddr = loadConstValue(var, srcAddr, usedRegsPtr, varsPtr, gadgets);
+        if (clearReg != NULL) {
+            loadAddr = loadConstValue(var, srcAddr, usedRegsPtr, varsPtr, gadgets);
+        }
+
+        if (loadAddr != NULL) {
+            strcpy(var->reg, loadDest);
+            move = moveReg(var, dest, *usedRegsPtr, *varsPtr, gadgets);
+        }
         
         if (clearReg != NULL || loadAddr != NULL){
             int len = strlen(loadGadget.assembly) + strlen(loadAddr) +
-                      strlen(clearReg) + 3;
+                      strlen(clearReg) + strlen(move) + 4;
             char* assembly = malloc(len);
-            snprintf(assembly, len, "%s\n%s\n%s",clearReg,loadAddr,loadGadget.assembly);
+            snprintf(assembly, len, "%s\n%s\n%s\n%s",clearReg,loadAddr,
+                    loadGadget.assembly,move);
+            return assembly;
         }
-
-
-        // Load const addr
-        // loadMem
-
         // if (exists(dest,usedRegs,vars->count)) {
         //     moveRegAnywhere(dest, usedRegs, vars, gadgets);
         // } 
     }
+    return NULL;
 }
 
 char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
@@ -306,7 +317,7 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
         return "";  // No change needed
     }
     else if(var->inMemory){
-        ;
+        return loadMem(var, dest, usedRegsPtr, varsPtr, gadgets);
     }
     // Unloaded var
     else if(strcmp(var->reg,"new") == 0){
