@@ -179,12 +179,14 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 }
 
 // Attempt to free src by moving the store var anywhere it can
-char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
-    char* assembly = storeMem(findVarByReg(src, vars),&usedRegs,&vars,gadgets);
+char* moveRegAnywhere(char* src, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+    // char* assembly = storeMem(findVarByReg(src, *varsPtr),usedRegsPtr,varsPtr,gadgets);
+    Vars* vars = *varsPtr;
+    char** usedRegs = *usedRegsPtr;
 
-    if (assembly != NULL){
-        return assembly;
-    }
+    // if (assembly != NULL){
+    //     return assembly;
+    // }
 
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
@@ -209,7 +211,7 @@ char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets
     char* assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
     assembly[0] = '\0';    
     if (used(dest, usedRegs, vars->count)){
-        char* moveExisting = moveRegAnywhere(dest, usedRegs, vars, gadgets);
+        char* moveExisting = moveRegAnywhere(dest, &usedRegs, &vars, gadgets);
         if (moveExisting == NULL){
             return NULL;
         }
@@ -291,7 +293,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         char* loadAddr;
 
         if (used(storeAddr,usedRegs,vars->count)) {
-            clearReg = moveRegAnywhere(storeAddr, usedRegs, vars, gadgets);
+            clearReg = moveRegAnywhere(storeAddr, &usedRegs, &vars, gadgets);
         }
         else {
             clearReg = "";
@@ -343,7 +345,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
 
         // Only gadgets have srcAddr = dest for now .. TODO
         if (used(srcAddr,usedRegs,vars->count)) {
-            clearReg = moveRegAnywhere(srcAddr, usedRegs, vars, gadgets);
+            clearReg = moveRegAnywhere(srcAddr, &usedRegs, &vars, gadgets);
         }
         else {
             clearReg = "";
