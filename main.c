@@ -25,7 +25,9 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 strcpy(newVar->name, operandList[0]);
                 newVar->lifeSpan = i+1;
                 newVar->loop = false;
-                newVar->constant = true;
+                newVar->constant = true;  // Is constant until changed
+                newVar->inMemory = false;
+                newVar->memAddress = vars->count;  //  Not in memory
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1])
@@ -199,6 +201,38 @@ char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets
     return NULL;
 }
 
+void loadMem(char** usedRegs, Vars* vars, Gadgets gadgets) {
+    for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
+        Gadget loadGadget = gadgets.loadMemGadgets[i];
+        char* dest = loadGadget.operands[0];
+        char* srcAddr = loadGadget.operands[1];
+        char* clearReg;
+        
+        // Only gadgets have srcAddr = dest for now .. TODO
+        if (exists(srcAddr,usedRegs,vars->count)) {
+            clearReg = moveRegAnywhere(srcAddr, usedRegs, vars, gadgets);
+        }
+        else {
+            clearReg = "";
+        }
+
+        if (clearReg != NULL){
+            char* assembly = malloc(strlen(loadGadget.assembly) + strlen(clearReg) + 2);
+            strcat(assembly,clearReg);
+            strcat(assembly,"\n");
+            // strcat()
+        }
+
+
+        // Load const addr
+        // loadMem
+
+        // if (exists(dest,usedRegs,vars->count)) {
+        //     moveRegAnywhere(dest, usedRegs, vars, gadgets);
+        // } 
+    }
+}
+
 char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -206,6 +240,9 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     // Already in correct register
     if(strcmp(var->reg,dest) == 0){
         return "";  // No change needed
+    }
+    else if(var->inMemory){
+        ;
     }
     // Unloaded var
     else if(strcmp(var->reg,"new") == 0){
@@ -251,14 +288,6 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     }
     // Loaded but in wrong register
     else {
-        // Reg assigned but not correct
-        // if (new) // merge
-        //     generate list of all poss loads ??s
-        
-        // get moves with correct dest 
-        // try to match with src <- even if requires a move?
-
-
         return moveReg(var, dest, usedRegs, vars, gadgets);
     }
     return NULL;
@@ -394,24 +423,15 @@ int main(){
     //         "Add x z",
     //     "End"
     // };
-    // const int progLines = 6;
-    // char* prog[progLines] = {
-    //     "Var x 3",
-    //     "Var y 1",
-    //     "Var z 0",
-
-    //     "While x > z",
-    //         "Sub x y",
-    //     "End"
-    // };
     const int progLines = 6;
     char* prog[progLines] = {
-        "Var a 1", //pop rax
-        "Var b 2", //pop rcx, mov rbx, rcx
-        "Add a b", //add rax, rbx
-        "Var c 3",
-        "Add a c",
-        "Add a b"
+        "Var x 3",
+        "Var y 1",
+        "Var z 0",
+
+        "While x > z",
+            "Sub x y",
+        "End"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;

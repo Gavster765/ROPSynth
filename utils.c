@@ -66,7 +66,7 @@ char** usedRegisters(Vars* vars){
     char** usedRegs = malloc(vars->count * sizeof(char*));
     for (int i = 0 ; i < vars->count ; i++) {
         usedRegs[i] = malloc(4);
-        if(vars->vars[i]->constant){
+        if(vars->vars[i]->constant || vars->vars[i]->inMemory){
             strcpy(usedRegs[i], "new");  // Allow constant to be overwritten
         }
         else {

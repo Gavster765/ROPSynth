@@ -68,22 +68,11 @@ void freeVars(Vars* vars){
 }
 
 void deleteStaleVars(int line, Vars* vars) {
-    char** usedRegs = malloc(vars->count * sizeof(char*));
     for (int i = 0 ; i < vars->count ; i++) {
         Var* v = vars->vars[i];
-        usedRegs[i] = malloc(4);
 
-        if (v->lifeSpan == line){
+        if (v->lifeSpan == line || v->constant || v->inMemory){
             strcpy(v->reg, "new");
         }
-        else {
-            for (int j = 0; j < i ; j++) {
-                if (strcmp(v->reg, usedRegs[j]) == 0) {  // If reg already used
-                    strcpy(v->reg,"new");
-                }
-            }
-        }
-        strcpy(usedRegs[i], v->reg);
-        
     }
 }
