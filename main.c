@@ -8,6 +8,8 @@
 #include "pseudo.h"
 #include "var.h"
 
+char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
+
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
     bool loop = false;
@@ -26,7 +28,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 newVar->lifeSpan = i+1;
                 newVar->loop = false;
                 newVar->constant = true;  // Is constant until changed
-                newVar->inMemory = true;
+                newVar->inMemory = false;
                 newVar->memAddress = vars->count;  //  Not in memory
                 LoadConst newConst = {
                     .out = operandList[0],
@@ -164,7 +166,7 @@ char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
         if (strcmp(src, moveGadget.operands[1]) == 0 &&
-            !exists(moveGadget.operands[0], usedRegs, vars->count)) {
+            !used(moveGadget.operands[0], usedRegs, vars->count)) {
                 Var* var = findVarByReg(src, vars);
                 strcpy(var->reg, moveGadget.operands[0]);
                 removeRegFromUsed(usedRegs, src, vars->count);
@@ -182,7 +184,7 @@ char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets
     // WARNING assumes no move gagdet longer than first and MEM LEAK?
     char* assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
     assembly[0] = '\0';    
-    if (exists(dest, usedRegs, vars->count)){
+    if (used(dest, usedRegs, vars->count)){
         char* moveExisting = moveRegAnywhere(dest, usedRegs, vars, gadgets);
         if (moveExisting == NULL){
             return NULL;
@@ -212,7 +214,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
 
     for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
         Gadget loadGadget = gadgets.loadConstGadgets[i];
-        if (exists(dest,usedRegs,count)){
+        if (used(dest,usedRegs,count)){
             break;  // Reg in use - would clobber value - move first?
         }
         else if (strcmp(loadGadget.operands[0],dest) == 0){
@@ -224,7 +226,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
     for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
         Gadget loadGadget = gadgets.loadConstGadgets[i];
         char* gadgetDest = loadGadget.operands[0];
-        if (!exists(gadgetDest,usedRegs,count)){
+        if (!used(gadgetDest,usedRegs,count)){
             Vars* tmpVars = copyVars(vars);
             Var* tmpVar = findVar(var->name, tmpVars);
             strcpy(tmpVar->reg,gadgetDest);  // Temporially load
@@ -249,6 +251,38 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
     return NULL;  // Load not possible without move TODO
 }
 
+char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+    Vars* vars = *varsPtr;
+    char** usedRegs = *usedRegsPtr;
+
+    for (int i = 0 ; i < gadgets.numStoreMemGadgets ; i++) {
+        Gadget storeGadget = gadgets.storeMemGadgets[i];
+        char* storeAddr = storeGadget.operands[0];
+        char* storeData = storeGadget.operands[1];
+
+        char* clearReg;
+
+        if (used(storeAddr,usedRegs,vars->count)) {
+            clearReg = moveRegAnywhere(storeAddr, usedRegs, vars, gadgets);
+        }
+        else {
+            clearReg = "";
+        }
+        char* moveData = moveReg(var, storeData, usedRegs, vars, gadgets);
+
+        if (moveData != NULL){
+            int len = strlen(storeGadget.assembly) + strlen(clearReg) + strlen(moveData) +
+                    3;
+            char* assembly = malloc(len);
+            snprintf(assembly, len, "%s\n%s\n%s",clearReg,moveData,
+                    storeGadget.assembly);
+            var->inMemory = true;
+            return assembly;
+        }
+    }
+    return NULL;
+}
+
 char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -268,7 +302,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         char* moveBack;
 
         // Only gadgets have srcAddr = dest for now .. TODO
-        if (exists(srcAddr,usedRegs,vars->count)) {
+        if (used(srcAddr,usedRegs,vars->count)) {
             clearReg = moveRegAnywhere(srcAddr, usedRegs, vars, gadgets);
         }
         else {
@@ -305,7 +339,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
                     loadGadget.assembly,move,moveBack);
             return assembly;
         }
-        // if (exists(dest,usedRegs,vars->count)) {
+        // if (used(dest,usedRegs,vars->count)) {
         //     moveRegAnywhere(dest, usedRegs, vars, gadgets);
         // } 
     }
@@ -380,15 +414,15 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
                 synthesizeArith(inst, &vars, gadgets);
+                findVar(inst.operand1,vars)->constant = false;
+                findVar(inst.operand1,vars)->inMemory = false;
                 switch (inst.opcode) {
                     case '+':
                         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
-                        findVar(inst.operand1,vars)->constant = false;
                         break;
                     
                     case '-':
                         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
-                        findVar(inst.operand1,vars)->constant = false;
                         break;
                 }
                 break;
