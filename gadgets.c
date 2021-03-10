@@ -4,6 +4,7 @@
 #include "gadgets.h"
 #include "utils.h"
 
+// Create a new gadget given a type and the asm string
 Gadget createGadget(GadgetType type, char* assembly){
     char* assm = strdup(assembly);  // Make string writable
     char* line = strdup(assembly);
@@ -22,6 +23,7 @@ Gadget createGadget(GadgetType type, char* assembly){
     return gadget;
 }
 
+// Read gadgets text file into Gadgets structure
 Gadgets loadGadgets(){
     int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets, 
         numStoreMemGadgets, numLoadMemGadgets;

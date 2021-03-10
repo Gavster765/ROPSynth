@@ -8,7 +8,7 @@ int getOperands(char** operandList, char* operandString);
 
 int getProgLines(char** progList, char* progString);
 
-bool exists(char* reg, char** usedRegs, int count);
+bool used(char* reg, char** usedRegs, int count);
 
 char** usedRegisters(Vars* vars);
 void freeUsedRegs(char** usedRegs, int count);
