@@ -233,6 +233,52 @@ void loadMem(char** usedRegs, Vars* vars, Gadgets gadgets) {
     }
 }
 
+char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
+    Vars* vars = *varsPtr;
+    char** usedRegs = *usedRegsPtr;
+    int count = vars->count;
+
+    for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+        Gadget loadGadget = gadgets.loadConstGadgets[i];
+        if (exists(dest,usedRegs,count)){
+            break;  // Reg in use - would clobber value - move first?
+        }
+        else if (strcmp(loadGadget.operands[0],dest) == 0){
+            strcpy(var->reg, dest);
+            addRegToUsed(usedRegs, dest, vars->count);
+            return loadGadget.assembly;
+        }
+    }
+    for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+        Gadget loadGadget = gadgets.loadConstGadgets[i];
+        char* gadgetDest = loadGadget.operands[0];
+        if (!exists(gadgetDest,usedRegs,count)){
+            Vars* tmpVars = copyVars(vars);
+            Var* tmpVar = findVar(var->name, tmpVars);
+            strcpy(tmpVar->reg,gadgetDest);  // Temporially load
+            char** tmpUsedRegs = usedRegisters(tmpVars);
+            char* possMove = moveReg(tmpVar, dest, tmpUsedRegs, tmpVars, gadgets);
+            if (possMove != NULL){
+                *varsPtr = tmpVars;
+                freeVars(vars);
+                *usedRegsPtr = tmpUsedRegs;
+                freeUsedRegs(usedRegs, count);
+                // WARNING memory leak!
+                char* assembly = malloc(strlen(loadGadget.assembly)
+                                            + strlen(possMove) + 2);
+                assembly[0] = '\0';                                             
+                strcat(assembly,loadGadget.assembly);
+                strcat(assembly,"\n");
+                strcat(assembly,possMove);
+                return assembly;
+            }
+            freeVars(tmpVars);
+            freeUsedRegs(tmpUsedRegs, count);
+        }
+    }
+    return NULL;  // Load not possible without move TODO
+}
+
 char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -246,45 +292,7 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     }
     // Unloaded var
     else if(strcmp(var->reg,"new") == 0){
-        for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
-            Gadget loadGadget = gadgets.loadConstGadgets[i];
-            if (exists(dest,usedRegs,count)){
-                break;  // Reg in use - would clobber value - move first?
-            }
-            else if (strcmp(loadGadget.operands[0],dest) == 0){
-                strcpy(var->reg, dest);
-                addRegToUsed(usedRegs, dest, vars->count);
-                return loadGadget.assembly;
-            }
-        }
-        for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
-            Gadget loadGadget = gadgets.loadConstGadgets[i];
-            char* gadgetDest = loadGadget.operands[0];
-            if (!exists(gadgetDest,usedRegs,count)){
-                Vars* tmpVars = copyVars(vars);
-                Var* tmpVar = findVar(var->name, tmpVars);
-                strcpy(tmpVar->reg,gadgetDest);  // Temporially load
-                char** tmpUsedRegs = usedRegisters(tmpVars);
-                char* possMove = moveReg(tmpVar, dest, tmpUsedRegs, tmpVars, gadgets);
-                if (possMove != NULL){
-                    *varsPtr = tmpVars;
-                    freeVars(vars);
-                    *usedRegsPtr = tmpUsedRegs;
-                    freeUsedRegs(usedRegs, count);
-                    // WARNING memory leak!
-                    char* assembly = malloc(strlen(loadGadget.assembly)
-                                                + strlen(possMove) + 2);
-                    assembly[0] = '\0';                                             
-                    strcat(assembly,loadGadget.assembly);
-                    strcat(assembly,"\n");
-                    strcat(assembly,possMove);
-                    return assembly;
-                }
-                freeVars(tmpVars);
-                freeUsedRegs(tmpUsedRegs, count);
-            }
-        }
-        return NULL;  // Load not possible without move TODO
+        return loadConstValue(var, dest, usedRegsPtr, varsPtr, gadgets);
     }
     // Loaded but in wrong register
     else {
@@ -323,6 +331,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
     }
+    printf("Failed to find\n");
 }
 
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
