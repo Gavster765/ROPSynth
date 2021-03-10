@@ -131,14 +131,11 @@ void freeVars(Vars* vars) {
 
 // Delete all vars no longer needed in registers
 void deleteStaleVars(int line, Vars* vars) {
-    char** usedRegs = malloc(vars->count * sizeof(char*));
     for (int i = 0 ; i < vars->count ; i++) {
         Var* v = vars->vars[i];
 
         if (v->lifeSpan == line || v->constant || v->inMemory){
             strcpy(v->reg, "new");
         }
-        strcpy(usedRegs[i], v->reg);
-        
     }
 }

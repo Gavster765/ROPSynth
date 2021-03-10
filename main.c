@@ -216,6 +216,38 @@ char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets
     return NULL;
 }
 
+void loadMem(char** usedRegs, Vars* vars, Gadgets gadgets) {
+    for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
+        Gadget loadGadget = gadgets.loadMemGadgets[i];
+        char* dest = loadGadget.operands[0];
+        char* srcAddr = loadGadget.operands[1];
+        char* clearReg;
+        
+        // Only gadgets have srcAddr = dest for now .. TODO
+        if (exists(srcAddr,usedRegs,vars->count)) {
+            clearReg = moveRegAnywhere(srcAddr, usedRegs, vars, gadgets);
+        }
+        else {
+            clearReg = "";
+        }
+
+        if (clearReg != NULL){
+            char* assembly = malloc(strlen(loadGadget.assembly) + strlen(clearReg) + 2);
+            strcat(assembly,clearReg);
+            strcat(assembly,"\n");
+            // strcat()
+        }
+
+
+        // Load const addr
+        // loadMem
+
+        // if (exists(dest,usedRegs,vars->count)) {
+        //     moveRegAnywhere(dest, usedRegs, vars, gadgets);
+        // } 
+    }
+}
+
 char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -223,6 +255,9 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     // Already in correct register
     if(strcmp(var->reg,dest) == 0){
         return "";  // No change needed
+    }
+    else if(var->inMemory){
+        ;
     }
     // Unloaded var
     else if(strcmp(var->reg,"new") == 0){
@@ -268,14 +303,6 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     }
     // Loaded but in wrong register
     else {
-        // Reg assigned but not correct
-        // if (new) // merge
-        //     generate list of all poss loads ??s
-        
-        // get moves with correct dest 
-        // try to match with src <- even if requires a move?
-
-
         return moveReg(var, dest, usedRegs, vars, gadgets);
     }
     return NULL;
