@@ -13,6 +13,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 
 char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 
+// Read user program and parse into pseudo instructions
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
     bool loop = false;
@@ -177,6 +178,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
         }
 }
 
+// Attempt to free src by moving the store var anywhere it can
 char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
@@ -192,6 +194,7 @@ char* moveRegAnywhere(char* src, char** usedRegs, Vars* vars, Gadgets gadgets) {
     return NULL;
 }
 
+// Try to move var to dest by mean of moves - can also move a var out of dest if required
 char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets){
     if (strcmp(var->reg, dest) == 0){
         return "";
@@ -222,6 +225,7 @@ char* moveReg(Var* var, char* dest, char** usedRegs, Vars* vars, Gadgets gadgets
 }
 
 // TODO move then load?
+// Will  try to load a const from the stack into dest - can move other var out of dest
 char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -266,6 +270,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
     return NULL;  // Load not possible without move TODO
 }
 
+// Store a var in memory so doesn't need to be in a reg
 char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -298,6 +303,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     return NULL;
 }
 
+// Load a var from memory into a given reg for use - noMove is incase both operands need to be loaded using the same load gadget
 char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -361,6 +367,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
     return NULL;
 }
 
+// Attempt to move a var into dest for use - TODO rename?
 char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -409,6 +416,7 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
 }
 
 // Create type a=a+b
+// Write asm for arithmetic operations
 void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     int count = vars->count;
@@ -466,6 +474,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     // TODO - execute new program - need more space first? (memory stores)
 }
 
+// Read list of pseudo instructions and write required asm
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
         Vars* vars = *varsPtr;
@@ -574,7 +583,9 @@ int main(){
     vars->maxSize = progLines+4;
     Pseudo pseudoInst[progLines];
     
+    // Parse program into pseudo instructions
     createPseudo(progLines, prog, vars, pseudoInst);
+    // Read gadgets file
     Gadgets gadgets = loadGadgets();
     translatePseudo(progLines, &vars, pseudoInst, gadgets);
     
