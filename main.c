@@ -264,9 +264,14 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
     return NULL;  // Load not possible without move TODO
 }
 
-char* loadMem(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
+    Var noMoveVar;
+    if (noMove != NULL) {
+        noMoveVar = *noMove;
+        strcpy(noMoveVar.name, noMove->name);
+    }
 
     for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
         Gadget loadGadget = gadgets.loadMemGadgets[i];
@@ -275,6 +280,7 @@ char* loadMem(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
         char* clearReg;
         char* loadAddr;
         char* move;
+        char* moveBack;
 
         // Only gadgets have srcAddr = dest for now .. TODO
         if (exists(srcAddr,usedRegs,vars->count)) {
@@ -293,12 +299,25 @@ char* loadMem(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
             move = moveReg(var, dest, *usedRegsPtr, *varsPtr, gadgets);
         }
         
-        if (clearReg != NULL || loadAddr != NULL){
-            int len = strlen(loadGadget.assembly) + strlen(loadAddr) +
-                      strlen(clearReg) + strlen(move) + 4;
+        if (noMove != NULL) {
+            if (strcmp(noMoveVar.reg, noMove->reg) != 0){
+                // TODO - combine with prev move? so can make move safe
+                moveBack = moveReg(noMove, noMoveVar.reg, *usedRegsPtr, *varsPtr, gadgets);
+            }
+            else {
+                moveBack = "";
+            }
+        }
+        else {
+            moveBack = "";
+        }
+        
+        if (clearReg != NULL && loadAddr != NULL && move != NULL && moveBack != NULL){
+            int len = strlen(loadGadget.assembly) + strlen(loadAddr) + strlen(clearReg) +
+                      strlen(move) + strlen(moveBack) + 5;
             char* assembly = malloc(len);
-            snprintf(assembly, len, "%s\n%s\n%s\n%s",clearReg,loadAddr,
-                    loadGadget.assembly,move);
+            snprintf(assembly, len, "%s\n%s\n%s\n%s\n%s",clearReg,loadAddr,
+                    loadGadget.assembly,move,moveBack);
             return assembly;
         }
         // if (exists(dest,usedRegs,vars->count)) {
@@ -308,7 +327,7 @@ char* loadMem(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
     return NULL;
 }
 
-char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
+char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
     int count = vars->count;
@@ -317,7 +336,7 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
         return "";  // No change needed
     }
     else if(var->inMemory){
-        return loadMem(var, dest, usedRegsPtr, varsPtr, gadgets);
+        return loadMem(var, dest, noMove, usedRegsPtr, varsPtr, gadgets);
     }
     // Unloaded var
     else if(strcmp(var->reg,"new") == 0){
@@ -373,7 +392,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
              (op == '*' &&  strcmp(gadget.opcode,"mul") == 0)  ) {
             char* setupA = checkRegisterPossible(a, gadget.operands[0], &usedRegs, &tmpVars, gadgets); 
             // WARNING may have moved value from add dest to add src - could now be stuck when other moves where possible
-            char* setupB = checkRegisterPossible(b, gadget.operands[1], &usedRegs, &tmpVars, gadgets);
+            char* setupB = checkRegisterPossible(b, gadget.operands[1], a, &usedRegs, &tmpVars, gadgets);
             if (setupA != NULL && setupB != NULL){
                 // Set new register - could be the same if unchanged
                 *varsPtr = tmpVars;

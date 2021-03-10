@@ -19,7 +19,7 @@ mov rcx, rax
 mov rax, rcx
 mov rax, rdx
 mov rdi, rbx
-mov rbx, rsp
+mov rax, rbx
 mov rbx, rcx
 
 storeMem
