@@ -16,7 +16,7 @@ pub extern fn run(components_str: *const c_char, program_str: *const c_char) -> 
         Err(_) => "there",
         Ok(string) => string,
     };
-    env_logger::init();
+    // env_logger::init();
 
     let opts = Options::from_args();
 
