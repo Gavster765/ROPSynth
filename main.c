@@ -402,16 +402,22 @@ int main(){
     //         "Add x z",
     //     "End"
     // };
-    const int progLines = 7;
-    char* prog[progLines] = {
-        "Var x 3",
-        "Var y 1",
-        "Var z 0",
+    // const int progLines = 6;
+    // char* prog[progLines] = {
+    //     "Var x 3",
+    //     "Var y 1",
+    //     "Var z 0",
 
-        "While x > z",
-            "Mul x y",
-            "Sub x y",
-        "End"
+    //     "While x > z",
+    //         "Sub x y",
+    //     "End"
+    // };
+    const int progLines = 3;
+    char* prog[progLines] = {
+        "Var x 2",
+        "Var y 3",
+
+        "Mul x y"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;
