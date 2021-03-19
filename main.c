@@ -294,6 +294,8 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
     }
+    // Couldn't find gadget so try to find alternative
+    findAlternative(inst, vars, gadgets);
 }
 
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
@@ -377,8 +379,6 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    char* res = run("Add,Add,Add,And,Sub,Xor", "Var,Const 4,Mul 0 1");
-    printf("%s\n",res);
     // const int progLines = 11;
     // char* prog[progLines] = {
     //     "Var x 1",

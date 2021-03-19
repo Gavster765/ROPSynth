@@ -1,3 +1,6 @@
+#ifndef PSEUDO_H
+#define PSEUDO_H
+
 #include "gadgets.h"
 
 typedef struct LoadConst {
@@ -33,3 +36,5 @@ typedef struct Pseudo {
     Comp comp;
     End end;
 } Pseudo;
+
+#endif /* PSEUDO_H */
