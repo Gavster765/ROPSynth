@@ -7,6 +7,7 @@ Variables that are constant or in memory get killed and reloaded - keep until ov
 
 Report notes:
 mention stale vars
+gadgets that end in jumps not return? (jop)
 
 TODO?:
 • Extend language to include basic loops using jump gadgets
