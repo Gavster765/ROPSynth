@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "pseudo.h"
 #include "var.h"
+#include "synth-loop-free-prog/synthesis.h"
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
@@ -376,6 +377,8 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
+    char* res = run("Add,Add,Add,And,Sub,Xor", "Var,Const 4,Mul 0 1");
+    printf("%s\n",res);
     // const int progLines = 11;
     // char* prog[progLines] = {
     //     "Var x 1",
