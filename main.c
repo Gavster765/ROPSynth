@@ -38,7 +38,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 vars->count++;
                 pseudoInst[i] = p;
             }
-            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0){
+            // TODO move check if arith to func?
+            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0 || strcmp(opcode,"Mul") == 0){
                 ArithOp newArith = {
                     .out = operandList[0],
                     .operand1 = operandList[0],
@@ -50,6 +51,9 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 }
                 else if(strcmp(opcode,"Sub") == 0) {
                     newArith.opcode = '-';
+                }
+                else if(strcmp(opcode,"Mul") == 0) {
+                    newArith.opcode = '*';
                 }
 
                 Pseudo p = {
@@ -278,7 +282,8 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         Gadget gadget = gadgets.arithOpGadgets[i];
 
         if ( (op == '+' &&  strcmp(gadget.opcode,"add") == 0) ||
-             (op == '-' &&  strcmp(gadget.opcode,"sub") == 0)  ) {
+             (op == '-' &&  strcmp(gadget.opcode,"sub") == 0) ||
+             (op == '*' &&  strcmp(gadget.opcode,"mul") == 0)  ) {
             char* setupA = checkRegisterPossible(a, gadget.operands[0], &usedRegs, &tmpVars, gadgets); 
             // WARNING may have moved value from add dest to add src - could now be stuck when other moves where possible
             char* setupB = checkRegisterPossible(b, gadget.operands[1], &usedRegs, &tmpVars, gadgets);
@@ -318,6 +323,9 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                     
                     case '-':
                         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
+                        break;
+                    case '*':
+                        findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
                         break;
                 }
                 break;
@@ -394,13 +402,14 @@ int main(){
     //         "Add x z",
     //     "End"
     // };
-    const int progLines = 6;
+    const int progLines = 7;
     char* prog[progLines] = {
         "Var x 3",
         "Var y 1",
         "Var z 0",
 
         "While x > z",
+            "Mul x y",
             "Sub x y",
         "End"
     };
