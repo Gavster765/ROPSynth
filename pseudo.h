@@ -10,6 +10,7 @@ typedef struct LoadConst {
 
 typedef struct ArithOp {
     char opcode;
+    char* op;
     char* out;
     char* operand1;
     char* operand2;

@@ -49,12 +49,15 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
                 if(strcmp(opcode,"Add") == 0) {
                     newArith.opcode = '+';
+                    newArith.op = "Add";
                 }
                 else if(strcmp(opcode,"Sub") == 0) {
                     newArith.opcode = '-';
+                    newArith.op = "Sub";
                 }
                 else if(strcmp(opcode,"Mul") == 0) {
                     newArith.opcode = '*';
+                    newArith.op = "Mul";
                 }
 
                 Pseudo p = {
@@ -404,23 +407,23 @@ int main(){
     //         "Add x z",
     //     "End"
     // };
-    const int progLines = 6;
-    char* prog[progLines] = {
-        "Var x 3",
-        "Var y 1",
-        "Var z 0",
-
-        "While x > z",
-            "Sub x y",
-        "End"
-    };
-    // const int progLines = 3;
+    // const int progLines = 6;
     // char* prog[progLines] = {
-    //     "Var x 2",
-    //     "Var y 3",
+    //     "Var x 3",
+    //     "Var y 1",
+    //     "Var z 0",
 
-    //     "Mul x y"
+    //     "While x > z",
+    //         "Sub x y",
+    //     "End"
     // };
+    const int progLines = 3;
+    char* prog[progLines] = {
+        "Var x 2",
+        "Var y 3",
+
+        "Mul x y"
+    };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;
     Pseudo pseudoInst[progLines];
