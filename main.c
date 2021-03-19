@@ -26,6 +26,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 strcpy(newVar->name, operandList[0]);
                 newVar->lifeSpan = i+1;
                 newVar->loop = false;
+                newVar->constant = true;
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1])
@@ -316,6 +317,7 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
                 synthesizeArith(inst, &vars, gadgets);
+                findVar(inst.operand1,vars)->constant = false;
                 switch (inst.opcode) {
                     case '+':
                         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
@@ -402,23 +404,23 @@ int main(){
     //         "Add x z",
     //     "End"
     // };
-    // const int progLines = 6;
-    // char* prog[progLines] = {
-    //     "Var x 3",
-    //     "Var y 1",
-    //     "Var z 0",
-
-    //     "While x > z",
-    //         "Sub x y",
-    //     "End"
-    // };
-    const int progLines = 3;
+    const int progLines = 6;
     char* prog[progLines] = {
-        "Var x 2",
-        "Var y 3",
+        "Var x 3",
+        "Var y 1",
+        "Var z 0",
 
-        "Mul x y"
+        "While x > z",
+            "Sub x y",
+        "End"
     };
+    // const int progLines = 3;
+    // char* prog[progLines] = {
+    //     "Var x 2",
+    //     "Var y 3",
+
+    //     "Mul x y"
+    // };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
     vars->count = 0;
     Pseudo pseudoInst[progLines];

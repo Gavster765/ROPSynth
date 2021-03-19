@@ -2,7 +2,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "var.h"
+#include "utils.h"
 
+// Find variable by name
 Var* findVar(char* name, Vars* vars) {
     if (name != NULL) {
         for (int i = 0 ; i < vars->count ; i++) {
@@ -14,6 +16,7 @@ Var* findVar(char* name, Vars* vars) {
     return NULL;
 }
 
+// Find variable which currently occupies a register
 Var* findVarByReg(char* reg, Vars* vars) {
     for (int i = 0 ; i < vars->count ; i++) {
         if (strcmp(vars->vars[i]->reg, reg) == 0) {
@@ -23,6 +26,7 @@ Var* findVarByReg(char* reg, Vars* vars) {
     return NULL;
 }
 
+// Updates the lifespan of var whenever it is referenced
 void updateLifespan(char* name, Vars* vars, int currLine, bool loop) {
     Var* v = findVar(name, vars);
     if (loop){
@@ -33,6 +37,7 @@ void updateLifespan(char* name, Vars* vars, int currLine, bool loop) {
     }
 }
 
+// Updates the lifespan of all vars to the end of current loop
 void updateLoopVars(Vars* vars, int currLine) {
     for (int i = 0 ; i < vars->count ; i++) {
         Var* v = vars->vars[i];
@@ -43,6 +48,7 @@ void updateLoopVars(Vars* vars, int currLine) {
     }
 }
 
+// Create an exact copy of every var
 Vars* copyVars(Vars* vars){
     Vars* copy = malloc(sizeof(Vars) + sizeof(Var*)*vars->count);
     copy->count = vars->count;
@@ -53,12 +59,18 @@ Vars* copyVars(Vars* vars){
         strcpy(newVar->reg, var->reg);
         newVar->value = var->value;
         newVar->lifeSpan = var->lifeSpan;
+        newVar->loop = var->loop;  // Not used?
+        newVar->constant = var->constant;
+        newVar->inMemory = var->inMemory;
+        newVar->memAddress = var->memAddress;
+        newVar->address = var->address;
 
         copy->vars[i] = newVar;
     }
     return copy;
 }
 
+// Free all memory allocated to vars
 void freeVars(Vars* vars){
     for (int i = 0 ; i < vars->count ; i++){
         free(vars->vars[i]);
@@ -66,10 +78,13 @@ void freeVars(Vars* vars){
     free(vars);
 }
 
+// Delete all vars no longer needed in registers
 void deleteStaleVars(int line, Vars* vars) {
     for (int i = 0 ; i < vars->count ; i++) {
-        if (vars->vars[i]->lifeSpan == line){
-            strcpy(vars->vars[i]->reg, "new");
+        Var* v = vars->vars[i];
+
+        if (v->lifeSpan == line || v->constant || v->inMemory){
+            strcpy(v->reg, "new");
         }
     }
 }
