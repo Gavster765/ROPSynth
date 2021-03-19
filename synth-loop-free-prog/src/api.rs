@@ -43,7 +43,7 @@ pub extern fn run(components_str: *const c_char, program_str: *const c_char) -> 
             return ret_str.into_raw();
             // println!("Synthesized:\n\n{}", prog);
         }
-        Err(e) => {
+        Err(_e) => {
             let ret_str = CString::new("Error").expect("CString::new failed");
             return ret_str.into_raw();
             // println!("Error: {:?}\n", e);
@@ -52,6 +52,7 @@ pub extern fn run(components_str: *const c_char, program_str: *const c_char) -> 
 }
 
 #[derive(StructOpt)]
+#[allow(dead_code)]
 struct Options {
     /// Set a timeout, in milliseconds.
     #[structopt(short = "t", long = "timeout")]
