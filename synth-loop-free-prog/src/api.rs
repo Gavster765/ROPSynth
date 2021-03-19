@@ -119,9 +119,9 @@ fn synthesize_prog(context: &z3::Context, opts: &Options, components: &str,
     for line in program_list {
         let operands = line.split(" ").collect::<Vec<&str>>();
         match operands[0] {
-            "var" => vars.push(builder.var()),
-            "const" => vars.push(builder.const_(operands[1].parse().unwrap())),
-            "mul" => {
+            "Var" => vars.push(builder.var()),
+            "Const" => vars.push(builder.const_(operands[1].parse().unwrap())),
+            "Mul" => {
                 let a: usize = operands[1].parse().unwrap();
                 let b: usize = operands[2].parse().unwrap();
                 vars.push(builder.mul(vars[a], vars[b]));
