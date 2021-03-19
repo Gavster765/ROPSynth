@@ -88,10 +88,10 @@ fn synthesize_prog(context: &z3::Context, opts: &Options, components: &str,
     let components_list = components.split(",");
     for comp in components_list {
         match comp {
-            "Add" => library.components.push(component::add()),
-            "Sub" => library.components.push(component::sub()),
-            "Xor" => library.components.push(component::xor()),
-            "And" => library.components.push(component::and()),
+            "add" => library.components.push(component::add()),
+            "sub" => library.components.push(component::sub()),
+            "xor" => library.components.push(component::xor()),
+            "and" => library.components.push(component::and()),
             _ => println!("Unknown Component"),
         }
         // println!("{}", comp);
@@ -119,9 +119,9 @@ fn synthesize_prog(context: &z3::Context, opts: &Options, components: &str,
     for line in program_list {
         let operands = line.split(" ").collect::<Vec<&str>>();
         match operands[0] {
-            "Var" => vars.push(builder.var()),
-            "Const" => vars.push(builder.const_(operands[1].parse().unwrap())),
-            "Mul" => {
+            "var" => vars.push(builder.var()),
+            "const" => vars.push(builder.const_(operands[1].parse().unwrap())),
+            "mul" => {
                 let a: usize = operands[1].parse().unwrap();
                 let b: usize = operands[2].parse().unwrap();
                 vars.push(builder.mul(vars[a], vars[b]));

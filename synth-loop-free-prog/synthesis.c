@@ -26,6 +26,6 @@ void findComponents(Gadgets gadgets) {
 
 void findAlternative(ArithOp inst, Vars* var, Gadgets gadgets) {
     findComponents(gadgets);
-    char* res = run("Add,Add,Add,And,Sub,Xor", "Var,Const 4,Mul 0 1");
+    char* res = run("add,add,add,and,sub,xor", "var,const 4,mul 0 1");
     printf("%s\n",res);
 }
