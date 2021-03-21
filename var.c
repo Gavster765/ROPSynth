@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+
 #include "var.h"
 #include "utils.h"
 
@@ -24,6 +26,37 @@ Var* findVarByReg(char* reg, Vars* vars) {
         }
     }
     return NULL;
+}
+
+// Adds new var to vars
+int addNewVar(Var* newVar, Vars* vars) {
+    if (vars->count < vars->maxSize) {
+        vars->vars[vars->count] = newVar;
+        vars->count++;
+        return 0;
+    }
+    else {
+        printf("Ran out of variable space - allocate more\n");
+        return -1;
+    }
+}
+
+int removeVar(Var* delVar, Vars* vars) {
+    bool found = false;
+    for (int i = 0 ; i < vars->count ; i++) {
+        printf("%d %d\n",i,vars->count);
+        if(strcmp(vars->vars[i]->name, delVar->name) == 0) {
+            if (i < vars->count - 1) {
+                vars->vars[i] = vars->vars[i+1];
+            }
+            vars->count -= 1;
+            found = true;
+        }
+        else if (found) {
+            vars->vars[i] = vars->vars[i+1];
+        }
+    }
+    free(delVar);
 }
 
 // Updates the lifespan of var whenever it is referenced
@@ -71,7 +104,7 @@ Vars* copyVars(Vars* vars){
 }
 
 // Free all memory allocated to vars
-void freeVars(Vars* vars){
+void freeVars(Vars* vars) {
     for (int i = 0 ; i < vars->count ; i++){
         free(vars->vars[i]);
     }

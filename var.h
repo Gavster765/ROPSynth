@@ -18,6 +18,7 @@ typedef struct Var {
 
 typedef struct Vars {
     int count;
+    int maxSize;
     Var* vars[];
 } Vars;
 
@@ -25,6 +26,12 @@ typedef struct Vars {
 
 Var* findVar(char* name, Vars* vars);
 Var* findVarByReg(char* reg, Vars* vars);
+
+// Add and delete from vars
+
+int addNewVar(Var* newVar, Vars* vars);
+
+int removeVar(Var* delVar, Vars* vars);
 
 // Used during createPseudo phase to calculate variable lifespan
 
