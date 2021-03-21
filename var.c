@@ -57,6 +57,8 @@ int removeVar(Var* delVar, Vars* vars) {
         }
     }
     free(delVar);
+    if (found) return 0;
+    else return -1;
 }
 
 // Updates the lifespan of var whenever it is referenced
