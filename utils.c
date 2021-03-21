@@ -15,6 +15,10 @@ void removeChars(char* str, char c) {
 }
 
 int getGadgetOperands(char** operandList, char* operandString) {
+    if (operandString == NULL) {
+        return 0;
+    }
+
     char* operands = strdup(operandString);
     char* operand = strtok(operands, ",");
     int numOperands = 0;
