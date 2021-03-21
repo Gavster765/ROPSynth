@@ -5,6 +5,7 @@ typedef enum {
     LOAD_CONST,
     MOVE_REG,
     ARITH_OP,
+    COPY, // TODO - move as only a pseudo type??
     COMP, // TODO - move as only a pseudo type??
     END // TODO - move as only a pseudo type??
 } GadgetType;

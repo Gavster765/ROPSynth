@@ -30,6 +30,11 @@ typedef struct End {
     Comp* loop;
 } End;
 
+typedef struct Copy {
+    char* dest;
+    char* src;
+} Copy;
+
 typedef struct Pseudo {
     GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
