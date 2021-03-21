@@ -304,7 +304,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeVars(tmpVars);
     }
     // Couldn't find gadget so try to find alternative
-    findAlternative(inst, vars, gadgets);
+    char* alt = findAlternative(inst, vars, gadgets);
 }
 
 void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){

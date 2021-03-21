@@ -4,4 +4,4 @@
 // Linked rust function
 char* run(char* components, char* program);
 
-void findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets);
+char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets);

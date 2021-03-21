@@ -40,13 +40,36 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
     return spec;
 }
 
-void findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
+char* parseNewProg(char* prog) {
+    char var;
+    char* inst;
+
+    char* curr = prog;
+    while (curr) {
+        char* next = strchr(curr, '\n');
+        if (next) next[0] = '\0';  // temporarily terminate the current line
+        
+        // printf("%s\n",curr);
+        int read = sscanf(curr,"%c ← %[^\n]",&var,inst);
+        if (read == -1) {
+            break;
+        }
+        printf("%c %s\n",var,inst);
+
+        if (next) *next = '\n';  // then restore newline-char, just to be tidy    
+        curr = next ? (next+1) : NULL;
+    }
+    return "";
+}
+
+char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* components = findComponents(gadgets);
     char* spec = createProgSpec(inst, vars);
     // char* res = run("add,add,add,and,sub,xor,", "Var,Const 4,Mul 0 1");
     char* res = run(components, spec);
-    printf("%s\n",res);
+    // printf("%s\n",res);
+    parseNewProg(res);
     free(components);
     free(spec);
-    free(res);
+    return res;
 }

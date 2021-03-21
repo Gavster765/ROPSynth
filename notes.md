@@ -5,6 +5,7 @@ When implementing loops - consider variable lifespan?
 
 Report notes:
 mention stale vars
+talk about fresh variables
 
 TODO?:
 • Extend language to include basic loops using jump gadgets
