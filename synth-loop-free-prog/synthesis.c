@@ -40,9 +40,9 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
     return spec;
 }
 
-char* parseNewProg(char* prog) {
-    char var;
-    char* inst;
+char* parseNewProg(char* prog, Vars* vars) {
+    char* varName = malloc(2);
+    char* inst = malloc(30);
 
     char* curr = prog;
     while (curr) {
@@ -50,15 +50,21 @@ char* parseNewProg(char* prog) {
         if (next) next[0] = '\0';  // temporarily terminate the current line
         
         // printf("%s\n",curr);
-        int read = sscanf(curr,"%c ← %[^\n]",&var,inst);
+        int read = sscanf(curr,"%s ← %[^\n]",varName,inst);
         if (read == -1) {
             break;
         }
-        printf("%c %s\n",var,inst);
+        printf("%s %s\n",varName,inst);
+        Var *v = malloc(sizeof(Var) + strlen("_x") + 1);
+        strcpy(v->name,"_");
+        strcat(v->name,varName);
+        addNewVar(v, vars);
 
         if (next) *next = '\n';  // then restore newline-char, just to be tidy    
         curr = next ? (next+1) : NULL;
     }
+    free(varName);
+    free(inst);
     return "";
 }
 
@@ -68,7 +74,16 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     // char* res = run("add,add,add,and,sub,xor,", "Var,Const 4,Mul 0 1");
     char* res = run(components, spec);
     // printf("%s\n",res);
-    parseNewProg(res);
+    parseNewProg(res, vars);
+    for (int i = 0 ; i < vars->count ; i++){
+        printf("%s\n",vars->vars[i]->name);
+    }
+    
+    // Var *var2 = malloc(sizeof(Var) + strlen("b") + 1);
+    // strcpy(var2->name,"b");
+    // addNewVar(var, vars);
+    // addNewVar(var2, vars);
+    // removeVar(var, vars);
     free(components);
     free(spec);
     return res;
