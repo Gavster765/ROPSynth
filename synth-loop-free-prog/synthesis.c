@@ -6,6 +6,7 @@
 #include "./var.h"
 #include "./gadgets.h"
 #include "./pseudo.h"
+#include "./utils.h"
 
 char* findComponents(Gadgets gadgets) {
     char* components = malloc(gadgets.numArithOpGadgets * 4 + 1);  // Max 3 char op with comma
@@ -40,9 +41,12 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
     return spec;
 }
 
-char* parseNewProg(char* prog, Vars* vars) {
+char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
+    char* pseudoInst = malloc(strlen(prog)+1);
+    pseudoInst[0] = '\0';
     char* varName = malloc(2);
-    char* inst = malloc(30);
+    char* newInst = malloc(30);
+    bool firstVar = true;
 
     char* curr = prog;
     while (curr) {
@@ -50,22 +54,45 @@ char* parseNewProg(char* prog, Vars* vars) {
         if (next) next[0] = '\0';  // temporarily terminate the current line
         
         // printf("%s\n",curr);
-        int read = sscanf(curr,"%s ← %[^\n]",varName,inst);
+        int read = sscanf(curr,"%s ← %[^\n]",varName,newInst);
         if (read == -1) {
             break;
         }
-        printf("%s %s\n",varName,inst);
+        // printf("%s %s\n",varName,inst);
         Var *v = malloc(sizeof(Var) + strlen("_x") + 1);
         strcpy(v->name,"_");
         strcat(v->name,varName);
         addNewVar(v, vars);
+        
+        char* opcode = strtok(newInst, " ");  // Peel off opcode
+        char* operands = strtok(NULL, "");  // Save all operands
+        char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
+        // printf("%s %s\n",opcode, operands);
+        getGadgetOperands(operandList,operands);
+
+        if (strcmp("var",opcode) == 0) {
+            if (firstVar) {
+                sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,inst.operand1);
+                firstVar = false;
+            }
+            else {
+                sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,inst.operand2);
+            }
+            // strcat(pseudoInst,"Copy");
+        }
+        else {
+            sprintf(pseudoInst,"%sCopy _%s _%s\n",pseudoInst,varName,operandList[0]);
+            sprintf(pseudoInst,"%s%s _%s _%s\n",pseudoInst,opcode,varName,operandList[1]);
+            // printf("%s %s %s\n",opcode,operandList[0],operandList[1]);
+        }
 
         if (next) *next = '\n';  // then restore newline-char, just to be tidy    
         curr = next ? (next+1) : NULL;
     }
+    sprintf(pseudoInst,"%sCopy %s _%s",pseudoInst,inst.operand1,varName);
     free(varName);
-    free(inst);
-    return "";
+    free(newInst);
+    return pseudoInst;
 }
 
 char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
@@ -74,7 +101,8 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     // char* res = run("add,add,add,and,sub,xor,", "Var,Const 4,Mul 0 1");
     char* res = run(components, spec);
     // printf("%s\n",res);
-    parseNewProg(res, vars);
+    char* pseudoCode = parseNewProg(res, inst, vars);
+    printf("%s\n",pseudoCode);
     for (int i = 0 ; i < vars->count ; i++){
         printf("%s\n",vars->vars[i]->name);
     }

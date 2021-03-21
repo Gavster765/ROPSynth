@@ -424,8 +424,9 @@ int main(){
 
         "Mul x y"
     };
-    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
+    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
     vars->count = 0;
+    vars->maxSize = progLines+4;
     Pseudo pseudoInst[progLines];
     
     createPseudo(progLines, prog, vars, pseudoInst);

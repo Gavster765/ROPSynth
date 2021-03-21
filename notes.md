@@ -2,6 +2,7 @@ Issues:
 Variables can get stuck <- i.e moved to rdx but no gadgets to move them out of rdx
 May need to look ahead a little <- on fail go back and try again?? <- some kind of tree?
 When implementing loops - consider variable lifespan?
+Synth needs var then const not reverse
 
 Report notes:
 mention stale vars
