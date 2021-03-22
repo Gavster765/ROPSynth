@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "synthesis.h"
 #include "./var.h"
@@ -65,12 +66,13 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
         addNewVar(v, vars);
         
         char* opcode = strtok(newInst, " ");  // Peel off opcode
+        opcode[0] = toupper(opcode[0]);
         char* operands = strtok(NULL, "");  // Save all operands
         char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
         // printf("%s %s\n",opcode, operands);
         getGadgetOperands(operandList,operands);
 
-        if (strcmp("var",opcode) == 0) {
+        if (strcmp("Var",opcode) == 0) {
             if (firstVar) {
                 sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,inst.operand1);
                 firstVar = false;
@@ -103,9 +105,9 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     // printf("%s\n",res);
     char* pseudoCode = parseNewProg(res, inst, vars);
     printf("%s\n",pseudoCode);
-    for (int i = 0 ; i < vars->count ; i++){
-        printf("%s\n",vars->vars[i]->name);
-    }
+    // for (int i = 0 ; i < vars->count ; i++){
+    //     printf("%s\n",vars->vars[i]->name);
+    // }
     
     // Var *var2 = malloc(sizeof(Var) + strlen("b") + 1);
     // strcpy(var2->name,"b");
@@ -114,5 +116,5 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     // removeVar(var, vars);
     free(components);
     free(spec);
-    return res;
+    return pseudoCode;
 }
