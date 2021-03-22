@@ -349,6 +349,9 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 }
                 break;
             }
+            case COPY: {
+                break;
+            }
             case COMP: {
                 Comp* inst = &pseudoInst[i].comp;
 
@@ -406,37 +409,15 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    // const int progLines = 11;
-    // char* prog[progLines] = {
-    //     "Var x 1",
-    //     "Var y 2",
-    //     "Add x y",
-    //     "Var z 3",
-
-    //     "If x > z",
-    //         "Sub x z",
-    //     "ElseIf x < z",
-    //         "Add x y",
-    //     "Else",
-    //         "Add x z",
-    //     "End"
-    // };
-    // const int progLines = 6;
-    // char* prog[progLines] = {
-    //     "Var x 3",
-    //     "Var y 1",
-    //     "Var z 0",
-
-    //     "While x > z",
-    //         "Sub x y",
-    //     "End"
-    // };
-    const int progLines = 3;
+    const int progLines = 6;
     char* prog[progLines] = {
         "Var x 2",
-        "Var y 3",
+        "Var y 1",
+        "Var z 0",
 
-        "Mul x y"
+        "Copy z x",
+        "Add z y",
+        "Copy x z"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
     vars->count = 0;
