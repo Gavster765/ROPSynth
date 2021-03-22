@@ -41,6 +41,21 @@ int addNewVar(Var* newVar, Vars* vars) {
     }
 }
 
+// Creates basic var and adds to vars
+Var* addVar(char* name, Vars* vars) {
+    Var *v = malloc(sizeof(Var) + strlen(name) + 1);
+    v->lifeSpan = -1;
+    v->loop = false;
+    v->constant = true;
+    v->inMemory = false;
+    v->address = false;
+    v->memAddress = vars->count;
+    strcpy(v->reg, "new");
+    strcpy(v->name, name);
+    addNewVar(v, vars);
+    return v;
+}
+
 int removeVar(Var* delVar, Vars* vars) {
     bool found = false;
     for (int i = 0 ; i < vars->count ; i++) {

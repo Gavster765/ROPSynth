@@ -46,6 +46,7 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
     char* pseudoInst = malloc(strlen(prog)+1);
     pseudoInst[0] = '\0';
     char* varName = malloc(2);
+    char* freshName = malloc(3);
     char* newInst = malloc(30);
     bool firstVar = true;
 
@@ -60,10 +61,9 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
             break;
         }
         // printf("%s %s\n",varName,inst);
-        Var *v = malloc(sizeof(Var) + strlen("_x") + 1);
-        strcpy(v->name,"_");
-        strcat(v->name,varName);
-        addNewVar(v, vars);
+        strcpy(freshName, "_");
+        strcat(freshName, varName);
+        Var* v = addVar(freshName, vars);
         
         char* opcode = strtok(newInst, " ");  // Peel off opcode
         opcode[0] = toupper(opcode[0]);
@@ -93,6 +93,7 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
     }
     sprintf(pseudoInst,"%sCopy %s _%s",pseudoInst,inst.operand1,varName);
     free(varName);
+    free(freshName);
     free(newInst);
     return pseudoInst;
 }

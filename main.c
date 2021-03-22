@@ -21,12 +21,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             int numOperands = getOperands(operandList, operands);
             
             if(strcmp(opcode,"Var") == 0){
-                Var *newVar = malloc(sizeof(Var) + strlen(operandList[0]) + 1);
-                strcpy(newVar->reg,"new");
-                strcpy(newVar->name, operandList[0]);
+                Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
-                newVar->loop = false;
-                newVar->constant = true;
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1])
@@ -35,8 +31,6 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .type = LOAD_CONST,
                     .loadConst = newConst
                 };
-                vars->vars[vars->count] = newVar;  // Use hastable?
-                vars->count++;
                 pseudoInst[i] = p;
             }
             // TODO move check if arith to func?
@@ -412,7 +406,7 @@ int main(){
     const int progLines = 6;
     char* prog[progLines] = {
         "Var x 2",
-        "Var y 1",
+        "Var y 3",
         "Var z 0",
 
         "Copy z x",
