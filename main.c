@@ -280,6 +280,31 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     return NULL;
 }
 
+char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
+    Vars* vars = *varsPtr;
+    Var* dest = findVar(inst.dest, vars);
+    Var* src = findVar(inst.src, vars);
+
+    // If src is constant just update value as if fresh
+    if (src->constant) {
+        dest->value = src->value;
+        strcpy(dest->reg, "new");
+        dest->constant = true;
+        dest->inMemory = false;
+        return "";
+    }
+    // Case in reg - TODO memory case
+    else {
+        // TODO check for NULL - i.e. impossible
+        char** usedRegs = usedRegisters(vars);
+        dest->value = src->value;
+        dest->constant = false;
+        dest->inMemory = false;
+        strcpy(dest->reg, src->reg);
+        return moveRegAnywhere(src->reg, usedRegs, vars, gadgets);
+    }
+}
+
 // Create type a=a+b
 void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
@@ -344,6 +369,9 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                 break;
             }
             case COPY: {
+                Copy inst = pseudoInst[i].copy;
+                char* copy = synthesizeCopy(inst, &vars, gadgets);
+                printf("%s\n",copy);
                 break;
             }
             case COMP: {
