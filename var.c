@@ -100,8 +100,9 @@ void updateLoopVars(Vars* vars, int currLine) {
 
 // Create an exact copy of every var
 Vars* copyVars(Vars* vars){
-    Vars* copy = malloc(sizeof(Vars) + sizeof(Var*)*vars->count);
+    Vars* copy = malloc(sizeof(Vars) + sizeof(Var*)*vars->maxSize);
     copy->count = vars->count;
+    copy->maxSize = vars->maxSize;
     for (int i = 0 ; i < vars->count ; i++){
         Var* var = vars->vars[i];
         Var *newVar = malloc(sizeof(Var) + strlen(var->name) + 1);

@@ -49,6 +49,20 @@ int getOperands(char** operandList, char* operandString) {
     return numOperands;
 }
 
+int getProgLines(char** progList, char* progString) {
+    if (progString == NULL){
+        return -1;
+    }
+    char* progLine = strtok(progString, "\n");
+    int numLines = 0;
+    // Iterate though operands 
+    while(progLine != NULL){
+        progList[numLines] = progLine;
+        numLines++;
+        progLine = strtok(NULL, "\n");
+    }
+    return numLines;
+}
 
 bool exists(char* reg, char** usedRegs, int count){
     for (int i = 0 ; i < count ; i++){

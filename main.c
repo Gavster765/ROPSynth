@@ -9,6 +9,8 @@
 #include "var.h"
 #include "synth-loop-free-prog/synthesis.h"
 
+void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets);
+
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
     bool loop = false;
@@ -17,9 +19,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
             char* operands = strtok(NULL, "");  // Save all operands
-            char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
+            char** operandList = malloc(3*20);  // Max 3 operands at 20 chars each
             int numOperands = getOperands(operandList, operands);
-            
             if(strcmp(opcode,"Var") == 0){
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
@@ -336,12 +337,36 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
     }
+    printf("alt\n");
     // Couldn't find gadget so try to find alternative
-    char* alt = findAlternative(inst, vars, gadgets);
+    Vars* tmpVars = copyVars(vars);
+    char* alt = findAlternative(inst, tmpVars, gadgets);
+    // printf("%s\n",alt);
+    // printf("%d\n",strlen(alt));
+    int lines = 0;
+    for (int i = 0 ; i < strlen(alt) ; i++) {
+        if (alt[i] == '\n'){
+            lines++;
+        }
+    }
+    // printf("%s\n",alt);
+    char* altProg[lines];
+    getProgLines(altProg, alt);
+    for (int i = 0 ; i < lines ; i++){
+        printf("%s\n",altProg[i]);
+    }
+    Pseudo altPseudoInst[lines];
+    createPseudo(lines, altProg, tmpVars, altPseudoInst);
+    translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
+    printf("done alt\n");
+    freeVars(tmpVars);
+
+    // TODO - execute new program - need more space first? (memory stores)
 }
 
-void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
+void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
+        Vars* vars = *varsPtr;
         deleteStaleVars(i, vars);
         
         switch (pseudoInst[i].type){
@@ -352,7 +377,8 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             }
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
-                synthesizeArith(inst, &vars, gadgets);
+                synthesizeArith(inst, varsPtr, gadgets);
+                vars = *varsPtr;
                 findVar(inst.operand1,vars)->constant = false;
                 switch (inst.opcode) {
                     case '+':
@@ -370,7 +396,9 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             }
             case COPY: {
                 Copy inst = pseudoInst[i].copy;
-                char* copy = synthesizeCopy(inst, &vars, gadgets);
+                char* copy = synthesizeCopy(inst, varsPtr, gadgets);                if (copy == NULL) {
+                    printf("Can't copy\n");
+                }
                 printf("%s\n",copy);
                 break;
             }
@@ -431,15 +459,12 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    const int progLines = 6;
+    const int progLines = 3;
     char* prog[progLines] = {
         "Var x 2",
         "Var y 3",
-        "Var z 0",
 
-        "Copy z x",
-        "Add z y",
-        "Copy x z"
+        "Mul x y"
     };
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
     vars->count = 0;
@@ -448,7 +473,7 @@ int main(){
     
     createPseudo(progLines, prog, vars, pseudoInst);
     Gadgets gadgets = loadGadgets();
-    translatePseudo(progLines, vars, pseudoInst, gadgets);
+    translatePseudo(progLines, &vars, pseudoInst, gadgets);
     
     return 0;
 }

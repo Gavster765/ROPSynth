@@ -43,7 +43,7 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
 }
 
 char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
-    char* pseudoInst = malloc(strlen(prog)+1);
+    char* pseudoInst = malloc(strlen(prog)+100); // TODO calculate actual length
     pseudoInst[0] = '\0';
     char* varName = malloc(2);
     char* freshName = malloc(3);
@@ -91,7 +91,7 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
         if (next) *next = '\n';  // then restore newline-char, just to be tidy    
         curr = next ? (next+1) : NULL;
     }
-    sprintf(pseudoInst,"%sCopy %s _%s",pseudoInst,inst.operand1,varName);
+    sprintf(pseudoInst,"%sCopy %s _%s\n",pseudoInst,inst.operand1,varName);
     free(varName);
     free(freshName);
     free(newInst);
@@ -105,7 +105,7 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* res = run(components, spec);
     // printf("%s\n",res);
     char* pseudoCode = parseNewProg(res, inst, vars);
-    printf("%s\n",pseudoCode);
+    // printf("%s\n",pseudoCode);
     // for (int i = 0 ; i < vars->count ; i++){
     //     printf("%s\n",vars->vars[i]->name);
     // }
