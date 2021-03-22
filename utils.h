@@ -6,6 +6,8 @@ void removeChars(char* str, char c);
 int getGadgetOperands(char** operandList, char* operandString);
 int getOperands(char** operandList, char* operandString);
 
+int getProgLines(char** progList, char* progString);
+
 bool exists(char* reg, char** usedRegs, int count);
 
 char** usedRegisters(Vars* vars);

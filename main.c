@@ -7,6 +7,9 @@
 #include "utils.h"
 #include "pseudo.h"
 #include "var.h"
+#include "synth-loop-free-prog/synthesis.h"
+
+void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets);
 
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
     Comp *currIf;  // Currently open if - TODO nested?
@@ -16,15 +19,11 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
             char* operands = strtok(NULL, "");  // Save all operands
-            char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
+            char** operandList = malloc(3*20);  // Max 3 operands at 20 chars each
             int numOperands = getOperands(operandList, operands);
-            
             if(strcmp(opcode,"Var") == 0){
-                Var *newVar = malloc(sizeof(Var) + strlen(operandList[0]) + 1);
-                strcpy(newVar->reg,"new");
-                strcpy(newVar->name, operandList[0]);
+                Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
-                newVar->loop = false;
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1])
@@ -33,11 +32,10 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .type = LOAD_CONST,
                     .loadConst = newConst
                 };
-                vars->vars[vars->count] = newVar;  // Use hastable?
-                vars->count++;
                 pseudoInst[i] = p;
             }
-            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0){
+            // TODO move check if arith to func?
+            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0 || strcmp(opcode,"Mul") == 0){
                 ArithOp newArith = {
                     .out = operandList[0],
                     .operand1 = operandList[0],
@@ -46,14 +44,34 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
                 if(strcmp(opcode,"Add") == 0) {
                     newArith.opcode = '+';
+                    newArith.op = "Add";
                 }
                 else if(strcmp(opcode,"Sub") == 0) {
                     newArith.opcode = '-';
+                    newArith.op = "Sub";
+                }
+                else if(strcmp(opcode,"Mul") == 0) {
+                    newArith.opcode = '*';
+                    newArith.op = "Mul";
                 }
 
                 Pseudo p = {
                     .type = ARITH_OP,
                     .arithOp = newArith
+                };
+                pseudoInst[i] = p;
+                updateLifespan(operandList[0], vars, i, loop);
+                updateLifespan(operandList[1], vars, i, loop);
+            }
+            else if(strcmp(opcode,"Copy") == 0) {
+                Copy newCopy = {
+                    .dest = operandList[0],
+                    .src = operandList[1]
+                };
+
+                Pseudo p = {
+                    .type = COPY,
+                    .copy = newCopy
                 };
                 pseudoInst[i] = p;
                 updateLifespan(operandList[0], vars, i, loop);
@@ -263,6 +281,31 @@ char* checkRegisterPossible(Var* var, char* dest, char** *usedRegsPtr, Vars* *va
     return NULL;
 }
 
+char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
+    Vars* vars = *varsPtr;
+    Var* dest = findVar(inst.dest, vars);
+    Var* src = findVar(inst.src, vars);
+
+    // If src is constant just update value as if fresh
+    if (src->constant) {
+        dest->value = src->value;
+        strcpy(dest->reg, "new");
+        dest->constant = true;
+        dest->inMemory = false;
+        return "";
+    }
+    // Case in reg - TODO memory case
+    else {
+        // TODO check for NULL - i.e. impossible
+        char** usedRegs = usedRegisters(vars);
+        dest->value = src->value;
+        dest->constant = false;
+        dest->inMemory = false;
+        strcpy(dest->reg, src->reg);
+        return moveRegAnywhere(src->reg, usedRegs, vars, gadgets);
+    }
+}
+
 // Create type a=a+b
 void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
@@ -277,7 +320,8 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         Gadget gadget = gadgets.arithOpGadgets[i];
 
         if ( (op == '+' &&  strcmp(gadget.opcode,"add") == 0) ||
-             (op == '-' &&  strcmp(gadget.opcode,"sub") == 0)  ) {
+             (op == '-' &&  strcmp(gadget.opcode,"sub") == 0) ||
+             (op == '*' &&  strcmp(gadget.opcode,"mul") == 0)  ) {
             char* setupA = checkRegisterPossible(a, gadget.operands[0], &usedRegs, &tmpVars, gadgets); 
             // WARNING may have moved value from add dest to add src - could now be stuck when other moves where possible
             char* setupB = checkRegisterPossible(b, gadget.operands[1], &usedRegs, &tmpVars, gadgets);
@@ -293,10 +337,36 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
     }
+    printf("alt\n");
+    // Couldn't find gadget so try to find alternative
+    Vars* tmpVars = copyVars(vars);
+    char* alt = findAlternative(inst, tmpVars, gadgets);
+    // printf("%s\n",alt);
+    // printf("%d\n",strlen(alt));
+    int lines = 0;
+    for (int i = 0 ; i < strlen(alt) ; i++) {
+        if (alt[i] == '\n'){
+            lines++;
+        }
+    }
+    // printf("%s\n",alt);
+    char* altProg[lines];
+    getProgLines(altProg, alt);
+    for (int i = 0 ; i < lines ; i++){
+        printf("%s\n",altProg[i]);
+    }
+    Pseudo altPseudoInst[lines];
+    createPseudo(lines, altProg, tmpVars, altPseudoInst);
+    translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
+    printf("done alt\n");
+    freeVars(tmpVars);
+
+    // TODO - execute new program - need more space first? (memory stores)
 }
 
-void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadgets){
+void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
+        Vars* vars = *varsPtr;
         deleteStaleVars(i, vars);
         
         switch (pseudoInst[i].type){
@@ -307,7 +377,9 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
             }
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
-                synthesizeArith(inst, &vars, gadgets);
+                synthesizeArith(inst, varsPtr, gadgets);
+                vars = *varsPtr;
+                findVar(inst.operand1,vars)->constant = false;
                 switch (inst.opcode) {
                     case '+':
                         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
@@ -316,7 +388,18 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
                     case '-':
                         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
                         break;
+                    case '*':
+                        findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
+                        break;
                 }
+                break;
+            }
+            case COPY: {
+                Copy inst = pseudoInst[i].copy;
+                char* copy = synthesizeCopy(inst, varsPtr, gadgets);                if (copy == NULL) {
+                    printf("Can't copy\n");
+                }
+                printf("%s\n",copy);
                 break;
             }
             case COMP: {
@@ -376,38 +459,21 @@ void translatePseudo(int progLines, Vars* vars, Pseudo* pseudoInst, Gadgets gadg
 }
 
 int main(){
-    // const int progLines = 11;
-    // char* prog[progLines] = {
-    //     "Var x 1",
-    //     "Var y 2",
-    //     "Add x y",
-    //     "Var z 3",
-
-    //     "If x > z",
-    //         "Sub x z",
-    //     "ElseIf x < z",
-    //         "Add x y",
-    //     "Else",
-    //         "Add x z",
-    //     "End"
-    // };
-    const int progLines = 6;
+    const int progLines = 3;
     char* prog[progLines] = {
-        "Var x 3",
-        "Var y 1",
-        "Var z 0",
+        "Var x 2",
+        "Var y 3",
 
-        "While x > z",
-            "Sub x y",
-        "End"
+        "Mul x y"
     };
-    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*progLines);
+    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
     vars->count = 0;
+    vars->maxSize = progLines+4;
     Pseudo pseudoInst[progLines];
     
     createPseudo(progLines, prog, vars, pseudoInst);
     Gadgets gadgets = loadGadgets();
-    translatePseudo(progLines, vars, pseudoInst, gadgets);
+    translatePseudo(progLines, &vars, pseudoInst, gadgets);
     
     return 0;
 }
