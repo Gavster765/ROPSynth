@@ -111,7 +111,7 @@ Vars* copyVars(Vars* vars){
         newVar->value = var->value;
         newVar->lifeSpan = var->lifeSpan;
         newVar->loop = var->loop;  // Not used?
-        newVar->constant = var->constant; //test
+        newVar->constant = var->constant;
         newVar->inMemory = var->inMemory;
         newVar->memAddress = var->memAddress;
         newVar->address = var->address;
