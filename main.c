@@ -456,7 +456,7 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
         dest->constant = false;
         dest->inMemory = false;
         strcpy(dest->reg, src->reg);
-        return moveRegAnywhere(src->reg, usedRegs, vars, gadgets);
+        return moveRegAnywhere(src->reg, &usedRegs, varsPtr, gadgets);
     }
 }
 
