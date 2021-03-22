@@ -23,3 +23,5 @@ TODO?:
 • Vary number of components given to cegis
 • Fix synthAdd
 • Fix memory stores/loads
+• Allow more operations in cegis api
+• Reason for occasional error is the order of arguments received from cegis
