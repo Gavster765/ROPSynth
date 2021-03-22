@@ -39,6 +39,7 @@ typedef struct Pseudo {
     GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
     ArithOp arithOp;
+    Copy copy;
     Comp comp;
     End end;
 } Pseudo;

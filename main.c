@@ -68,6 +68,20 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 updateLifespan(operandList[0], vars, i, loop);
                 updateLifespan(operandList[1], vars, i, loop);
             }
+            else if(strcmp(opcode,"Copy") == 0) {
+                Copy newCopy = {
+                    .dest = operandList[0],
+                    .src = operandList[1]
+                };
+
+                Pseudo p = {
+                    .type = COPY,
+                    .copy = newCopy
+                };
+                pseudoInst[i] = p;
+                updateLifespan(operandList[0], vars, i, loop);
+                updateLifespan(operandList[1], vars, i, loop);
+            }
             else if(strcmp(opcode,"If") == 0) {
                 updateLifespan(operandList[0], vars, i, loop);
                 updateLifespan(operandList[2], vars, i, loop);
