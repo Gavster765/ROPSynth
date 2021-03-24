@@ -261,7 +261,9 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
         else if (strcmp(loadGadget.operands[0],dest) == 0){
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
-            return loadGadget.assembly;
+            char* assembly = malloc(strlen(loadGadget.assembly) + sizeof(int) + 1);
+            sprintf(assembly, "%s (%d)",loadGadget.assembly,var->value);  // TODO - free
+            return assembly;
         }
     }
     for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
@@ -276,14 +278,14 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             char* possMove = moveReg(tmpVar, dest, &tmpUsedRegs, &tmpVars, gadgets);
             if (possMove != NULL){
                 *varsPtr = tmpVars;
-                freeVars(vars);
                 *usedRegsPtr = tmpUsedRegs;
-                freeUsedRegs(usedRegs, count);
                 // WARNING memory leak!
-                int len = strlen(loadGadget.assembly) + strlen(possMove) + 2;
+                int len = strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 2;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
-                snprintf(assembly, len, "%s\n%s", loadGadget.assembly, possMove);
+                snprintf(assembly, len, "%s (%d)\n%s", loadGadget.assembly, tmpVar->value, possMove);
+                freeVars(vars);
+                freeUsedRegs(usedRegs, count);
                 return assembly;
             }
             freeVars(tmpVars);
@@ -320,6 +322,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
 
         if (clearReg != NULL) {
             addressVar = vars->vars[0];
+            addressVar->value = var->memAddress;
             loadAddr = loadConstValue(addressVar, storeAddr, usedRegsPtr, varsPtr, gadgets);
             if (loadAddr == NULL) {
                 continue;
@@ -547,7 +550,6 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
     for (int i = 0 ; i < progLines ; i++){
         Vars* vars = *varsPtr;
         deleteStaleVars(i, vars);
-        printf("%d\n",i);
         switch (pseudoInst[i].type){
             case LOAD_CONST: {
                 LoadConst inst = pseudoInst[i].loadConst;
@@ -639,11 +641,11 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 3;
+    const int progLines = 4;
     char* prog[progLines] = {
         "Var x 2",
         "Var y 4",
-
+        "Add x y",
         "Mul x y"
     };
     // Allocate space for variables and pseudo instructions
