@@ -1,13 +1,9 @@
-7,3,6,1,1
+3,3,6,1,1
 
 loadConst
 pop rax
 pop rcx
 pop rdx
-pop rsp
-pop rbp
-pop rsi
-pop rdi
 
 arithOp
 sub rax, rcx
