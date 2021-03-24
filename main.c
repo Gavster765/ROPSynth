@@ -10,7 +10,7 @@
 #include "synth-loop-free-prog/synthesis.h"
 
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets);
-char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
+char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 
 // Read user program and parse into pseudo instructions
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
@@ -179,7 +179,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
 // Attempt to free src by moving the store var anywhere it can
 char* moveRegAnywhere(char* src, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
-    char* assembly = storeMem(*findVarByReg(src, *varsPtr),usedRegsPtr,varsPtr,gadgets);
+    char* assembly = storeMem(findVarByReg(src, *varsPtr),usedRegsPtr,varsPtr,gadgets);
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
 
@@ -294,7 +294,8 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
 }
 
 // Store a var in memory so doesn't need to be in a reg
-char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+    char* varName = strdup(var->name);
     Vars* vars = *varsPtr;
     Var* addressVar = NULL;
     char** usedRegs = *usedRegsPtr;
@@ -326,8 +327,8 @@ char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             usedRegs = *usedRegsPtr;
             vars = *varsPtr;
         }
-
-        char* moveData = moveReg(findVar(var.name, vars), storeData, usedRegsPtr, varsPtr, gadgets);
+        // printf("store var: %s\n",varName);
+        char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
 
         if (moveData != NULL){
             int len = strlen(storeGadget.assembly) + strlen(clearReg) + strlen(moveData) +
@@ -335,7 +336,7 @@ char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             char* assembly = malloc(len);
             snprintf(assembly, len, "%s\n%s\n%s\n%s",clearReg,loadAddr,moveData,
                     storeGadget.assembly);
-            Var* v = findVar(var.name, vars);
+            Var* v = findVar(varName, vars);
             v->inMemory = true;
             strcpy(v->reg,"new");
 
@@ -344,9 +345,13 @@ char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             if (addressVar != NULL){
                 strcpy(addressVar->name, "new");
             }
+            // printf("store part: %s\n",assembly);
+            // printf("done\n");
+            free(varName);
             return assembly;
         }
     }
+    free(varName);
     return NULL;
 }
 
@@ -387,8 +392,8 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             move = moveReg(var, dest, usedRegsPtr, varsPtr, gadgets);
         }
         
-        if (noMove != NULL) {
-            Var* noMoveVar = findVarByReg(noMoveVarName, *varsPtr);
+        Var* noMoveVar = findVarByReg(noMoveVarName, *varsPtr);
+        if (noMoveVar != NULL) {
             if (strcmp(noMoveVarReg, noMove->reg) != 0){
                 // TODO - combine with prev move? so can make move safe
                 moveBack = moveReg(noMoveVar, noMoveVarReg, usedRegsPtr, varsPtr, gadgets);
@@ -484,7 +489,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         if ( (op == '+' &&  strcmp(gadget.opcode,"add") == 0) ||
              (op == '-' &&  strcmp(gadget.opcode,"sub") == 0) ||
              (op == '*' &&  strcmp(gadget.opcode,"mul") == 0)  ) {
-            printf("gadget: %s\n",gadget.assembly);
+            // printf("gadget: %s\n",gadget.assembly);
             char* setupA = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets); 
             a = findVar(inst.operand1,tmpVars);
             b = findVar(inst.operand2,tmpVars);
@@ -542,7 +547,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
     for (int i = 0 ; i < progLines ; i++){
         Vars* vars = *varsPtr;
         deleteStaleVars(i, vars);
-        
+        printf("%d\n",i);
         switch (pseudoInst[i].type){
             case LOAD_CONST: {
                 LoadConst inst = pseudoInst[i].loadConst;
