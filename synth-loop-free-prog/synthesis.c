@@ -18,7 +18,7 @@ char* findComponents(Gadgets gadgets) {
             sprintf(components, "%s%s,",components,op.opcode); // TODO remove last
         }
     }
-    printf("%s\n",components);
+    // printf("%s\n",components);
     return components;
 }
 
@@ -38,7 +38,7 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
 
     strcat(spec, inst.op);
     strcat(spec, " 0 1");
-    printf("%s\n",spec);
+    // printf("%s\n",spec);
     return spec;
 }
 

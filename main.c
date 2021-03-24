@@ -512,7 +512,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
     }
-    printf("alt\n");
+    // printf("alt\n");
     // Couldn't find gadget so try to find alternative
     Vars* tmpVars = copyVars(vars);
     char* alt = findAlternative(inst, tmpVars, gadgets);
@@ -527,13 +527,13 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     // printf("%s\n",alt);
     char* altProg[lines];
     getProgLines(altProg, alt);
-    for (int i = 0 ; i < lines ; i++){
-        printf("%s\n",altProg[i]);
-    }
+    // for (int i = 0 ; i < lines ; i++){
+    //     printf("%s\n",altProg[i]);
+    // }
     Pseudo altPseudoInst[lines];
     createPseudo(lines, altProg, tmpVars, altPseudoInst);
     translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
-    printf("done alt\n");
+    // printf("done alt\n");
     // Swap variables
     for (int i = 0 ; i < tmpVars->count ; i ++) {
         if (tmpVars->vars[i]->name[0] != '_') {
