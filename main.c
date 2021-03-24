@@ -10,7 +10,7 @@
 #include "synth-loop-free-prog/synthesis.h"
 
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets);
-char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
+char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 
 // Read user program and parse into pseudo instructions
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
@@ -179,13 +179,13 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
 
 // Attempt to free src by moving the store var anywhere it can
 char* moveRegAnywhere(char* src, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
-    // char* assembly = storeMem(findVarByReg(src, *varsPtr),usedRegsPtr,varsPtr,gadgets);
+    char* assembly = storeMem(*findVarByReg(src, *varsPtr),usedRegsPtr,varsPtr,gadgets);
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
 
-    // if (assembly != NULL){
-    //     return assembly;
-    // }
+    if (assembly != NULL){
+        return assembly;
+    }
 
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
@@ -294,8 +294,9 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
 }
 
 // Store a var in memory so doesn't need to be in a reg
-char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+char* storeMem(Var var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
+    Var* addressVar = NULL;
     char** usedRegs = *usedRegsPtr;
     int count = vars->count;
 
@@ -308,21 +309,25 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         char* loadAddr;
 
         if (used(storeAddr,usedRegs,vars->count)) {
-            printf("Warning!");
-            clearReg = moveRegAnywhere(storeAddr, usedRegsPtr, varsPtr, gadgets);
+            printf("Warning!\n");
+            continue;
+            // clearReg = moveRegAnywhere(storeAddr, usedRegsPtr, varsPtr, gadgets);
         }
         else {
             clearReg = "";
         }
 
         if (clearReg != NULL) {
-            Var* addressVar = vars->vars[0];
+            addressVar = vars->vars[0];
             loadAddr = loadConstValue(addressVar, storeAddr, usedRegsPtr, varsPtr, gadgets);
+            if (loadAddr == NULL) {
+                continue;
+            }
             usedRegs = *usedRegsPtr;
             vars = *varsPtr;
         }
 
-        char* moveData = moveReg(var, storeData, usedRegsPtr, varsPtr, gadgets);
+        char* moveData = moveReg(findVar(var.name, vars), storeData, usedRegsPtr, varsPtr, gadgets);
 
         if (moveData != NULL){
             int len = strlen(storeGadget.assembly) + strlen(clearReg) + strlen(moveData) +
@@ -330,12 +335,15 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             char* assembly = malloc(len);
             snprintf(assembly, len, "%s\n%s\n%s\n%s",clearReg,loadAddr,moveData,
                     storeGadget.assembly);
-            var = findVar(var->name, vars);
-            var->inMemory = true;
-            strcpy(var->reg,"new");
+            Var* v = findVar(var.name, vars);
+            v->inMemory = true;
+            strcpy(v->reg,"new");
 
             removeRegFromUsed(usedRegs,storeData,count);
             removeRegFromUsed(usedRegs,storeAddr,count);
+            if (addressVar != NULL){
+                strcpy(addressVar->name, "new");
+            }
             return assembly;
         }
     }
@@ -476,6 +484,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         if ( (op == '+' &&  strcmp(gadget.opcode,"add") == 0) ||
              (op == '-' &&  strcmp(gadget.opcode,"sub") == 0) ||
              (op == '*' &&  strcmp(gadget.opcode,"mul") == 0)  ) {
+            printf("gadget: %s\n",gadget.assembly);
             char* setupA = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets); 
             a = findVar(inst.operand1,tmpVars);
             b = findVar(inst.operand2,tmpVars);
@@ -515,6 +524,14 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     createPseudo(lines, altProg, tmpVars, altPseudoInst);
     translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
     printf("done alt\n");
+    // Swap variables
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            Var* tmp = vars->vars[i];
+            vars->vars[i] = tmpVars->vars[i];
+            tmpVars->vars[i] = tmp;
+        }
+    }
     freeVars(tmpVars);
 
     // TODO - execute new program - need more space first? (memory stores)
@@ -620,7 +637,7 @@ int main(){
     const int progLines = 3;
     char* prog[progLines] = {
         "Var x 2",
-        "Var y 3",
+        "Var y 4",
 
         "Mul x y"
     };
