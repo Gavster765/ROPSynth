@@ -49,7 +49,7 @@ Var* addVar(char* name, Vars* vars) {
     v->constant = true;
     v->inMemory = false;
     v->address = false;
-    v->memAddress = vars->count;
+    v->memAddress = vars->count + 1000;
     strcpy(v->reg, "new");
     strcpy(v->name, name);
     addNewVar(v, vars);
