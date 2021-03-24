@@ -261,7 +261,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
         else if (strcmp(loadGadget.operands[0],dest) == 0){
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
-            char* assembly = malloc(strlen(loadGadget.assembly) + sizeof(int) + 1);
+            char* assembly = malloc(strlen(loadGadget.assembly) + sizeof(int) + 3);
             sprintf(assembly, "%s (%d)",loadGadget.assembly,var->value);  // TODO - free
             return assembly;
         }
@@ -280,7 +280,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 *varsPtr = tmpVars;
                 *usedRegsPtr = tmpUsedRegs;
                 // WARNING memory leak!
-                int len = strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 2;
+                int len = strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 5;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
                 snprintf(assembly, len, "%s (%d)\n%s", loadGadget.assembly, tmpVar->value, possMove);
@@ -299,7 +299,6 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
 char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
     char* varName = strdup(var->name);
     Vars* vars = *varsPtr;
-    Var* addressVar = NULL;
     char** usedRegs = *usedRegsPtr;
     int count = vars->count;
 
@@ -321,7 +320,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         }
 
         if (clearReg != NULL) {
-            addressVar = vars->vars[0];
+            Var* addressVar = vars->vars[0];
             addressVar->value = var->memAddress;
             loadAddr = loadConstValue(addressVar, storeAddr, usedRegsPtr, varsPtr, gadgets);
             if (loadAddr == NULL) {
@@ -329,6 +328,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             }
             usedRegs = *usedRegsPtr;
             vars = *varsPtr;
+            strcpy(addressVar->name, "new");
         }
         // printf("store var: %s\n",varName);
         char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
@@ -345,9 +345,6 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
 
             removeRegFromUsed(usedRegs,storeData,count);
             removeRegFromUsed(usedRegs,storeAddr,count);
-            if (addressVar != NULL){
-                strcpy(addressVar->name, "new");
-            }
             // printf("store part: %s\n",assembly);
             // printf("done\n");
             free(varName);
@@ -386,7 +383,12 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         }
 
         if (clearReg != NULL) {
-            loadAddr = loadConstValue(findVar(varName,*varsPtr), srcAddr, usedRegsPtr, varsPtr, gadgets);
+            Var* v = findVar(varName,*varsPtr);
+            int value = v->value;
+            v->value = v->memAddress;
+            loadAddr = loadConstValue(v, srcAddr, usedRegsPtr, varsPtr, gadgets);
+            v = findVar(varName,*varsPtr);
+            v->value = value;
         }
 
         if (loadAddr != NULL) {
