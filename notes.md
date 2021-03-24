@@ -25,3 +25,5 @@ TODO?:
 • Fix memory stores/loads
 • Allow more operations in cegis api
 • Reason for occasional error is the order of arguments received from cegis
+• Fail nicely if cegis fails
+• Double moves?
