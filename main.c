@@ -402,8 +402,8 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             }
         }
         
-        Var* noMoveVar = findVarByReg(noMoveVarName, *varsPtr);
-        if (noMoveVar != NULL) {
+        if (noMove != NULL) {
+            Var* noMoveVar = findVar(noMoveVarName, *varsPtr);
             if (strcmp(noMoveVarReg, noMove->reg) != 0){
                 // TODO - combine with prev move? so can make move safe
                 moveBack = moveReg(noMoveVar, noMoveVarReg, usedRegsPtr, varsPtr, gadgets);
@@ -482,8 +482,9 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     // Case in memory
     else if (src->inMemory) {
         char** usedRegs = usedRegisters(vars);
-        char** *usedRegsPtr = &usedRegs;
-        char* assembly = loadMem(src, "any", NULL, usedRegsPtr, varsPtr, gadgets);
+        // char** *usedRegsPtr = &usedRegs;
+        char* assembly = loadMem(src, "any", NULL, &usedRegs, varsPtr, gadgets);
+        vars = *varsPtr;
         dest = findVar(inst.dest, vars);
         src = findVar(inst.src, vars);
         // Set properties of dest
@@ -493,28 +494,28 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
         dest->constant = false;
         // Reset loaded src
         strcpy(src->reg, "new");
-        dest->inMemory = true;
-        freeUsedRegs(*usedRegsPtr, (*varsPtr)->count);
+        src->inMemory = true;
+        freeUsedRegs(usedRegs, vars->count);
         return assembly;
     }
     // Case in reg
     else {
         // TODO check for NULL - i.e. impossible
         char** usedRegs = usedRegisters(vars);
-        char** *usedRegsPtr = &usedRegs;
+        // char** *usedRegsPtr = &usedRegs;
         dest->value = src->value;
         dest->constant = false;
         dest->inMemory = false;
         strcpy(dest->reg, src->reg);
-        char* assembly = moveRegAnywhere(src->reg, usedRegsPtr, varsPtr, gadgets);
-        freeUsedRegs(*usedRegsPtr, (*varsPtr)->count);
+        char* assembly = moveRegAnywhere(src->reg, &usedRegs, varsPtr, gadgets);
+        freeUsedRegs(usedRegs, (*varsPtr)->count);
         return assembly;
     }
 }
 
-// Create type a=a+b
+// Create type a=a+b, return whether needs updating
 // Write asm for arithmetic operations
-void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
+bool synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     int count = vars->count;
     char op = inst.opcode;
@@ -541,7 +542,7 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
                 printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
-                return;
+                return true;
             }
         }
         freeUsedRegs(usedRegs, count);
@@ -572,14 +573,13 @@ void synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     // Swap variables
     for (int i = 0 ; i < tmpVars->count ; i ++) {
         if (tmpVars->vars[i]->name[0] != '_') {
-            Var* tmp = vars->vars[i];
-            vars->vars[i] = tmpVars->vars[i];
-            tmpVars->vars[i] = tmp;
+            Var* temp = vars->vars[i];
+            (*varsPtr)->vars[i] = tmpVars->vars[i];
+            tmpVars->vars[i] = temp;
         }
     }
     freeVars(tmpVars);
-
-    // TODO - execute new program - need more space first? (memory stores)
+    return false;
 }
 
 // Read list of pseudo instructions and write required asm
@@ -595,21 +595,23 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
-                synthesizeArith(inst, varsPtr, gadgets);
+                bool update = synthesizeArith(inst, varsPtr, gadgets);
                 vars = *varsPtr;
-                findVar(inst.operand1,vars)->constant = false;
-                findVar(inst.operand1,vars)->inMemory = false;
-                switch (inst.opcode) {
-                    case '+':
-                        findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
-                        break;
-                    
-                    case '-':
-                        findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
-                        break;
-                    case '*':
-                        findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
-                        break;
+                if (update) {
+                    findVar(inst.operand1,vars)->constant = false;
+                    findVar(inst.operand1,vars)->inMemory = false;
+                    switch (inst.opcode) {
+                        case '+':
+                            findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
+                            break;
+                        
+                        case '-':
+                            findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
+                            break;
+                        case '*':
+                            findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
+                            break;
+                    }
                 }
                 break;
             }
@@ -683,13 +685,13 @@ int main(){
     char* prog[progLines] = {
         "Var x 3",
         "Var y 2",
-        "Var z 0",
-        "Var i 3",
-        "Var one 1",
 
-        "While i > z",
+        "Var i 0",
+        "Var end 3",
+        "Var one 1",
+        "While i < end",
             "Mul x y",
-            "Sub i one",
+            "Add i one",
         "End"
     };
     // Allocate space for variables and pseudo instructions
@@ -714,6 +716,10 @@ int main(){
     // Read gadgets file
     Gadgets gadgets = loadGadgets();
     translatePseudo(progLines, &vars, pseudoInst, gadgets);
-    
+    printf("\n__Results__\n");
+    for (int i = 1 ; i < vars->count ; i ++) {
+        Var* v = vars->vars[i];
+        printf("%s: %d\n",v->name,v->value);
+    }
     return 0;
 }
