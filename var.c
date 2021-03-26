@@ -79,7 +79,10 @@ int removeVar(Var* delVar, Vars* vars) {
 // Updates the lifespan of var whenever it is referenced
 void updateLifespan(char* name, Vars* vars, int currLine, bool loop) {
     Var* v = findVar(name, vars);
-    if (loop){
+    if (v == NULL) {
+        return;
+    }
+    else if (loop){
         v->loop = true;
     }
     else {

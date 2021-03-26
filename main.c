@@ -328,7 +328,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             }
             usedRegs = *usedRegsPtr;
             vars = *varsPtr;
-            strcpy(addressVar->name, "new");
+            strcpy(vars->vars[0]->reg, "new");
         }
         // printf("store var: %s\n",varName);
         char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
@@ -394,7 +394,12 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         if (loadAddr != NULL) {
             var = findVar(varName, *varsPtr);
             strcpy(var->reg, loadDest);
-            move = moveReg(var, dest, usedRegsPtr, varsPtr, gadgets);
+            if (strcmp(dest,"any") == 0){
+                move = "";
+            } 
+            else {
+                move = moveReg(var, dest, usedRegsPtr, varsPtr, gadgets);
+            }
         }
         
         Var* noMoveVar = findVarByReg(noMoveVarName, *varsPtr);
@@ -455,8 +460,17 @@ char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsP
 char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     Var* dest = findVar(inst.dest, vars);
-    Var* src = findVar(inst.src, vars);
+    
+    // Copy number (must be hex 0x...)
+    if (inst.src[0] == '0') {
+        dest->value = (int)strtol(inst.dest, NULL, 0);
+        strcpy(dest->reg, "new");
+        dest->constant = true;
+        dest->inMemory = false;
+        return "";
+    }
 
+    Var* src = findVar(inst.src, vars);
     // If src is constant just update value as if fresh
     if (src->constant) {
         dest->value = src->value;
@@ -465,15 +479,36 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
         dest->inMemory = false;
         return "";
     }
-    // Case in reg - TODO memory case
+    // Case in memory
+    else if (src->inMemory) {
+        char** usedRegs = usedRegisters(vars);
+        char** *usedRegsPtr = &usedRegs;
+        char* assembly = loadMem(src, "any", NULL, usedRegsPtr, varsPtr, gadgets);
+        dest = findVar(inst.dest, vars);
+        src = findVar(inst.src, vars);
+        // Set properties of dest
+        dest->value = src->value;
+        strcpy(dest->reg, src->reg);
+        dest->inMemory = false;
+        dest->constant = false;
+        // Reset loaded src
+        strcpy(src->reg, "new");
+        dest->inMemory = true;
+        freeUsedRegs(*usedRegsPtr, (*varsPtr)->count);
+        return assembly;
+    }
+    // Case in reg
     else {
         // TODO check for NULL - i.e. impossible
         char** usedRegs = usedRegisters(vars);
+        char** *usedRegsPtr = &usedRegs;
         dest->value = src->value;
         dest->constant = false;
         dest->inMemory = false;
         strcpy(dest->reg, src->reg);
-        return moveRegAnywhere(src->reg, &usedRegs, varsPtr, gadgets);
+        char* assembly = moveRegAnywhere(src->reg, usedRegsPtr, varsPtr, gadgets);
+        freeUsedRegs(*usedRegsPtr, (*varsPtr)->count);
+        return assembly;
     }
 }
 
@@ -580,7 +615,8 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case COPY: {
                 Copy inst = pseudoInst[i].copy;
-                char* copy = synthesizeCopy(inst, varsPtr, gadgets);                if (copy == NULL) {
+                char* copy = synthesizeCopy(inst, varsPtr, gadgets);                
+                if (copy == NULL) {
                     printf("Can't copy\n");
                 }
                 printf("%s\n",copy);
@@ -643,12 +679,18 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 4;
+    const int progLines = 9;
     char* prog[progLines] = {
-        "Var x 2",
-        "Var y 4",
-        "Add x y",
-        "Mul x y"
+        "Var x 3",
+        "Var y 2",
+        "Var z 0",
+        "Var i 3",
+        "Var one 1",
+
+        "While i > z",
+            "Mul x y",
+            "Sub i one",
+        "End"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
