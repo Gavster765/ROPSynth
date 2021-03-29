@@ -10,17 +10,19 @@
 #include "./utils.h"
 
 char* findComponents(Gadgets gadgets) {
-    char* components = malloc(gadgets.numArithOpGadgets * 4 + 1);  // Max 3 char op with comma
+    char* components = malloc(gadgets.numArithOpGadgets * 4 * 3 + 1);  // Max 3 char op with comma
     components[0] = '\0';
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++) {
         Gadget op = gadgets.arithOpGadgets[i];
         if (strcmp(op.operands[0], op.operands[1]) != 0) {
             sprintf(components, "%s%s,",components,op.opcode);
+            sprintf(components, "%s%s,",components,op.opcode);
+            sprintf(components, "%s%s,",components,op.opcode);
         }
     }
     int len = strlen(components);
     if (components[len-1] == ',') {
-        components[len-1] = '\0';
+        components[len-1] = '\0';  // Remove trailing comma
     }
     // printf("%s\n",components);
     return components;
