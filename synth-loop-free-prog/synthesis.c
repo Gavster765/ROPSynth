@@ -106,7 +106,9 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* spec = createProgSpec(inst, vars);
     // char* res = run("add,add,add,and,sub,xor,", "Var,Const 4,Mul 0 1");
     char* res = run(components, spec);
-    // printf("%s\n",res);
+    if (strcmp(res,"Error") == 0) {
+        return NULL; // Synthesis failed
+    }
     char* pseudoCode = parseNewProg(res, inst, vars);
     // printf("%s\n",pseudoCode);
     // for (int i = 0 ; i < vars->count ; i++){

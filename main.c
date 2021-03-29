@@ -527,9 +527,9 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     }
 }
 
-// Create type a=a+b, return whether needs updating
+// Create type a=a+b, return whether needs updating (yes=1,no=0,fail=-1)
 // Write asm for arithmetic operations
-bool synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
+int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     int count = vars->count;
     char op = inst.opcode;
@@ -566,6 +566,9 @@ bool synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     // Couldn't find gadget so try to find alternative
     Vars* tmpVars = copyVars(vars);
     char* alt = findAlternative(inst, tmpVars, gadgets);
+    if (alt == NULL) {
+        return -1;  // Synthesis failed
+    }
     // printf("%s\n",alt);
     // printf("%d\n",strlen(alt));
     int lines = 0;
@@ -610,9 +613,13 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
-                bool update = synthesizeArith(inst, varsPtr, gadgets);
+                int update = synthesizeArith(inst, varsPtr, gadgets);
                 vars = *varsPtr;
-                if (update) {
+                if (update == -1) {
+                    printf("Could not synthesize\n");
+                    return;
+                }
+                else if (update == 1) {
                     findVar(inst.operand1,vars)->constant = false;
                     findVar(inst.operand1,vars)->inMemory = false;
                     switch (inst.opcode) {
@@ -699,7 +706,7 @@ int main(){
     const int progLines = 9;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 3",
+        "Var y 4",
 
         "Var i 0",
         "Var end 3",
