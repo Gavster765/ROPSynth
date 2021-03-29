@@ -110,23 +110,14 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
 char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* components = findComponents(gadgets);
     char* spec = createProgSpec(inst, vars);
-    // char* res = run("add,add,add,and,sub,xor,", "Var,Const 4,Mul 0 1");
-    char* res = run(components, spec);
-    if (strcmp(res,"Error") == 0) {
+    char* synth = getSynth(spec, gadgets);
+    if (synth == NULL) {
+        synth = run(components, spec);
+        addSynthComp(spec, synth, gadgets);
+    }
+    if (strcmp(synth,"Error") == 0) {
         return NULL; // Synthesis failed
     }
-    char* pseudoCode = parseNewProg(res, inst, vars);
-    // printf("%s\n",pseudoCode);
-    // for (int i = 0 ; i < vars->count ; i++){
-    //     printf("%s\n",vars->vars[i]->name);
-    // }
-    
-    // Var *var2 = malloc(sizeof(Var) + strlen("b") + 1);
-    // strcpy(var2->name,"b");
-    // addNewVar(var, vars);
-    // addNewVar(var2, vars);
-    // removeVar(var, vars);
-    free(components);
-    free(spec);
+    char* pseudoCode = parseNewProg(synth, inst, vars);
     return pseudoCode;
 }
