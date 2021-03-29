@@ -21,8 +21,8 @@ typedef struct Gadget {
 } Gadget;
 
 typedef struct SynthComp {
-    char** spec;
-    char** synth;
+    char* spec;
+    char* synth;
 } SynthComp;
 
 typedef struct Gadgets {
@@ -41,7 +41,7 @@ typedef struct Gadgets {
     int numLoadMemGadgets;
     Gadget* loadMemGadgets;
 
-    int numSynthComps;
+    int* numSynthComps;
     SynthComp* synthComps;
 } Gadgets;
 
@@ -49,6 +49,6 @@ Gadget createGadget(GadgetType type, char* assembly);
 
 Gadgets loadGadgets();
 
-void addSynthComp(char** spec, char** synth, Gadgets gadgets);
+void addSynthComp(char* spec, char* synth, Gadgets gadgets);
 
 #endif /* GADGET_H */
