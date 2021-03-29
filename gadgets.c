@@ -110,3 +110,12 @@ void addSynthComp(char* spec, char* synth, Gadgets gadgets) {
     gadgets.synthComps[*gadgets.numSynthComps] = s;
     (*gadgets.numSynthComps)++;
 }
+
+char* getSynth(char* spec, Gadgets gadgets) {
+    for (int i = 0 ; i < *gadgets.numSynthComps ; i++) {
+        if (strcmp(gadgets.synthComps[i].spec, spec) == 0) {
+            return gadgets.synthComps[i].synth;
+        }
+    }
+    return NULL;
+}

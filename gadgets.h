@@ -50,5 +50,6 @@ Gadget createGadget(GadgetType type, char* assembly);
 Gadgets loadGadgets();
 
 void addSynthComp(char* spec, char* synth, Gadgets gadgets);
+char* getSynth(char* spec, Gadgets gadgets);
 
 #endif /* GADGET_H */
