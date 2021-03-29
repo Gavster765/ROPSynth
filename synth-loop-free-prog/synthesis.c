@@ -18,7 +18,7 @@ char* findComponents(Gadgets gadgets) {
             sprintf(components, "%s%s,",components,op.opcode); // TODO remove last
         }
     }
-    printf("%s\n",components);
+    // printf("%s\n",components);
     return components;
 }
 
@@ -38,7 +38,7 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
 
     strcat(spec, inst.op);
     strcat(spec, " 0 1");
-    printf("%s\n",spec);
+    // printf("%s\n",spec);
     return spec;
 }
 
@@ -82,6 +82,9 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
             }
             // strcat(pseudoInst,"Copy");
         }
+        else if (strcmp("Const",opcode) == 0) {
+            sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,operandList[0]);
+        }
         else {
             sprintf(pseudoInst,"%sCopy _%s _%s\n",pseudoInst,varName,operandList[0]);
             sprintf(pseudoInst,"%s%s _%s _%s\n",pseudoInst,opcode,varName,operandList[1]);
@@ -103,7 +106,9 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* spec = createProgSpec(inst, vars);
     // char* res = run("add,add,add,and,sub,xor,", "Var,Const 4,Mul 0 1");
     char* res = run(components, spec);
-    // printf("%s\n",res);
+    if (strcmp(res,"Error") == 0) {
+        return NULL; // Synthesis failed
+    }
     char* pseudoCode = parseNewProg(res, inst, vars);
     // printf("%s\n",pseudoCode);
     // for (int i = 0 ; i < vars->count ; i++){

@@ -25,16 +25,16 @@ pub extern fn run(components_str: *const c_char, program_str: *const c_char) -> 
     config.set_model_generation(true);
     let context = z3::Context::new(&config);
     
-    println!("==================== P1 ====================");
-    let then = std::time::Instant::now();
+    // println!("==================== P1 ====================");
+    // let then = std::time::Instant::now();
     let program = synthesize_prog(&context, &opts, components, program);
-    let elapsed = then.elapsed();
-
-    println!(
-        "\nElapsed: {}.{:03}s\n",
-        elapsed.as_secs(),
-        elapsed.subsec_millis()
-    );
+    
+    // let elapsed = then.elapsed();
+    // println!(
+    //     "\nElapsed: {}.{:03}s\n",
+    //     elapsed.as_secs(),
+    //     elapsed.subsec_millis()
+    // );
     match program {
         Ok(prog) => {
             let ret_str = CString::new(prog.to_string()).expect("CString::new failed");

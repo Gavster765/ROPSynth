@@ -1,13 +1,9 @@
-7,3,6
+3,3,6,1,1
 
 loadConst
 pop rax
 pop rcx
 pop rdx
-pop rsp
-pop rbp
-pop rsi
-pop rdi
 
 arithOp
 sub rax, rcx
@@ -18,6 +14,12 @@ moveReg
 mov rcx, rax
 mov rax, rcx
 mov rax, rdx
-mov rdi, rbx
-mov rbx, rsp
+mov rdx, rax
+mov rax, rbx
 mov rbx, rcx
+
+storeMem
+mov DWORD PTR[rbx], rax
+
+loadMem
+mov rax, DWORD PTR[rax]

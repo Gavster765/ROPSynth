@@ -14,6 +14,7 @@ void removeChars(char* str, char c) {
     *pw = '\0';
 }
 
+// Work out the registers used by the gadget
 int getGadgetOperands(char** operandList, char* operandString) {
     if (operandString == NULL) {
         return 0;
@@ -25,6 +26,12 @@ int getGadgetOperands(char** operandList, char* operandString) {
     // Iterate though operands 
     while(operand != NULL){
         removeChars(operand,' ');
+        // For now ignore length of data read/written
+        int a = strspn(operand, "DWORDPTR[");
+        if (a == 9){
+            memcpy(operand, operand+9, 3);
+            operand[3] = '\0';
+        }
         operandList[numOperands] = operand;
         numOperands++;
         operand = strtok(NULL, ",");
@@ -32,6 +39,7 @@ int getGadgetOperands(char** operandList, char* operandString) {
     return numOperands;
 }
 
+// Unpack the operands of a user program instruction
 int getOperands(char** operandList, char* operandString) {
     if (operandString == NULL){
         return 0;
@@ -64,7 +72,8 @@ int getProgLines(char** progList, char* progString) {
     return numLines;
 }
 
-bool exists(char* reg, char** usedRegs, int count){
+// Check if a register exists withing usedRegs
+bool used(char* reg, char** usedRegs, int count){
     for (int i = 0 ; i < count ; i++){
         if(strcmp(usedRegs[i],reg) == 0){
             return true;
@@ -73,16 +82,22 @@ bool exists(char* reg, char** usedRegs, int count){
     return false;
 }
 
-// return a list of registers currently in use
+// return a list of registers currently in use excluding constants
 char** usedRegisters(Vars* vars){
     char** usedRegs = malloc(vars->count * sizeof(char*));
     for (int i = 0 ; i < vars->count ; i++) {
         usedRegs[i] = malloc(4);
-        strcpy(usedRegs[i], vars->vars[i]->reg);
+        if(vars->vars[i]->constant || vars->vars[i]->inMemory){
+            strcpy(usedRegs[i], "new");  // Allow constant to be overwritten
+        }
+        else {
+            strcpy(usedRegs[i], vars->vars[i]->reg);
+        }
     }
     return usedRegs;
 }
 
+// Free memory used by usedRegs struct
 void freeUsedRegs(char** usedRegs, int count){
     for (int i = 0 ; i < count ; i++) {
         free(usedRegs[i]);    
@@ -90,22 +105,24 @@ void freeUsedRegs(char** usedRegs, int count){
     free(usedRegs);
 }
 
-void addRegToUsed(char** used, char* reg, int count){
-    if(!exists(reg,used,count)){
+// Add a register to the list of used registers
+void addRegToUsed(char** usedRegs, char* reg, int count){
+    if(!used(reg,usedRegs,count)){
         for (int i = 0 ; i < count ; i++) {
-            if(strcmp(used[i],"new") == 0) {
-                strcpy(used[i],reg);
+            if(strcmp(usedRegs[i],"new") == 0) {
+                strcpy(usedRegs[i],reg);
                 return;
             }
         }
     }
 }
 
-void removeRegFromUsed(char** used, char* reg, int count){
-    if(exists(reg,used,count)){
+// Remove a register from the list of used registers
+void removeRegFromUsed(char** usedRegs, char* reg, int count){
+    if(used(reg,usedRegs,count)){
         for (int i = 0 ; i < count ; i++) {
-            if(strcmp(used[i],reg) == 0) {
-                strcpy(used[i],"new");
+            if(strcmp(usedRegs[i],reg) == 0) {
+                strcpy(usedRegs[i],"new");
                 return;
             }
         }

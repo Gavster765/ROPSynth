@@ -6,7 +6,7 @@ Issues:
 • Lifespan issues -> in new createPseudo the lifespan of old vars updated? <- used tmpVars but need to update now
 • SynthesizeArith sometimes fails causing second call to cegis for add gadget
 • Cegis needs more components than spec lines (not equal)
-
+• Need to update lifespan for unused alt vars if alt longer than prog
 
 Report notes:
 mention stale vars
@@ -25,3 +25,6 @@ TODO?:
 • Fix memory stores/loads
 • Allow more operations in cegis api
 • Reason for occasional error is the order of arguments received from cegis
+• Fail nicely if cegis fails
+• Double moves?
+• Store results <- don't need to redo long synthesis in a loop
