@@ -20,6 +20,11 @@ typedef struct Gadget {
     char** operands;
 } Gadget;
 
+typedef struct SynthComp {
+    char** spec;
+    char** synth;
+} SynthComp;
+
 typedef struct Gadgets {
     int numLoadConstGadgets;
     Gadget* loadConstGadgets;
@@ -35,10 +40,15 @@ typedef struct Gadgets {
     
     int numLoadMemGadgets;
     Gadget* loadMemGadgets;
+
+    int numSynthComps;
+    SynthComp* synthComps;
 } Gadgets;
 
 Gadget createGadget(GadgetType type, char* assembly);
 
 Gadgets loadGadgets();
+
+void addSynthComp(char** spec, char** synth, Gadgets gadgets);
 
 #endif /* GADGET_H */

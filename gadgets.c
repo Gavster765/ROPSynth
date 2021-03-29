@@ -38,6 +38,7 @@ Gadgets loadGadgets(){
     Gadget* moveRegGadgets = malloc(sizeof(Gadget) * numMoveRegGadgets);
     Gadget* storeMemGadgets = malloc(sizeof(Gadget) * numStoreMemGadgets);
     Gadget* loadMemGadgets = malloc(sizeof(Gadget) * numLoadMemGadgets);
+    SynthComp* synthComps = malloc(sizeof(SynthComp) * 10);  // Max 10 saved synthesis components
     
     Gadget* curr;
     int count;
@@ -91,8 +92,19 @@ Gadgets loadGadgets(){
         numStoreMemGadgets,
         storeMemGadgets,
         numLoadMemGadgets,
-        loadMemGadgets
+        loadMemGadgets,
+        0,  // 0 components already synthesized
+        synthComps
     };
 
     return gadgets;
+}
+
+void addSynthComp(char** spec, char** synth, Gadgets gadgets) {
+    SynthComp s = {
+        .spec = spec,
+        .synth = synth
+    };
+    gadgets.synthComps[gadgets.numSynthComps] = s;
+    gadgets.numSynthComps++;
 }
