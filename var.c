@@ -85,7 +85,7 @@ void updateLifespan(char* name, Vars* vars, int currLine, bool loop) {
     else if (loop){
         v->loop = true;
     }
-    else {
+    else if (v->lifeSpan <= currLine) {
         v->lifeSpan = currLine+1;
     }
 }
