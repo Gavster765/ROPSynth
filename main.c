@@ -249,20 +249,33 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
 // TODO move then load?
 // Will  try to load a const from the stack into dest - can move other var out of dest
 char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
+    char* varName = strdup(var->name);
+    char* moveAway;
+    if (used(dest,*usedRegsPtr,(*varsPtr)->count)) {
+        moveAway = moveRegAnywhere(dest, usedRegsPtr, varsPtr, gadgets);  // Reg in use - move first
+        if (moveAway == NULL) {
+            free(varName);
+            return NULL;  // Can't free dest so fail
+        }
+    }
+    else {
+        moveAway = "";
+    }
+
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
     int count = vars->count;
+    var = findVar(varName,vars);
+    free(varName);
 
+    // Check for direct load first
     for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
         Gadget loadGadget = gadgets.loadConstGadgets[i];
-        if (used(dest,usedRegs,count)){
-            break;  // Reg in use - would clobber value - move first?
-        }
-        else if (strcmp(loadGadget.operands[0],dest) == 0){
+        if (strcmp(loadGadget.operands[0],dest) == 0){
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
-            char* assembly = malloc(strlen(loadGadget.assembly) + sizeof(int) + 3);
-            sprintf(assembly, "%s (%d)",loadGadget.assembly,var->value);  // TODO - free
+            char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 4);
+            sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);  // TODO - free
             return assembly;
         }
     }
@@ -280,10 +293,10 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 *varsPtr = tmpVars;
                 *usedRegsPtr = tmpUsedRegs;
                 // WARNING memory leak!
-                int len = strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 5;
+                int len = strlen(moveAway) + strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 6;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
-                snprintf(assembly, len, "%s (%d)\n%s", loadGadget.assembly, tmpVar->value, possMove);
+                snprintf(assembly, len, "%s\n%s (%d)\n%s", moveAway, loadGadget.assembly, tmpVar->value, possMove);
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
                 return assembly;
@@ -500,6 +513,7 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     }
     // Case in reg
     else {
+        // printf("copy %s %s\n",inst.dest,inst.src);
         // TODO check for NULL - i.e. impossible
         char** usedRegs = usedRegisters(vars);
         // char** *usedRegsPtr = &usedRegs;

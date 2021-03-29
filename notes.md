@@ -6,7 +6,7 @@ Issues:
 • Lifespan issues -> in new createPseudo the lifespan of old vars updated? <- used tmpVars but need to update now
 • SynthesizeArith sometimes fails causing second call to cegis for add gadget
 • Cegis needs more components than spec lines (not equal)
-
+• Need to update lifespan for unused alt vars if alt longer than prog
 
 Report notes:
 mention stale vars
