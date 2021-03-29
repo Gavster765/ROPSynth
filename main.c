@@ -575,6 +575,7 @@ bool synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         if (tmpVars->vars[i]->name[0] != '_') {
             Var* temp = vars->vars[i];
             (*varsPtr)->vars[i] = tmpVars->vars[i];
+            (*varsPtr)->vars[i]->lifeSpan = temp->lifeSpan;  // Reset lifespan
             tmpVars->vars[i] = temp;
         }
     }
@@ -684,7 +685,7 @@ int main(){
     const int progLines = 9;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 2",
+        "Var y 3",
 
         "Var i 0",
         "Var end 3",
