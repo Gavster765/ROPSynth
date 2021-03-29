@@ -15,8 +15,12 @@ char* findComponents(Gadgets gadgets) {
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++) {
         Gadget op = gadgets.arithOpGadgets[i];
         if (strcmp(op.operands[0], op.operands[1]) != 0) {
-            sprintf(components, "%s%s,",components,op.opcode); // TODO remove last
+            sprintf(components, "%s%s,",components,op.opcode);
         }
+    }
+    int len = strlen(components);
+    if (components[len-1] == ',') {
+        components[len-1] = '\0';
     }
     // printf("%s\n",components);
     return components;
