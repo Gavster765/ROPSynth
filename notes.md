@@ -27,3 +27,4 @@ TODO?:
 • Reason for occasional error is the order of arguments received from cegis
 • Fail nicely if cegis fails
 • Double moves?
+• Store results <- don't need to redo long synthesis in a loop

@@ -578,6 +578,13 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         }
     }
     // printf("%s\n",alt);
+    // printf("lines: %d\n",lines);
+    // All non fresh vars should have lifespans longer than alt prog
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            tmpVars->vars[i]->lifeSpan = lines + 1;
+        }
+    }
     char* altProg[lines];
     getProgLines(altProg, alt);
     // for (int i = 0 ; i < lines ; i++){
@@ -706,7 +713,7 @@ int main(){
     const int progLines = 9;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 4",
+        "Var y 3",
 
         "Var i 0",
         "Var end 3",
