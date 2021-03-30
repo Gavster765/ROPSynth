@@ -29,3 +29,16 @@ Basic synthesis test
     "Var y 3",
 
     "Mul x y"
+
+Synthesis with 'for' loop
+
+    "Var x 3",
+    "Var y 50",
+
+    "Var i 0",
+    "Var end 3",
+    "Var one 1",
+    "While i < end",
+        "Mul x y",
+        "Add i one",
+    "End"
