@@ -2,7 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "var.h"
+#include <ctype.h>
+#include "utils.h"
 
 // Remove all occurrences of c from str
 void removeChars(char* str, char c) {
@@ -126,5 +127,52 @@ void removeRegFromUsed(char** usedRegs, char* reg, int count){
                 return;
             }
         }
+    }
+}
+
+char getOpChar(char* opcode) {
+    char first = opcode[0];
+    char op = '_';
+    opcode[0] = tolower(opcode[0]);
+    if(strcmp(opcode,"add") == 0) {
+        op = '+';
+    }
+    else if(strcmp(opcode,"sub") == 0) {
+        op = '-';
+    }
+    else if(strcmp(opcode,"mul") == 0) {
+        op = '*';
+    }
+    else if(strcmp(opcode,"and") == 0) {
+        op = '&';
+    }
+    opcode[0] = first;
+    return op;
+}
+
+bool checkArithOp(char* opcode) {
+    bool isArith = false;
+    if (getOpChar(opcode) != '_') {
+        isArith = true;
+    }
+    return isArith;
+}
+
+bool checkArithOpGadget(char opcode, char* gadget) {
+    bool gadgetCorrect = false;
+    if (getOpChar(gadget) == opcode) {
+        gadgetCorrect = true;
+    }
+    return gadgetCorrect;
+}
+
+void fillArithOp(ArithOp* arithOp, char* opcode) {
+    char op = getOpChar(opcode);
+    if (op != '_') {
+        char first = opcode[0];
+        opcode[0] = toupper(opcode[0]);
+        arithOp->opcode = op;
+        arithOp->op = opcode;
+        opcode[0] = first;
     }
 }
