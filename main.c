@@ -706,6 +706,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         case '*':
                             findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
                             break;
+                        case '&':
+                            findVar(inst.operand1,vars)->value &= findVar(inst.operand2,vars)->value;
+                            break;
                     }
                 }
                 break;
@@ -783,18 +786,18 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 8;
+    const int progLines = 9;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 2",
+        "Var y 50",
 
         "Var i 0",
         "Var end 3",
         "Var one 1",
-        
-        "And x y",
-        "Add i one",
-        "Jump 5 i < end "
+        "While i < end",
+            "Mul x y",
+            "Add i one",
+        "End"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
