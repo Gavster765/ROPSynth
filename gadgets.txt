@@ -1,4 +1,4 @@
-3,3,6,1,1
+3,3,7,1,1
 
 loadConst
 pop rax
@@ -17,6 +17,7 @@ mov rax, rdx
 mov rdx, rax
 mov rax, rbx
 mov rbx, rcx
+mov rbx, rax
 
 storeMem
 mov DWORD PTR[rbx], rax
