@@ -721,18 +721,18 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 9;
+    const int progLines = 8;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 50",
+        "Var y 2",
 
         "Var i 0",
         "Var end 3",
         "Var one 1",
-        "While i < end",
-            "Mul x y",
-            "Add i one",
-        "End"
+        
+        "Mul x y",
+        "Add i one",
+        "Jump 5 i < end "
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
