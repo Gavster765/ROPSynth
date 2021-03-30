@@ -71,13 +71,13 @@ struct Options {
 
 
 fn synthesize(
-    opts: &Options,
+    _opts: &Options,
     context: &z3::Context,
     spec: &dyn Specification,
     library: &Library,
 ) -> Result<Program> {
     Synthesizer::new(context, library, spec)?
-        .set_timeout(opts.timeout)
+        .set_timeout(Some(20000))//opts.timeout)
         .should_synthesize_minimal_programs(true)//opts.minimal)
         .synthesize()
 }
