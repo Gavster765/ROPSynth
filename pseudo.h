@@ -35,6 +35,13 @@ typedef struct Copy {
     char* src;
 } Copy;
 
+typedef struct Jump {
+    int dest;
+    char* opcode;
+    char* operand1;
+    char* operand2;
+} Jump;
+
 typedef struct Pseudo {
     GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
@@ -42,6 +49,7 @@ typedef struct Pseudo {
     Copy copy;
     Comp comp;
     End end;
+    Jump jump;
 } Pseudo;
 
 #endif /* PSEUDO_H */

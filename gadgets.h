@@ -8,9 +8,11 @@ typedef enum {
     STORE_MEM,
     LOAD_MEM,
     SPECIAL,
-    COPY, // TODO - move as only a pseudo type??
-    COMP, // TODO - move as only a pseudo type??
-    END // TODO - move as only a pseudo type??
+    // Pseudo only
+    COPY,
+    COMP,
+    END,
+    JUMP
 } GadgetType;
 
 typedef struct Gadget {
