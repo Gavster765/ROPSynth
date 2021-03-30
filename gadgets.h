@@ -7,6 +7,7 @@ typedef enum {
     ARITH_OP,
     STORE_MEM,
     LOAD_MEM,
+    SPECIAL,
     COPY, // TODO - move as only a pseudo type??
     COMP, // TODO - move as only a pseudo type??
     END // TODO - move as only a pseudo type??
@@ -40,6 +41,9 @@ typedef struct Gadgets {
     
     int numLoadMemGadgets;
     Gadget* loadMemGadgets;
+
+    int numSpecialGadgets;
+    Gadget* specialGadgets;
 
     int* numSynthComps;
     SynthComp* synthComps;

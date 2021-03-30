@@ -26,18 +26,19 @@ Gadget createGadget(GadgetType type, char* assembly){
 // Read gadgets text file into Gadgets structure
 Gadgets loadGadgets(){
     int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets, 
-        numStoreMemGadgets, numLoadMemGadgets;
+        numStoreMemGadgets, numLoadMemGadgets, numSpecialGadgets;
     const int max = 30;
     char line[max];
     FILE *f = fopen("gadgets.txt", "r");
     
-    fscanf(f, "%d,%d,%d,%d,%d\n",&numLoadConstGadgets, &numArithOpGadgets, 
-        &numMoveRegGadgets, &numStoreMemGadgets, &numLoadMemGadgets);
+    fscanf(f, "%d,%d,%d,%d,%d, %d\n",&numLoadConstGadgets, &numArithOpGadgets, 
+        &numMoveRegGadgets, &numStoreMemGadgets, &numLoadMemGadgets, &numSpecialGadgets);
     Gadget* loadConstGadgets = malloc(sizeof(Gadget) * numLoadConstGadgets);
     Gadget* arithOpGadgets = malloc(sizeof(Gadget) * numArithOpGadgets);
     Gadget* moveRegGadgets = malloc(sizeof(Gadget) * numMoveRegGadgets);
     Gadget* storeMemGadgets = malloc(sizeof(Gadget) * numStoreMemGadgets);
     Gadget* loadMemGadgets = malloc(sizeof(Gadget) * numLoadMemGadgets);
+    Gadget* specialGadgets = malloc(sizeof(Gadget) * numSpecialGadgets);
     SynthComp* synthComps = malloc(sizeof(SynthComp) * 10);  // Max 10 saved synthesis components
     int* numSynthComps = malloc(sizeof(int));
     *numSynthComps = 0;
@@ -74,6 +75,11 @@ Gadgets loadGadgets(){
         }
         else if(strcmp(line,"loadMem") == 0){
             curr = loadMemGadgets;
+            type = SPECIAL;
+            count = 0;
+        }
+        else if(strcmp(line,"special") == 0){
+            curr = specialGadgets;
             type = LOAD_MEM;
             count = 0;
         }
@@ -95,6 +101,8 @@ Gadgets loadGadgets(){
         storeMemGadgets,
         numLoadMemGadgets,
         loadMemGadgets,
+        numSpecialGadgets,
+        specialGadgets,
         numSynthComps,  // 0 components already synthesized
         synthComps
     };
