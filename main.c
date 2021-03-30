@@ -37,25 +37,14 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 pseudoInst[i] = p;
             }
             // TODO move check if arith to func?
-            else if(strcmp(opcode,"Add") == 0 || strcmp(opcode,"Sub") == 0 || strcmp(opcode,"Mul") == 0){
+            else if(checkArithOp(opcode)) {
                 ArithOp newArith = {
                     .out = operandList[0],
                     .operand1 = operandList[0],
                     .operand2 = operandList[1]
                 };
 
-                if(strcmp(opcode,"Add") == 0) {
-                    newArith.opcode = '+';
-                    newArith.op = "Add";
-                }
-                else if(strcmp(opcode,"Sub") == 0) {
-                    newArith.opcode = '-';
-                    newArith.op = "Sub";
-                }
-                else if(strcmp(opcode,"Mul") == 0) {
-                    newArith.opcode = '*';
-                    newArith.op = "Mul";
-                }
+                fillArithOp(&newArith, opcode);
 
                 Pseudo p = {
                     .type = ARITH_OP,
@@ -569,9 +558,7 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         Var* b = findVar(inst.operand2,tmpVars);
         Gadget gadget = gadgets.arithOpGadgets[i];
 
-        if ( (op == '+' &&  strcmp(gadget.opcode,"add") == 0) ||
-             (op == '-' &&  strcmp(gadget.opcode,"sub") == 0) ||
-             (op == '*' &&  strcmp(gadget.opcode,"mul") == 0)  ) {
+        if (checkArithOpGadget(op, gadget.opcode)) {
             // printf("gadget: %s\n",gadget.assembly);
             char* setupA = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets); 
             a = findVar(inst.operand1,tmpVars);
@@ -634,6 +621,57 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     freeVars(tmpVars);
     return false;
 }
+
+// void synthesizeLoop(Jump inst, Vars* vars, Gadgets gadgets) {
+//     Vars* tmpVars = copyVars(vars);
+
+//     if (strcmp(inst.opcode, "<") == 0) {
+//         "Copy _1 %s\n",inst.operand2
+//         "Copy _2 0x%d\n",inst.dest
+//         "Sub _1 %s\n",inst.operand1
+//         "And _1 _2"
+//         "Add rsp _1"
+//     }
+
+//     if (alt == NULL) {
+//         return -1;  // Synthesis failed
+//     }
+//     // printf("%s\n",alt);
+//     // printf("%d\n",strlen(alt));
+//     int lines = 0;
+//     for (int i = 0 ; i < strlen(alt) ; i++) {
+//         if (alt[i] == '\n'){
+//             lines++;
+//         }
+//     }
+//     // printf("%s\n",alt);
+//     // printf("lines: %d\n",lines);
+//     // All non fresh vars should have lifespans longer than alt prog
+//     for (int i = 0 ; i < tmpVars->count ; i ++) {
+//         if (tmpVars->vars[i]->name[0] != '_') {
+//             tmpVars->vars[i]->lifeSpan = lines + 1;
+//         }
+//     }
+//     char* altProg[lines];
+//     getProgLines(altProg, alt);
+//     // for (int i = 0 ; i < lines ; i++){
+//     //     printf("%s\n",altProg[i]);
+//     // }
+//     Pseudo altPseudoInst[lines];
+//     createPseudo(lines, altProg, tmpVars, altPseudoInst);
+//     translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
+//     // printf("done alt\n");
+//     // Swap variables
+//     for (int i = 0 ; i < tmpVars->count ; i ++) {
+//         if (tmpVars->vars[i]->name[0] != '_') {
+//             Var* temp = vars->vars[i];
+//             (*varsPtr)->vars[i] = tmpVars->vars[i];
+//             (*varsPtr)->vars[i]->lifeSpan = temp->lifeSpan;  // Reset lifespan
+//             tmpVars->vars[i] = temp;
+//         }
+//     }
+//     freeVars(tmpVars);
+// }
 
 // Read list of pseudo instructions and write required asm
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
@@ -732,7 +770,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case JUMP: {
                 Jump inst = pseudoInst[i].jump;
-                printf("Jump %d %s %s %s",inst.dest,inst.operand1,inst.opcode,inst.operand2);
+                if(strcmp(inst.opcode, "<") == 0) {
+                    printf("jump\n");
+                }
                 break;
             }
             default:
@@ -752,7 +792,7 @@ int main(){
         "Var end 3",
         "Var one 1",
         
-        "Mul x y",
+        "And x y",
         "Add i one",
         "Jump 5 i < end "
     };
