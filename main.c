@@ -174,6 +174,23 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 pseudoInst[i] = p;
             }
+            else if(strcmp(opcode, "Jump") == 0) {
+                updateLifespan(operandList[1], vars, i, loop);
+                updateLifespan(operandList[3], vars, i, loop);
+                
+                Jump j = {
+                    .dest = atoi(operandList[0]),
+                    .opcode = operandList[2],
+                    .operand1 = operandList[1],
+                    .operand2 = operandList[3]
+                };
+
+                Pseudo p = {
+                    .type = JUMP,
+                    .jump = j
+                };
+                pseudoInst[i] = p;
+            }
         }
 }
 
@@ -711,6 +728,11 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 if (inst.loop != NULL && inst.loop->valid) {
                     i = inst.loop->start - 1;  // Go back to loop start
                 }
+                break;
+            }
+            case JUMP: {
+                Jump inst = pseudoInst[i].jump;
+                printf("Jump %d %s %s %s",inst.dest,inst.operand1,inst.opcode,inst.operand2);
                 break;
             }
             default:
