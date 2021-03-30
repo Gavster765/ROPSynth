@@ -146,6 +146,9 @@ char getOpChar(char* opcode) {
     else if(strcmp(opcode,"and") == 0) {
         op = '&';
     }
+    else if(strcmp(opcode,"adc") == 0) {
+        op = '!';
+    }
     opcode[0] = first;
     return op;
 }
