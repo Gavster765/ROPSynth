@@ -376,6 +376,11 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
     if (noMove != NULL) {
         noMoveVarName = strdup(noMove->name);
         strcpy(noMoveVarReg,noMove->reg);
+        if (strcmp(dest,noMoveVarReg) == 0) {
+            // Impossible since both vars need to be in same reg
+            free(varName);
+            return NULL;
+        }
     }
 
     for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
@@ -417,9 +422,15 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         
         if (noMove != NULL) {
             Var* noMoveVar = findVar(noMoveVarName, *varsPtr);
-            if (strcmp(noMoveVarReg, noMove->reg) != 0){
+            var = findVar(varName, *varsPtr);
+            if (strcmp(noMoveVarReg, noMoveVar->reg) != 0){
                 // TODO - combine with prev move? so can make move safe
-                moveBack = moveReg(noMoveVar, noMoveVarReg, usedRegsPtr, varsPtr, gadgets);
+                if (noMoveVar->inMemory) {
+                    // Possible infinite recursion - consider NULL for var with clobber check?
+                    moveBack = loadMem(noMoveVar, noMoveVarReg, var, usedRegsPtr, varsPtr, gadgets);
+                } else {
+                    moveBack = moveReg(noMoveVar, noMoveVarReg, usedRegsPtr, varsPtr, gadgets);
+                }
             }
             else {
                 moveBack = "";
@@ -713,7 +724,7 @@ int main(){
     const int progLines = 9;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 3",
+        "Var y 50",
 
         "Var i 0",
         "Var end 3",
@@ -724,9 +735,9 @@ int main(){
         "End"
     };
     // Allocate space for variables and pseudo instructions
-    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+4));
+    Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
     vars->count = 0;
-    vars->maxSize = progLines+4;
+    vars->maxSize = progLines+10;
 
     Var *addressVar = malloc(sizeof(Var) + 2);
     strcpy(addressVar->name, "");
