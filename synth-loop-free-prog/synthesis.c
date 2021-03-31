@@ -16,8 +16,8 @@ char* findComponents(Gadgets gadgets) {
         Gadget op = gadgets.arithOpGadgets[i];
         if (strcmp(op.operands[0], op.operands[1]) != 0) {
             sprintf(components, "%s%s,",components,op.opcode);
-            sprintf(components, "%s%s,",components,op.opcode);
-            sprintf(components, "%s%s,",components,op.opcode);
+            // sprintf(components, "%s%s,",components,op.opcode);
+            // sprintf(components, "%s%s,",components,op.opcode);
         }
     }
     int len = strlen(components);
