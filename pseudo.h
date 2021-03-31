@@ -42,6 +42,12 @@ typedef struct Jump {
     char* operand2;
 } Jump;
 
+typedef struct Special {
+    char opcode;
+    char* op;
+    char* operand;
+} Special;
+
 typedef struct Pseudo {
     GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
@@ -50,6 +56,7 @@ typedef struct Pseudo {
     Comp comp;
     End end;
     Jump jump;
+    Special special;
 } Pseudo;
 
 #endif /* PSEUDO_H */
