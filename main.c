@@ -622,56 +622,55 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     return false;
 }
 
-// void synthesizeLoop(Jump inst, Vars* vars, Gadgets gadgets) {
-//     Vars* tmpVars = copyVars(vars);
+void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
+    Vars* tmpVars = copyVars(vars);
+    char* progString = malloc(200);  // TODO - actual size
+    int lines;
+    progString[0] = '\0';
 
-//     if (strcmp(inst.opcode, "<") == 0) {
-//         "Copy _1 %s\n",inst.operand2
-//         "Copy _2 0x%d\n",inst.dest
-//         "Sub _1 %s\n",inst.operand1
-//         "And _1 _2"
-//         "Add rsp _1"
-//     }
+    Var* rspVar = addVar("_rsp", tmpVars);
+    strcpy(rspVar->reg, "rsp");
+    rspVar->constant = false;
+    if (strcmp(inst.opcode, "<") == 0) {
+        lines = 8;
+        sprintf(progString,
+            "Var _0 0\n"
+            "Var _1 0\n"
+            "Var _2 %d\n"
+            "Copy _0 %s\n"
+            "Sub _0 %s\n"
+            "Adc _1 _1\n"
+            "And _1 _2\n"
+            "Add _rsp _1\n",
+            inst.dest,inst.operand2,inst.operand1
+        );
+    }
 
-//     if (alt == NULL) {
-//         return -1;  // Synthesis failed
-//     }
-//     // printf("%s\n",alt);
-//     // printf("%d\n",strlen(alt));
-//     int lines = 0;
-//     for (int i = 0 ; i < strlen(alt) ; i++) {
-//         if (alt[i] == '\n'){
-//             lines++;
-//         }
-//     }
-//     // printf("%s\n",alt);
-//     // printf("lines: %d\n",lines);
-//     // All non fresh vars should have lifespans longer than alt prog
-//     for (int i = 0 ; i < tmpVars->count ; i ++) {
-//         if (tmpVars->vars[i]->name[0] != '_') {
-//             tmpVars->vars[i]->lifeSpan = lines + 1;
-//         }
-//     }
-//     char* altProg[lines];
-//     getProgLines(altProg, alt);
-//     // for (int i = 0 ; i < lines ; i++){
-//     //     printf("%s\n",altProg[i]);
-//     // }
-//     Pseudo altPseudoInst[lines];
-//     createPseudo(lines, altProg, tmpVars, altPseudoInst);
-//     translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
-//     // printf("done alt\n");
-//     // Swap variables
-//     for (int i = 0 ; i < tmpVars->count ; i ++) {
-//         if (tmpVars->vars[i]->name[0] != '_') {
-//             Var* temp = vars->vars[i];
-//             (*varsPtr)->vars[i] = tmpVars->vars[i];
-//             (*varsPtr)->vars[i]->lifeSpan = temp->lifeSpan;  // Reset lifespan
-//             tmpVars->vars[i] = temp;
-//         }
-//     }
-//     freeVars(tmpVars);
-// }
+    // All non fresh vars should have lifespans longer than alt prog
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            tmpVars->vars[i]->lifeSpan = lines + 1;
+        }
+    }
+    char* prog[lines];
+    getProgLines(prog, progString);
+    // for (int i = 0 ; i < lines ; i++){
+    //     printf("%s\n",prog[i]);
+    // }
+    Pseudo progPseudoInst[lines];
+    createPseudo(lines, prog, tmpVars, progPseudoInst);
+    translatePseudo(lines, &tmpVars, progPseudoInst, gadgets);
+    // // Swap variables
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            Var* temp = vars->vars[i];
+            vars->vars[i] = tmpVars->vars[i];
+            vars->vars[i]->lifeSpan = temp->lifeSpan;  // Reset lifespan
+            tmpVars->vars[i] = temp;
+        }
+    }
+    freeVars(tmpVars);
+}
 
 // Read list of pseudo instructions and write required asm
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
@@ -773,9 +772,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case JUMP: {
                 Jump inst = pseudoInst[i].jump;
-                if(strcmp(inst.opcode, "<") == 0) {
-                    printf("jump\n");
-                }
+                synthesizeJump(inst, vars, gadgets);
                 break;
             }
             default:
@@ -786,18 +783,18 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 9;
+    const int progLines = 8;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 50",
+        "Var y 2",
 
         "Var i 0",
         "Var end 3",
         "Var one 1",
-        "While i < end",
-            "Mul x y",
-            "Add i one",
-        "End"
+        
+        "Add x y",
+        "Add i one",
+        "Jump 5 i < end"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
