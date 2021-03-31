@@ -713,6 +713,14 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             inst.dest,inst.operand1,inst.operand2
         );
     }
+    else if (strcmp(inst.opcode, "_") == 0) {
+        lines = 2;
+        sprintf(progString,
+        "Const _0 %d\n"
+        "Add _rsp _0\n",
+        inst.dest
+        );
+    }
 
     // All non fresh vars should have lifespans longer than alt prog
     for (int i = 0 ; i < tmpVars->count ; i ++) {
@@ -821,47 +829,60 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 Var* a = findVar(inst->operand1, vars);
                 Var* b = findVar(inst->operand2, vars);
                 inst->valid = false;  // result of if is assumed false
-                bool skip = false;  // Can skip valid else ifs
+                // bool skip = false;  // Can skip valid else ifs
                 
-                if(inst->joinedIf != NULL && inst->joinedIf->valid) {
-                    inst-> valid = true;  // Propagate validity to also skip chained elses
-                    skip = true;  // Skip since previous if was true
-                } 
-                else if(strcmp(inst->opcode, "==") == 0){
-                    if(a->value == b->value) inst->valid  = true;
-                }
-                else if(strcmp(inst->opcode, "<") == 0){
-                    if(a->value < b->value) inst->valid  = true;
-                }
-                else if(strcmp(inst->opcode, ">") == 0){
-                    if(a->value > b->value) inst->valid  = true;
-                }
-                else if(strcmp(inst->opcode, "<=") == 0){
-                    if(a->value <= b->value) inst->valid  = true;
-                }
-                else if(strcmp(inst->opcode, ">=") == 0){
-                    if(a->value >= b->value) inst->valid  = true;
-                }
-                else if(strcmp(inst->opcode, "") == 0){
-                    inst->valid  = true;  // Else
-                }
-                else {
-                    printf("Unknown operation\n");
-                }
+                Jump j = {
+                    .dest = inst->end + 2000,
+                    .opcode = inst->opcode,
+                    .operand1 = inst->operand1,
+                    .operand2 = inst->operand2
+                };
+                synthesizeJump(j, vars, gadgets);
+
+                // if(inst->joinedIf != NULL && inst->joinedIf->valid) {
+                //     inst-> valid = true;  // Propagate validity to also skip chained elses
+                //     skip = true;  // Skip since previous if was true
+                // } 
+                // else if(strcmp(inst->opcode, "==") == 0){
+                //     if(a->value == b->value) inst->valid  = true;
+                // }
+                // else if(strcmp(inst->opcode, "<") == 0){
+                //     if(a->value < b->value) inst->valid  = true;
+                // }
+                // else if(strcmp(inst->opcode, ">") == 0){
+                //     if(a->value > b->value) inst->valid  = true;
+                // }
+                // else if(strcmp(inst->opcode, "<=") == 0){
+                //     if(a->value <= b->value) inst->valid  = true;
+                // }
+                // else if(strcmp(inst->opcode, ">=") == 0){
+                //     if(a->value >= b->value) inst->valid  = true;
+                // }
+                // else if(strcmp(inst->opcode, "") == 0){
+                //     inst->valid  = true;  // Else
+                // }
+                // else {
+                //     printf("Unknown operation\n");
+                // }
 
 
-                if(!inst->valid || skip){
-                    i = inst->end - 1;  // Skip to end of loop (sub one because of loop inc)
-                }
+                // if(!inst->valid || skip){
+                //     i = inst->end - 1;  // Skip to end of loop (sub one because of loop inc)
+                // }
 
                 break;
             }
             case END: {
                 End inst = pseudoInst[i].end;
 
-                if (inst.loop != NULL && inst.loop->valid) {
-                    i = inst.loop->start - 1;  // Go back to loop start
-                }
+                Jump j = {
+                    .dest = -2000 - inst.loop->start,
+                    .opcode = "_"
+                };
+                synthesizeJump(j, vars, gadgets);
+                // if (inst.loop != NULL && inst.loop->valid) {
+                //     i = inst.loop->start - 1;  // Go back to loop start
+                // }
                 break;
             }
             case JUMP: {
