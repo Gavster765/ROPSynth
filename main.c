@@ -848,9 +848,12 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 synthesizeSpecial(inst, varsPtr, gadgets);
                 vars = *varsPtr;
                 switch (inst.opcode) {
-                    case '~':
-                        findVar(inst.operand,vars)->value = ~findVar(inst.operand,vars)->value;
+                    case '~': {
+                        Var* v = findVar(inst.operand,vars);
+                        v->value = ~v->value;
+                        v->value ++;
                         break;
+                    }
                 }
                 break;
             }
