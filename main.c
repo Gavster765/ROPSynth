@@ -68,21 +68,6 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 updateLifespan(operandList[0], vars, i, loop);
                 updateLifespan(operandList[1], vars, i, loop);
             }
-            else if(strcmp(opcode,"Neg") == 0) {
-                Special s = {
-                    .opcode = '~',
-                    .op = "Neg",
-                    .operand = operandList[0]
-                };
-
-                Pseudo p = {
-                    .type = SPECIAL,
-                    .special = s
-                };
-
-                pseudoInst[i] = p;
-                updateLifespan(operandList[0], vars, i, loop);
-            }
             else if(strcmp(opcode,"If") == 0) {
                 updateLifespan(operandList[0], vars, i, loop);
                 updateLifespan(operandList[2], vars, i, loop);
@@ -194,6 +179,21 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .jump = j
                 };
                 pseudoInst[i] = p;
+            }
+            else if(strcmp(opcode,"Neg") == 0) {
+                Special s = {
+                    .opcode = '~',
+                    .op = "neg",
+                    .operand = operandList[0]
+                };
+
+                Pseudo p = {
+                    .type = SPECIAL,
+                    .special = s
+                };
+
+                pseudoInst[i] = p;
+                updateLifespan(operandList[0], vars, i, loop);
             }
         }
 }
@@ -718,6 +718,28 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     freeVars(tmpVars);
 }
 
+void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
+    Vars* vars = *varsPtr;
+    for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
+        Gadget gadget = gadgets.specialGadgets[i];
+        Vars* tmpVars = copyVars(vars);
+        char** usedRegs = usedRegisters(tmpVars);
+        if (strcmp(gadget.opcode, inst.op) == 0) {
+            Var* a = findVar(inst.operand, tmpVars);
+            char* setup = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets);
+            if (setup != NULL) {   
+                *varsPtr = tmpVars;
+                freeVars(vars);
+                freeUsedRegs(usedRegs, (*varsPtr)->count);
+                printf("%s\n%s\n",setup,gadget.assembly);
+                return;
+            }
+        }
+        freeUsedRegs(usedRegs, tmpVars->count);
+        freeVars(tmpVars);
+    }
+}
+
 // Read list of pseudo instructions and write required asm
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
@@ -819,6 +841,17 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             case JUMP: {
                 Jump inst = pseudoInst[i].jump;
                 synthesizeJump(inst, vars, gadgets);
+                break;
+            }
+            case SPECIAL: {
+                Special inst = pseudoInst[i].special;
+                synthesizeSpecial(inst, varsPtr, gadgets);
+                vars = *varsPtr;
+                switch (inst.opcode) {
+                    case '~':
+                        findVar(inst.operand,vars)->value = ~findVar(inst.operand,vars)->value;
+                        break;
+                }
                 break;
             }
             default:
