@@ -667,7 +667,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     Var* rspVar = addVar("_rsp", tmpVars);
     strcpy(rspVar->reg, "rsp");
     rspVar->constant = false;
-    if (strcmp(inst.opcode, "<") == 0) {
+    if (strcmp(inst.opcode, ">") == 0) {
         lines = 9;
         sprintf(progString,
             "Const _0 0\n"
@@ -682,7 +682,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             inst.dest,inst.operand1,inst.operand2
         );
     }
-    else if (strcmp(inst.opcode, ">") == 0) {
+    else if (strcmp(inst.opcode, "<") == 0) {
         lines = 9;
         sprintf(progString,
             "Const _0 0\n"
@@ -697,7 +697,6 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             inst.dest,inst.operand2,inst.operand1
         );
     }
-    // TODO
     else if (strcmp(inst.opcode, "=") == 0) {
         lines = 11;
         sprintf(progString,
@@ -709,7 +708,6 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             "Neg _0\n"
             "Adc _1 _1\n"
             "Neg _1\n"
-            "Not _1\n"
             "And _1 _2\n"
             "Add _rsp _1\n",
             inst.dest,inst.operand1,inst.operand2
