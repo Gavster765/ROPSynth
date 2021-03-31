@@ -679,7 +679,6 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     // TODO
     else if (strcmp(inst.opcode, "=") == 0) {
         lines = 11;
-        printf("not supported..yet\n");
         sprintf(progString,
             "Var _0 0\n"
             "Var _1 0\n"
