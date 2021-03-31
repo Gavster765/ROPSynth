@@ -19,3 +19,7 @@ void removeRegFromUsed(char** usedRegs, char* reg, int count);
 bool checkArithOp(char* opcode);
 bool checkArithOpGadget(char opcode, char* gadget);
 void fillArithOp(ArithOp* arithOp, char* opcode);
+
+bool checkSpecialOp(char* opcode);
+bool checkSpecialOpGadget(char opcode, char* gadget);
+void fillSpecialOp(Special* special, char* opcode);

@@ -130,7 +130,7 @@ void removeRegFromUsed(char** usedRegs, char* reg, int count){
     }
 }
 
-char getOpChar(char* opcode) {
+char getArithOpChar(char* opcode) {
     char first = opcode[0];
     char op = '_';
     opcode[0] = tolower(opcode[0]);
@@ -158,7 +158,7 @@ char getOpChar(char* opcode) {
 
 bool checkArithOp(char* opcode) {
     bool isArith = false;
-    if (getOpChar(opcode) != '_') {
+    if (getArithOpChar(opcode) != '_') {
         isArith = true;
     }
     return isArith;
@@ -166,19 +166,60 @@ bool checkArithOp(char* opcode) {
 
 bool checkArithOpGadget(char opcode, char* gadget) {
     bool gadgetCorrect = false;
-    if (getOpChar(gadget) == opcode) {
+    if (getArithOpChar(gadget) == opcode) {
         gadgetCorrect = true;
     }
     return gadgetCorrect;
 }
 
 void fillArithOp(ArithOp* arithOp, char* opcode) {
-    char op = getOpChar(opcode);
+    char op = getArithOpChar(opcode);
     if (op != '_') {
         char first = opcode[0];
         opcode[0] = toupper(opcode[0]);
         arithOp->opcode = op;
         arithOp->op = opcode;
+        opcode[0] = first;
+    }
+}
+
+char getSpecialOpChar(char* opcode) {
+    char first = opcode[0];
+    char op = '_';
+    opcode[0] = tolower(opcode[0]);
+    if(strcmp(opcode,"neg") == 0) {
+        op = '~';
+    }
+    else if(strcmp(opcode,"not") == 0) {
+        op = '!';
+    }
+    opcode[0] = first;
+    return op;
+}
+
+bool checkSpecialOp(char* opcode) {
+    bool isSpecial = false;
+    if (getSpecialOpChar(opcode) != '_') {
+        isSpecial = true;
+    }
+    return isSpecial;
+}
+
+bool checkSpecialOpGadget(char opcode, char* gadget) {
+    bool gadgetCorrect = false;
+    if (getSpecialOpChar(gadget) == opcode) {
+        gadgetCorrect = true;
+    }
+    return gadgetCorrect;
+}
+
+void fillSpecialOp(Special* special, char* opcode) {
+    char op = getSpecialOpChar(opcode);
+    if (op != '_') {
+        char first = opcode[0];
+        opcode[0] = toupper(opcode[0]);
+        special->opcode = op;
+        special->op = opcode;
         opcode[0] = first;
     }
 }
