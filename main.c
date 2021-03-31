@@ -180,13 +180,13 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 pseudoInst[i] = p;
             }
-            else if(strcmp(opcode,"Neg") == 0) {
+            else if(checkSpecialOp(opcode)) {
                 Special s = {
-                    .opcode = '~',
-                    .op = "neg",
                     .operand = operandList[0]
                 };
-
+                
+                fillSpecialOp(&s, opcode);
+                
                 Pseudo p = {
                     .type = SPECIAL,
                     .special = s
@@ -678,7 +678,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     }
     // TODO
     else if (strcmp(inst.opcode, "=") == 0) {
-        lines = 9;
+        lines = 10;
         printf("not supported..yet\n");
         sprintf(progString,
             "Var _0 0\n"
@@ -688,6 +688,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             "Sub %s _0\n"
             "Adc _1 _1\n"
             "Neg _1\n"
+            "Not _1\n"
             "And _1 _2\n"
             "Add _rsp _1\n",
             inst.dest,inst.operand2,inst.operand1
@@ -724,7 +725,7 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
         Gadget gadget = gadgets.specialGadgets[i];
         Vars* tmpVars = copyVars(vars);
         char** usedRegs = usedRegisters(tmpVars);
-        if (strcmp(gadget.opcode, inst.op) == 0) {
+        if (checkSpecialOpGadget(inst.opcode, gadget.opcode)) {
             Var* a = findVar(inst.operand, tmpVars);
             char* setup = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets);
             if (setup != NULL) {   
@@ -852,6 +853,11 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         Var* v = findVar(inst.operand,vars);
                         v->value = ~v->value;
                         v->value ++;
+                        break;
+                    }
+                    case '!': {
+                        Var* v = findVar(inst.operand,vars);
+                        v->value = ~v->value;
                         break;
                     }
                 }
