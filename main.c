@@ -658,7 +658,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             "Neg _1\n"
             "And _1 _2\n"
             "Add _rsp _1\n",
-            inst.dest,inst.operand2,inst.operand1
+            inst.dest,inst.operand1,inst.operand2
         );
     }
     else if (strcmp(inst.opcode, ">") == 0) {
@@ -668,7 +668,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             "Var _1 0\n"
             "Var _2 %d\n"
             "Copy _0 %s\n"
-            "Sub %s _0\n"
+            "Sub _0 %s\n"
             "Adc _1 _1\n"
             "Neg _1\n"
             "And _1 _2\n"
@@ -678,20 +678,21 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     }
     // TODO
     else if (strcmp(inst.opcode, "=") == 0) {
-        lines = 10;
+        lines = 11;
         printf("not supported..yet\n");
         sprintf(progString,
             "Var _0 0\n"
             "Var _1 0\n"
             "Var _2 %d\n"
             "Copy _0 %s\n"
-            "Sub %s _0\n"
+            "Sub _0 %s\n"
+            "Neg _0\n"
             "Adc _1 _1\n"
             "Neg _1\n"
             "Not _1\n"
             "And _1 _2\n"
             "Add _rsp _1\n",
-            inst.dest,inst.operand2,inst.operand1
+            inst.dest,inst.operand1,inst.operand2
         );
     }
 
@@ -882,7 +883,7 @@ int main(){
         
         "Add x y",
         "Add i one",
-        "Jump 5 i < end"
+        "Jump 5 i = end"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
