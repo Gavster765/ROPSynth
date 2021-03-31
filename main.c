@@ -10,6 +10,7 @@
 #include "synth-loop-free-prog/synthesis.h"
 
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets);
+char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 
 // Read user program and parse into pseudo instructions
@@ -23,9 +24,23 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             char* operands = strtok(NULL, "");  // Save all operands
             char** operandList = malloc(3*20);  // Max 3 operands at 20 chars each
             int numOperands = getOperands(operandList, operands);
-            if(strcmp(opcode,"Var") == 0){
+            if(strcmp(opcode,"Const") == 0){
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
+                LoadConst newConst = {
+                    .out = operandList[0],
+                    .value = atoi(operandList[1])
+                };
+                Pseudo p = {
+                    .type = LOAD_CONST,
+                    .loadConst = newConst
+                };
+                pseudoInst[i] = p;
+            }
+            else if(strcmp(opcode,"Var") == 0){
+                Var* newVar = addVar(operandList[0], vars);
+                newVar->lifeSpan = i+1;
+                newVar->constant = false;
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1])
@@ -239,6 +254,7 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
         var = findVar(varName, vars);
         usedRegs = *usedRegsPtr;
         if (moveExisting == NULL){
+            free(varName);
             return NULL;
         }
         assembly = malloc(strlen(gadgets.moveRegGadgets[0].assembly) +
@@ -250,6 +266,11 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
     else {
         assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
         assembly[0] = '\0';    
+    }
+    if (strcmp(var->reg, "new") == 0) {
+        char* load = loadConstValue(var, dest, usedRegsPtr, varsPtr, gadgets);
+        free(varName);
+        return load;
     }
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
@@ -649,9 +670,9 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     if (strcmp(inst.opcode, "<") == 0) {
         lines = 9;
         sprintf(progString,
-            "Var _0 0\n"
-            "Var _1 0\n"
-            "Var _2 %d\n"
+            "Const _0 0\n"
+            "Const _1 0\n"
+            "Const _2 %d\n"
             "Copy _0 %s\n"
             "Sub _0 %s\n"
             "Adc _1 _1\n"
@@ -664,9 +685,9 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     else if (strcmp(inst.opcode, ">") == 0) {
         lines = 9;
         sprintf(progString,
-            "Var _0 0\n"
-            "Var _1 0\n"
-            "Var _2 %d\n"
+            "Const _0 0\n"
+            "Const _1 0\n"
+            "Const _2 %d\n"
             "Copy _0 %s\n"
             "Sub _0 %s\n"
             "Adc _1 _1\n"
@@ -680,9 +701,9 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     else if (strcmp(inst.opcode, "=") == 0) {
         lines = 11;
         sprintf(progString,
-            "Var _0 0\n"
-            "Var _1 0\n"
-            "Var _2 %d\n"
+            "Const _0 0\n"
+            "Const _1 0\n"
+            "Const _2 %d\n"
             "Copy _0 %s\n"
             "Sub _0 %s\n"
             "Neg _0\n"
@@ -749,7 +770,13 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
         switch (pseudoInst[i].type){
             case LOAD_CONST: {
                 LoadConst inst = pseudoInst[i].loadConst;
-                findVar(inst.out,vars)->value = inst.value;
+                Var* v = findVar(inst.out,vars);
+                v->value = inst.value;
+                if (!v->constant) {
+                    char** usedRegs = usedRegisters(vars);
+                    char* res = storeMem(v, &usedRegs, varsPtr, gadgets);
+                    printf("%s\n",res);
+                }
                 break;
             }
             case ARITH_OP: {
@@ -848,18 +875,17 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 Special inst = pseudoInst[i].special;
                 synthesizeSpecial(inst, varsPtr, gadgets);
                 vars = *varsPtr;
+                Var* v = findVar(inst.operand,vars);
+                v->constant = false;    
                 switch (inst.opcode) {
                     case '~': {
-                        Var* v = findVar(inst.operand,vars);
                         v->value = ~v->value;
                         v->value ++;
                         break;
                     }
-                    case '!': {
-                        Var* v = findVar(inst.operand,vars);
+                    case '!': 
                         v->value = ~v->value;
                         break;
-                    }
                 }
                 break;
             }
@@ -874,15 +900,15 @@ int main(){
     const int progLines = 8;
     char* prog[progLines] = {
         "Var x 3",
-        "Var y 2",
+        "Const y 2",
 
         "Var i 0",
-        "Var end 3",
-        "Var one 1",
+        "Const end 3",
+        "Const one 1",
         
         "Add x y",
         "Add i one",
-        "Jump 5 i = end"
+        "Jump 2005 i = end"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
