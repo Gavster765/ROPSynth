@@ -632,7 +632,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     strcpy(rspVar->reg, "rsp");
     rspVar->constant = false;
     if (strcmp(inst.opcode, "<") == 0) {
-        lines = 8;
+        lines = 9;
         sprintf(progString,
             "Var _0 0\n"
             "Var _1 0\n"
@@ -640,6 +640,39 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             "Copy _0 %s\n"
             "Sub _0 %s\n"
             "Adc _1 _1\n"
+            "Neg _1\n"
+            "And _1 _2\n"
+            "Add _rsp _1\n",
+            inst.dest,inst.operand2,inst.operand1
+        );
+    }
+    else if (strcmp(inst.opcode, ">") == 0) {
+        lines = 9;
+        sprintf(progString,
+            "Var _0 0\n"
+            "Var _1 0\n"
+            "Var _2 %d\n"
+            "Copy _0 %s\n"
+            "Sub %s _0\n"
+            "Adc _1 _1\n"
+            "Neg _1\n"
+            "And _1 _2\n"
+            "Add _rsp _1\n",
+            inst.dest,inst.operand2,inst.operand1
+        );
+    }
+    // TODO
+    else if (strcmp(inst.opcode, "=") == 0) {
+        lines = 9;
+        printf("not supported..yet\n");
+        sprintf(progString,
+            "Var _0 0\n"
+            "Var _1 0\n"
+            "Var _2 %d\n"
+            "Copy _0 %s\n"
+            "Sub %s _0\n"
+            "Adc _1 _1\n"
+            "Neg _1\n"
             "And _1 _2\n"
             "Add _rsp _1\n",
             inst.dest,inst.operand2,inst.operand1
@@ -654,9 +687,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     }
     char* prog[lines];
     getProgLines(prog, progString);
-    // for (int i = 0 ; i < lines ; i++){
-    //     printf("%s\n",prog[i]);
-    // }
+
     Pseudo progPseudoInst[lines];
     createPseudo(lines, prog, tmpVars, progPseudoInst);
     translatePseudo(lines, &tmpVars, progPseudoInst, gadgets);
