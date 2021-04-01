@@ -20,9 +20,9 @@ typedef struct Comp {
     char* opcode;
     char* operand1;
     char* operand2;
-    int start;
-    int end;
-    bool valid;
+    int start;  // Jump location for while loops
+    int end;  // Jump location if not true
+    int finish;  // Jump location for end of if else chain
     struct Comp* joinedIf;
 } Comp;
 
