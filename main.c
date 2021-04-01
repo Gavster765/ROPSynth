@@ -813,6 +813,25 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     }
 }
 
+// Make sure all non constants are in memory so location is known
+void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
+    int count = (*varsPtr)->count;
+    for (int i = 0 ; i < count ; i++) {
+        Var* v = (*varsPtr)->vars[i];
+        if (!v->constant && !v->inMemory) {
+            char** usedRegs = usedRegisters(*varsPtr);
+            char* assembly = storeMem(v, &usedRegs, varsPtr, gadgets);
+            if (assembly != NULL) {
+                printf("%s\n",assembly);
+            }
+            else {
+                printf("Warning could not store\n");
+            }
+            freeUsedRegs(usedRegs, count);
+        }
+    }
+}
+
 // Read list of pseudo instructions and write required asm
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
@@ -895,19 +914,16 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             case END: {
                 End inst = pseudoInst[i].end;
                 
-                // End of if statement - don't need to do anything
-                if (inst.loop == NULL) {
-                    break;
-                }
+                storeAllVar(varsPtr, gadgets);
 
-                Jump j = {
-                    .dest = -2000 - inst.loop->start,
-                    .opcode = "_"
-                };
-                synthesizeJump(j, vars, gadgets);
-                // if (inst.loop != NULL && inst.loop->valid) {
-                //     i = inst.loop->start - 1;  // Go back to loop start
-                // }
+                // End of loop so jump back to start
+                if (inst.loop != NULL) {
+                    Jump j = {
+                        .dest = -2000 - inst.loop->start,
+                        .opcode = "_"
+                    };
+                    synthesizeJump(j, *varsPtr, gadgets);
+                }
                 break;
             }
             case JUMP: {
@@ -936,7 +952,6 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             default:
                 break;
         }
-        // printf("%d %d %d\n",findVar("x",vars)->value,findVar("y",vars)->value,findVar("z",vars)->value);
     }
 }
 
