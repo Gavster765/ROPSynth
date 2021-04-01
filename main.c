@@ -152,7 +152,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .operand2 = operandList[2],
                     .start = i,
                     .end = i+1,  // Default end to next line
-                    .joinedIf = currIf
+                    .joinedIf = NULL
                 };
                 
                 Pseudo p = {
@@ -165,6 +165,13 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             }
             else if(strcmp(opcode,"End") == 0) {
                 currIf->end = i;
+                // Set the finish point for all ifs in chain
+                Comp* prev = currIf->joinedIf;
+                while (prev != NULL) {
+                    prev->finish = i;
+                    prev = prev->joinedIf;
+                }
+
                 End e = {.loop = NULL};
                 if (loop) {
                     updateLoopVars(vars, i);
@@ -754,6 +761,11 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
         inst.dest
         );
     }
+    else {
+        printf("Invalid jump\n");
+        free(tmpVars);
+        return;
+    }
 
     // All non fresh vars should have lifespans longer than alt prog
     for (int i = 0 ; i < tmpVars->count ; i ++) {
@@ -858,59 +870,33 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case COMP: {
                 Comp* inst = &pseudoInst[i].comp;
-
-                Var* a = findVar(inst->operand1, vars);
-                Var* b = findVar(inst->operand2, vars);
-                inst->valid = false;  // result of if is assumed false
-                // bool skip = false;  // Can skip valid else ifs
                 
-                Jump j = {
-                    .dest = inst->end + 2000,
-                    .opcode = inst->opcode,
-                    .operand1 = inst->operand1,
-                    .operand2 = inst->operand2
-                };
-                synthesizeJump(j, vars, gadgets);
+                // Jump over elseif/else if required
+                if(inst->joinedIf != NULL) {
+                    Jump j = {
+                        .dest = 2000 + inst->joinedIf->finish,
+                        .opcode = "_"
+                    };
+                    synthesizeJump(j, vars, gadgets);
+                } 
 
-                // if(inst->joinedIf != NULL && inst->joinedIf->valid) {
-                //     inst-> valid = true;  // Propagate validity to also skip chained elses
-                //     skip = true;  // Skip since previous if was true
-                // } 
-                // else if(strcmp(inst->opcode, "==") == 0){
-                //     if(a->value == b->value) inst->valid  = true;
-                // }
-                // else if(strcmp(inst->opcode, "<") == 0){
-                //     if(a->value < b->value) inst->valid  = true;
-                // }
-                // else if(strcmp(inst->opcode, ">") == 0){
-                //     if(a->value > b->value) inst->valid  = true;
-                // }
-                // else if(strcmp(inst->opcode, "<=") == 0){
-                //     if(a->value <= b->value) inst->valid  = true;
-                // }
-                // else if(strcmp(inst->opcode, ">=") == 0){
-                //     if(a->value >= b->value) inst->valid  = true;
-                // }
-                // else if(strcmp(inst->opcode, "") == 0){
-                //     inst->valid  = true;  // Else
-                // }
-                // else {
-                //     printf("Unknown operation\n");
-                // }
-
-
-                // if(!inst->valid || skip){
-                //     i = inst->end - 1;  // Skip to end of loop (sub one because of loop inc)
-                // }
-
+                // No jump for else
+                if (strcmp(inst->opcode, "") != 0 ) {
+                    Jump j = {
+                        .dest = inst->end + 2000,
+                        .opcode = inst->opcode,
+                        .operand1 = inst->operand1,
+                        .operand2 = inst->operand2
+                    };
+                    synthesizeJump(j, vars, gadgets);
+                }
                 break;
             }
             case END: {
                 End inst = pseudoInst[i].end;
                 
-                // End of if statement
+                // End of if statement - don't need to do anything
                 if (inst.loop == NULL) {
-                    printf("if end\n");
                     break;
                 }
 
@@ -955,18 +941,18 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 9;
+    const int progLines = 10;
     char* prog[progLines] = {
-        "Var x 3",
+        "Var x 1",
         "Const y 2",
+        "Const z 3",
 
-        "Var i 0",
-        "Const end 3",
-        "Const one 1",
-        
-        "While i < end",
+        "If x > z",
+            "Sub x z",
+        "ElseIf x < z",
             "Add x y",
-            "Add i one",
+        "Else",
+            "Add x z",
         "End"
     };
     // Allocate space for variables and pseudo instructions
