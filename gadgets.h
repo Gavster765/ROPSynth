@@ -54,6 +54,7 @@ typedef struct Gadgets {
 Gadget createGadget(GadgetType type, char* assembly);
 
 Gadgets loadGadgets();
+void freeGadgets(Gadgets gadgets);
 
 void addSynthComp(char* spec, char* synth, Gadgets gadgets);
 char* getSynth(char* spec, Gadgets gadgets);

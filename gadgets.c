@@ -111,6 +111,45 @@ Gadgets loadGadgets(){
     return gadgets;
 }
 
+void freeGadget(Gadget gadget) {
+    free(gadget.assembly);
+    free(gadget.operands);
+}
+
+void freeGadgets(Gadgets gadgets) {
+    for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+        Gadget gadget = gadgets.loadConstGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.loadConstGadgets);
+    for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++) {
+        Gadget gadget = gadgets.arithOpGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.arithOpGadgets);
+    for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
+        Gadget gadget = gadgets.moveRegGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.moveRegGadgets);
+    for (int i = 0 ; i < gadgets.numStoreMemGadgets ; i++) {
+        Gadget gadget = gadgets.storeMemGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.storeMemGadgets);
+    for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
+        Gadget gadget = gadgets.loadMemGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.loadMemGadgets);
+    for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
+        Gadget gadget = gadgets.specialGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.specialGadgets);
+    free(gadgets.numSynthComps);
+}
+
 void addSynthComp(char* spec, char* synth, Gadgets gadgets) {
     SynthComp s = {
         .spec = spec,
