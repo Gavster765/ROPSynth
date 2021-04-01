@@ -217,6 +217,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 pseudoInst[i] = p;
                 updateLifespan(operandList[0], vars, i, loop);
             }
+            free(operandList);
+            free(line);
         }
 }
 
@@ -276,6 +278,7 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
     }
     if (strcmp(var->reg, "new") == 0) {
         char* load = loadConstValue(var, dest, usedRegsPtr, varsPtr, gadgets);
+        usedRegs = *usedRegsPtr;
         free(varName);
         return load;
     }
@@ -324,7 +327,6 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
             char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 6);
-            printf("me\n");
             sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);  // TODO - free
             return assembly;
         }
@@ -346,7 +348,6 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 int len = strlen(moveAway) + strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 6;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
-                printf("no me\n");
                 snprintf(assembly, len, "%s\n%s (%d)\n%s", moveAway, loadGadget.assembly, tmpVar->value, possMove);
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
@@ -396,7 +397,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         }
         // printf("store var: %s\n",varName);
         char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
-
+        usedRegs = *usedRegsPtr;
         if (moveData != NULL){
             int len = strlen(storeGadget.assembly) + strlen(clearReg) + strlen(moveData) +
                     strlen(loadAddr) + 4;
@@ -847,6 +848,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 if (!v->constant) {
                     char** usedRegs = usedRegisters(vars);
                     char* res = storeMem(v, &usedRegs, varsPtr, gadgets);
+                    freeUsedRegs(usedRegs, (*varsPtr)->count);
                     printf("%s\n",res);
                 }
                 break;
@@ -1000,5 +1002,7 @@ int main(){
         Var* v = vars->vars[i];
         printf("%s: %d\n",v->name,v->value);
     }
+    freeVars(vars);
+    freeGadgets(gadgets);
     return 0;
 }
