@@ -889,7 +889,8 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case COMP: {
                 Comp* inst = &pseudoInst[i].comp;
-                
+                storeAllVar(varsPtr, gadgets);
+                vars = *varsPtr;
                 // Jump over elseif/else if required
                 if(inst->joinedIf != NULL) {
                     Jump j = {
@@ -913,7 +914,6 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case END: {
                 End inst = pseudoInst[i].end;
-                
                 storeAllVar(varsPtr, gadgets);
 
                 // End of loop so jump back to start
@@ -956,18 +956,18 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 10;
+    const int progLines = 9;
     char* prog[progLines] = {
-        "Var x 1",
+        "Var x 3",
         "Const y 2",
-        "Const z 3",
 
-        "If x > z",
-            "Sub x z",
-        "ElseIf x < z",
+        "Var i 0",
+        "Const end 3",
+        "Const one 1",
+
+        "While i <= end",
             "Add x y",
-        "Else",
-            "Add x z",
+            "Add i one",
         "End"
     };
     // Allocate space for variables and pseudo instructions
