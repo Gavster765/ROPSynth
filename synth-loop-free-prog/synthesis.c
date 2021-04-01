@@ -69,7 +69,7 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
         // printf("%s %s\n",varName,inst);
         strcpy(freshName, "_");
         strcat(freshName, varName);
-        Var* v = addVar(freshName, vars);
+        addVar(freshName, vars);
         
         char* opcode = strtok(newInst, " ");  // Peel off opcode
         opcode[0] = toupper(opcode[0]);

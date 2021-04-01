@@ -23,7 +23,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             char* opcode = strtok(line, " ");
             char* operands = strtok(NULL, "");  // Save all operands
             char** operandList = malloc(3*20);  // Max 3 operands at 20 chars each
-            int numOperands = getOperands(operandList, operands);
+            getOperands(operandList, operands);
             if(strcmp(opcode,"Const") == 0){
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
@@ -436,8 +436,8 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         Gadget loadGadget = gadgets.loadMemGadgets[i];
         char* loadDest = loadGadget.operands[0];
         char* srcAddr = loadGadget.operands[1];
-        char* clearReg;
-        char* loadAddr;
+        char* clearReg = NULL;
+        char* loadAddr = NULL;
         char* move;
         char* moveBack;
 
