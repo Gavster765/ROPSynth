@@ -323,7 +323,8 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
         if (strcmp(loadGadget.operands[0],dest) == 0){
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
-            char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 4);
+            char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 6);
+            printf("me\n");
             sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);  // TODO - free
             return assembly;
         }
@@ -345,6 +346,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 int len = strlen(moveAway) + strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 6;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
+                printf("no me\n");
                 snprintf(assembly, len, "%s\n%s (%d)\n%s", moveAway, loadGadget.assembly, tmpVar->value, possMove);
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
