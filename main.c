@@ -956,7 +956,8 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    const int progLines = 9;
+    // const int progLines = 9;
+    enum { progLines = 9 };
     char* prog[progLines] = {
         "Var x 3",
         "Const y 2",

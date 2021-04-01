@@ -27,7 +27,8 @@ Gadget createGadget(GadgetType type, char* assembly){
 Gadgets loadGadgets(){
     int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets, 
         numStoreMemGadgets, numLoadMemGadgets, numSpecialGadgets;
-    const int max = 30;
+    enum { max = 30 };
+    // const int max = 30;
     char line[max];
     FILE *f = fopen("gadgets.txt", "r");
     
