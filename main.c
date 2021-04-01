@@ -667,8 +667,8 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     Var* rspVar = addVar("_rsp", tmpVars);
     strcpy(rspVar->reg, "rsp");
     rspVar->constant = false;
-    if (strcmp(inst.opcode, ">=") == 0) {
-        lines = 9;
+    if (strcmp(inst.opcode, "<") == 0) {
+        lines = 10;
         sprintf(progString,
             "Const _0 0\n"
             "Const _1 0\n"
@@ -677,6 +677,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             "Sub _0 %s\n"
             "Adc _1 _1\n"
             "Neg _1\n"
+            "Not _1\n"
             "And _1 _2\n"
             "Add _rsp _1\n",
             inst.dest,inst.operand1,inst.operand2
@@ -697,6 +698,37 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             inst.dest,inst.operand2,inst.operand1
         );
     }
+    else if (strcmp(inst.opcode, ">") == 0) {
+        lines = 10;
+        sprintf(progString,
+            "Const _0 0\n"
+            "Const _1 0\n"
+            "Const _2 %d\n"
+            "Copy _0 %s\n"
+            "Sub _0 %s\n"
+            "Adc _1 _1\n"
+            "Neg _1\n"
+            "Not _1\n"
+            "And _1 _2\n"
+            "Add _rsp _1\n",
+            inst.dest,inst.operand2,inst.operand1
+        );
+    }
+    else if (strcmp(inst.opcode, ">=") == 0) {
+        lines = 9;
+        sprintf(progString,
+            "Const _0 0\n"
+            "Const _1 0\n"
+            "Const _2 %d\n"
+            "Copy _0 %s\n"
+            "Sub _0 %s\n"
+            "Adc _1 _1\n"
+            "Neg _1\n"
+            "And _1 _2\n"
+            "Add _rsp _1\n",
+            inst.dest,inst.operand1,inst.operand2
+        );
+    }
     else if (strcmp(inst.opcode, "=") == 0) {
         lines = 10;
         sprintf(progString,
@@ -713,6 +745,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             inst.dest,inst.operand1,inst.operand2
         );
     }
+    // Always jump
     else if (strcmp(inst.opcode, "_") == 0) {
         lines = 2;
         sprintf(progString,
@@ -874,6 +907,12 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case END: {
                 End inst = pseudoInst[i].end;
+                
+                // End of if statement
+                if (inst.loop == NULL) {
+                    printf("if end\n");
+                    break;
+                }
 
                 Jump j = {
                     .dest = -2000 - inst.loop->start,
@@ -925,7 +964,7 @@ int main(){
         "Const end 3",
         "Const one 1",
         
-        "While i <= end",
+        "While i < end",
             "Add x y",
             "Add i one",
         "End"
