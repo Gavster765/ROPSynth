@@ -99,6 +99,8 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
 
         if (next) *next = '\n';  // then restore newline-char, just to be tidy    
         curr = next ? (next+1) : NULL;
+        // free(operandList[0]);
+        free(operandList);
     }
     sprintf(pseudoInst,"%sCopy %s _%s\n",pseudoInst,inst.operand1,varName);
     free(varName);

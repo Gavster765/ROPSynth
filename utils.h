@@ -23,3 +23,5 @@ void fillArithOp(ArithOp* arithOp, char* opcode);
 bool checkSpecialOp(char* opcode);
 bool checkSpecialOpGadget(char opcode, char* gadget);
 void fillSpecialOp(Special* special, char* opcode);
+
+void freePseudo(int progLines, Pseudo* pseudoInst);

@@ -223,3 +223,43 @@ void fillSpecialOp(Special* special, char* opcode) {
         opcode[0] = first;
     }
 }
+
+void freePseudo(int progLines, Pseudo* pseudoInst) {
+    for (int i = 0 ; i < progLines ; i++) {
+        switch (pseudoInst[i].type){
+            case LOAD_CONST: {
+                LoadConst inst = pseudoInst[i].loadConst;
+                free(inst.out);
+                break;
+            }
+            case ARITH_OP: {
+                ArithOp inst = pseudoInst[i].arithOp;
+                free(inst.out);
+                break;
+            }
+            case COMP: {
+                Comp inst = pseudoInst[i].comp;
+                free(inst.operand1);
+                break;
+            }
+            case COPY: {
+                Copy inst = pseudoInst[i].copy;
+                free(inst.dest);
+                break;
+            }
+            case JUMP: {
+                Jump inst = pseudoInst[i].jump;
+                free(inst.operand1);
+                break;
+            }
+            case SPECIAL: {
+                Special inst = pseudoInst[i].special;
+                free(inst.operand);
+                break;
+            }
+            default :{
+                break;
+            }
+        }
+    } 
+}

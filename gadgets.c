@@ -113,7 +113,9 @@ Gadgets loadGadgets(){
 
 void freeGadget(Gadget gadget) {
     free(gadget.assembly);
+    free(gadget.operands[0]);
     free(gadget.operands);
+    free(gadget.opcode);
 }
 
 void freeGadgets(Gadgets gadgets) {
@@ -146,6 +148,12 @@ void freeGadgets(Gadgets gadgets) {
         Gadget gadget = gadgets.specialGadgets[i];
         freeGadget(gadget);
     }
+    for (int i = 0 ; i < *gadgets.numSynthComps ; i++) {
+        SynthComp gadget = gadgets.synthComps[i];
+        free(gadget.spec);
+        free(gadget.synth);
+    }
+    free(gadgets.synthComps);
     free(gadgets.specialGadgets);
     free(gadgets.numSynthComps);
 }

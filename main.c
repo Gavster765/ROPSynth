@@ -217,8 +217,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 pseudoInst[i] = p;
                 updateLifespan(operandList[0], vars, i, loop);
             }
-            free(operandList);
-            free(line);
+            // free(operandList);
+            // free(line);
         }
 }
 
@@ -248,13 +248,12 @@ char* moveRegAnywhere(char* src, char** *usedRegsPtr, Vars* *varsPtr, Gadgets ga
 
 // Try to move var to dest by mean of moves - can also move a var out of dest if required
 char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
+    if (strcmp(var->reg, dest) == 0){
+        return strdup("");
+    }
     char* varName = strdup(var->name);
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
-
-    if (strcmp(var->reg, dest) == 0){
-        return "";
-    }
     // WARNING assumes no move gagdet longer than first and MEM LEAK?
     char* assembly;// = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
     if (used(dest, usedRegs, vars->count)){
@@ -267,20 +266,23 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
             return NULL;
         }
         assembly = malloc(strlen(gadgets.moveRegGadgets[0].assembly) +
-                          strlen(moveExisting) + 2);
+                          strlen(moveExisting) + sizeof(int) + 2);
         assembly[0] = '\0';    
         strcat(assembly,moveExisting);
         strcat(assembly,"\n");
+        free(moveExisting);
     }
     else {
-        assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
+        assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + sizeof(int) + 2);
         assembly[0] = '\0';    
     }
     if (strcmp(var->reg, "new") == 0) {
         char* load = loadConstValue(var, dest, usedRegsPtr, varsPtr, gadgets);
         usedRegs = *usedRegsPtr;
+        strcat(assembly,load);
         free(varName);
-        return load;
+        free(load);
+        return assembly;
     }
     for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
         Gadget moveGadget = gadgets.moveRegGadgets[i];
@@ -294,6 +296,7 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
                 return assembly;
         }
     }
+    free(assembly);
     free(varName);
     return NULL;
 }
@@ -351,6 +354,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 snprintf(assembly, len, "%s\n%s (%d)\n%s", moveAway, loadGadget.assembly, tmpVar->value, possMove);
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
+                free(possMove);
                 return assembly;
             }
             freeVars(tmpVars);
@@ -413,8 +417,12 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             // printf("store part: %s\n",assembly);
             // printf("done\n");
             free(varName);
+            free(moveData);
+            free(loadAddr);
             return assembly;
         }
+        free(moveData);
+        free(loadAddr);
     }
     free(varName);
     return NULL;
@@ -449,7 +457,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             clearReg = moveRegAnywhere(srcAddr, usedRegsPtr, varsPtr, gadgets);
         }
         else {
-            clearReg = "";
+            clearReg = strdup("");
         }
 
         if (clearReg != NULL) {
@@ -465,7 +473,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             var = findVar(varName, *varsPtr);
             strcpy(var->reg, loadDest);
             if (strcmp(dest,"any") == 0){
-                move = "";
+                move = strdup("");
             } 
             else {
                 move = moveReg(var, dest, usedRegsPtr, varsPtr, gadgets);
@@ -485,12 +493,12 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
                 }
             }
             else {
-                moveBack = "";
+                moveBack = strdup("");
             }
             free(noMoveVarName);
         }
         else {
-            moveBack = "";
+            moveBack = strdup("");
         }
         
         if (clearReg != NULL && loadAddr != NULL && move != NULL && moveBack != NULL){
@@ -499,9 +507,18 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             char* assembly = malloc(len);
             snprintf(assembly, len, "%s\n%s\n%s\n%s\n%s",clearReg,loadAddr,
                     loadGadget.assembly,move,moveBack);
+            free(clearReg);
+            free(loadAddr);
+            free(move);
+            free(moveBack);
             free(varName);
             return assembly;
         }
+        free(clearReg);
+        free(loadAddr);
+        free(move);
+        free(moveBack);
+
         // if (used(dest,usedRegs,vars->count)) {
         //     moveRegAnywhere(dest, usedRegs, vars, gadgets);
         // } 
@@ -517,7 +534,7 @@ char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsP
     // int count = vars->count;
     // Already in correct register
     if(strcmp(var->reg,dest) == 0){
-        return "";  // No change needed
+        return strdup("");  // No change needed
     }
     else if(var->inMemory){
         return loadMem(var, dest, noMove, usedRegsPtr, varsPtr, gadgets);
@@ -617,8 +634,12 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
                 printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
+                free(setupA);
+                free(setupB);
                 return true;
             }
+            free(setupA);
+            free(setupB);
         }
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
@@ -665,6 +686,7 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         }
     }
     freeVars(tmpVars);
+    freePseudo(lines, altPseudoInst);
     return false;
 }
 
@@ -791,7 +813,9 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             tmpVars->vars[i] = temp;
         }
     }
+    free(progString);
     freeVars(tmpVars);
+    freePseudo(lines, progPseudoInst);
 }
 
 void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
@@ -808,6 +832,7 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
                 freeVars(vars);
                 freeUsedRegs(usedRegs, (*varsPtr)->count);
                 printf("%s\n%s\n",setup,gadget.assembly);
+                free(setup);
                 return;
             }
         }
@@ -831,6 +856,7 @@ void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
                 printf("Warning could not store\n");
             }
             freeUsedRegs(usedRegs, count);
+            free(assembly);
         }
     }
 }
@@ -850,6 +876,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                     char* res = storeMem(v, &usedRegs, varsPtr, gadgets);
                     freeUsedRegs(usedRegs, (*varsPtr)->count);
                     printf("%s\n",res);
+                    free(res);
                 }
                 break;
             }
@@ -961,19 +988,12 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 
 int main(){
     // const int progLines = 9;
-    enum { progLines = 9 };
+    enum { progLines = 3 };
     char* prog[progLines] = {
-        "Var x 3",
-        "Const y 2",
+        "Var x 2",
+        "Const y 3",
 
-        "Var i 0",
-        "Const end 3",
-        "Const one 1",
-
-        "While i <= end",
-            "Add x y",
-            "Add i one",
-        "End"
+        "Mul x y"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
@@ -1004,5 +1024,6 @@ int main(){
     }
     freeVars(vars);
     freeGadgets(gadgets);
+    freePseudo(progLines, pseudoInst);
     return 0;
 }
