@@ -7,9 +7,12 @@ typedef enum {
     ARITH_OP,
     STORE_MEM,
     LOAD_MEM,
-    COPY, // TODO - move as only a pseudo type??
-    COMP, // TODO - move as only a pseudo type??
-    END // TODO - move as only a pseudo type??
+    SPECIAL,
+    // Pseudo only
+    COPY,
+    COMP,
+    END,
+    JUMP
 } GadgetType;
 
 typedef struct Gadget {
@@ -19,6 +22,11 @@ typedef struct Gadget {
     int numOperands;
     char** operands;
 } Gadget;
+
+typedef struct SynthComp {
+    char* spec;
+    char* synth;
+} SynthComp;
 
 typedef struct Gadgets {
     int numLoadConstGadgets;
@@ -35,10 +43,20 @@ typedef struct Gadgets {
     
     int numLoadMemGadgets;
     Gadget* loadMemGadgets;
+
+    int numSpecialGadgets;
+    Gadget* specialGadgets;
+
+    int* numSynthComps;
+    SynthComp* synthComps;
 } Gadgets;
 
 Gadget createGadget(GadgetType type, char* assembly);
 
 Gadgets loadGadgets();
+void freeGadgets(Gadgets gadgets);
+
+void addSynthComp(char* spec, char* synth, Gadgets gadgets);
+char* getSynth(char* spec, Gadgets gadgets);
 
 #endif /* GADGET_H */

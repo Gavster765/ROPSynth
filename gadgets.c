@@ -26,19 +26,24 @@ Gadget createGadget(GadgetType type, char* assembly){
 // Read gadgets text file into Gadgets structure
 Gadgets loadGadgets(){
     int numLoadConstGadgets, numArithOpGadgets, numMoveRegGadgets, 
-        numStoreMemGadgets, numLoadMemGadgets;
-    const int max = 30;
+        numStoreMemGadgets, numLoadMemGadgets, numSpecialGadgets;
+    enum { max = 30 };
+    // const int max = 30;
     char line[max];
     FILE *f = fopen("gadgets.txt", "r");
     
-    fscanf(f, "%d,%d,%d,%d,%d\n",&numLoadConstGadgets, &numArithOpGadgets, 
-        &numMoveRegGadgets, &numStoreMemGadgets, &numLoadMemGadgets);
+    fscanf(f, "%d,%d,%d,%d,%d, %d\n",&numLoadConstGadgets, &numArithOpGadgets, 
+        &numMoveRegGadgets, &numStoreMemGadgets, &numLoadMemGadgets, &numSpecialGadgets);
     Gadget* loadConstGadgets = malloc(sizeof(Gadget) * numLoadConstGadgets);
     Gadget* arithOpGadgets = malloc(sizeof(Gadget) * numArithOpGadgets);
     Gadget* moveRegGadgets = malloc(sizeof(Gadget) * numMoveRegGadgets);
     Gadget* storeMemGadgets = malloc(sizeof(Gadget) * numStoreMemGadgets);
     Gadget* loadMemGadgets = malloc(sizeof(Gadget) * numLoadMemGadgets);
-    
+    Gadget* specialGadgets = malloc(sizeof(Gadget) * numSpecialGadgets);
+    SynthComp* synthComps = malloc(sizeof(SynthComp) * 10);  // Max 10 saved synthesis components
+    int* numSynthComps = malloc(sizeof(int));
+    *numSynthComps = 0;
+
     Gadget* curr;
     int count;
     GadgetType type;
@@ -71,6 +76,11 @@ Gadgets loadGadgets(){
         }
         else if(strcmp(line,"loadMem") == 0){
             curr = loadMemGadgets;
+            type = SPECIAL;
+            count = 0;
+        }
+        else if(strcmp(line,"special") == 0){
+            curr = specialGadgets;
             type = LOAD_MEM;
             count = 0;
         }
@@ -91,8 +101,77 @@ Gadgets loadGadgets(){
         numStoreMemGadgets,
         storeMemGadgets,
         numLoadMemGadgets,
-        loadMemGadgets
+        loadMemGadgets,
+        numSpecialGadgets,
+        specialGadgets,
+        numSynthComps,  // 0 components already synthesized
+        synthComps
     };
 
     return gadgets;
+}
+
+void freeGadget(Gadget gadget) {
+    free(gadget.assembly);
+    free(gadget.operands[0]);
+    free(gadget.operands);
+    free(gadget.opcode);
+}
+
+void freeGadgets(Gadgets gadgets) {
+    for (int i = 0 ; i < gadgets.numLoadConstGadgets ; i++) {
+        Gadget gadget = gadgets.loadConstGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.loadConstGadgets);
+    for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++) {
+        Gadget gadget = gadgets.arithOpGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.arithOpGadgets);
+    for (int i = 0 ; i < gadgets.numMoveRegGadgets ; i++) {
+        Gadget gadget = gadgets.moveRegGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.moveRegGadgets);
+    for (int i = 0 ; i < gadgets.numStoreMemGadgets ; i++) {
+        Gadget gadget = gadgets.storeMemGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.storeMemGadgets);
+    for (int i = 0 ; i < gadgets.numLoadMemGadgets ; i++) {
+        Gadget gadget = gadgets.loadMemGadgets[i];
+        freeGadget(gadget);
+    }
+    free(gadgets.loadMemGadgets);
+    for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
+        Gadget gadget = gadgets.specialGadgets[i];
+        freeGadget(gadget);
+    }
+    for (int i = 0 ; i < *gadgets.numSynthComps ; i++) {
+        SynthComp gadget = gadgets.synthComps[i];
+        free(gadget.spec);
+        free(gadget.synth);
+    }
+    free(gadgets.synthComps);
+    free(gadgets.specialGadgets);
+    free(gadgets.numSynthComps);
+}
+
+void addSynthComp(char* spec, char* synth, Gadgets gadgets) {
+    SynthComp s = {
+        .spec = spec,
+        .synth = synth
+    };
+    gadgets.synthComps[*gadgets.numSynthComps] = s;
+    (*gadgets.numSynthComps)++;
+}
+
+char* getSynth(char* spec, Gadgets gadgets) {
+    for (int i = 0 ; i < *gadgets.numSynthComps ; i++) {
+        if (strcmp(gadgets.synthComps[i].spec, spec) == 0) {
+            return gadgets.synthComps[i].synth;
+        }
+    }
+    return NULL;
 }

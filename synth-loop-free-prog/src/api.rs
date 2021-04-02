@@ -71,13 +71,13 @@ struct Options {
 
 
 fn synthesize(
-    opts: &Options,
+    _opts: &Options,
     context: &z3::Context,
     spec: &dyn Specification,
     library: &Library,
 ) -> Result<Program> {
     Synthesizer::new(context, library, spec)?
-        .set_timeout(opts.timeout)
+        .set_timeout(Some(20000))//opts.timeout)
         .should_synthesize_minimal_programs(true)//opts.minimal)
         .synthesize()
 }
@@ -126,6 +126,11 @@ fn synthesize_prog(context: &z3::Context, opts: &Options, components: &str,
                 let a: usize = operands[1].parse().unwrap();
                 let b: usize = operands[2].parse().unwrap();
                 vars.push(builder.mul(vars[a], vars[b]));
+            },
+            "Xor" => {
+                let a: usize = operands[1].parse().unwrap();
+                let b: usize = operands[2].parse().unwrap();
+                vars.push(builder.xor(vars[a], vars[b]));
             },
             _ => println!("Unknown program line"),
         }

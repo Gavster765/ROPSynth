@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include "var.h"
+#include "pseudo.h"
 
 void removeChars(char* str, char c);
 
@@ -14,3 +15,13 @@ char** usedRegisters(Vars* vars);
 void freeUsedRegs(char** usedRegs, int count);
 void addRegToUsed(char** usedRegs, char* reg, int count);
 void removeRegFromUsed(char** usedRegs, char* reg, int count);
+
+bool checkArithOp(char* opcode);
+bool checkArithOpGadget(char opcode, char* gadget);
+void fillArithOp(ArithOp* arithOp, char* opcode);
+
+bool checkSpecialOp(char* opcode);
+bool checkSpecialOpGadget(char opcode, char* gadget);
+void fillSpecialOp(Special* special, char* opcode);
+
+void freePseudo(int progLines, Pseudo* pseudoInst);

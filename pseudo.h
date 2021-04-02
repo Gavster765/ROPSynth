@@ -20,9 +20,9 @@ typedef struct Comp {
     char* opcode;
     char* operand1;
     char* operand2;
-    int start;
-    int end;
-    bool valid;
+    int start;  // Jump location for while loops
+    int end;  // Jump location if not true
+    int finish;  // Jump location for end of if else chain
     struct Comp* joinedIf;
 } Comp;
 
@@ -35,6 +35,19 @@ typedef struct Copy {
     char* src;
 } Copy;
 
+typedef struct Jump {
+    int dest;
+    char* opcode;
+    char* operand1;
+    char* operand2;
+} Jump;
+
+typedef struct Special {
+    char opcode;
+    char* op;
+    char* operand;
+} Special;
+
 typedef struct Pseudo {
     GadgetType type;  // Type of pseudo instruction
     LoadConst loadConst;
@@ -42,6 +55,8 @@ typedef struct Pseudo {
     Copy copy;
     Comp comp;
     End end;
+    Jump jump;
+    Special special;
 } Pseudo;
 
 #endif /* PSEUDO_H */

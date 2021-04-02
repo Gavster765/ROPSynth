@@ -10,6 +10,7 @@ Issues:
 
 Report notes:
 mention stale vars
+gadgets that end in jumps not return? (jop)
 talk about fresh variables
 
 TODO?:
@@ -28,3 +29,4 @@ TODO?:
 • Fail nicely if cegis fails
 • Double moves?
 • Store results <- don't need to redo long synthesis in a loop
+• Make sure to store and load before/after loops/ifs (otherwise var location not known)
