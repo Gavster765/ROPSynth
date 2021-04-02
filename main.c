@@ -217,8 +217,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 pseudoInst[i] = p;
                 updateLifespan(operandList[0], vars, i, loop);
             }
-            // free(operandList);
-            // free(line);
+            free(operandList);
+            free(line);
         }
 }
 
@@ -560,7 +560,7 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
         strcpy(dest->reg, "new");
         dest->constant = true;
         dest->inMemory = false;
-        return "";
+        return strdup("");
     }
 
     Var* src = findVar(inst.src, vars);
@@ -570,7 +570,7 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
         strcpy(dest->reg, "new");
         dest->constant = true;
         dest->inMemory = false;
-        return "";
+        return strdup("");
     }
     // Case in memory
     else if (src->inMemory) {
@@ -685,6 +685,7 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
             tmpVars->vars[i] = temp;
         }
     }
+    free(alt);
     freeVars(tmpVars);
     freePseudo(lines, altPseudoInst);
     return false;
@@ -916,6 +917,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                     printf("Can't copy\n");
                 }
                 printf("%s\n",copy);
+                free(copy);
                 break;
             }
             case COMP: {
@@ -987,13 +989,19 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
 }
 
 int main(){
-    // const int progLines = 9;
-    enum { progLines = 3 };
+    enum { progLines = 9 };
     char* prog[progLines] = {
-        "Var x 2",
-        "Const y 3",
+        "Var x 3",
+        "Const y 2",
 
-        "Mul x y"
+        "Var i 0",
+        "Const end 3",
+        "Const one 1",
+        
+        "While i <= end",
+            "Mul x y",
+            "Add i one",
+        "End"
     };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));

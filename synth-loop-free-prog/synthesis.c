@@ -41,7 +41,6 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
     else {
         strcat(spec,"Var,");
     }
-
     strcat(spec, inst.op);
     strcat(spec, " 0 1");
     // printf("%s\n",spec);
@@ -76,7 +75,7 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
         char* operands = strtok(NULL, "");  // Save all operands
         char** operandList = malloc(3*20*sizeof(char));  // Max 3 operands at 20 chars each
         // printf("%s %s\n",opcode, operands);
-        getGadgetOperands(operandList,operands);
+        int num = getGadgetOperands(operandList,operands);
 
         if (strcmp("Var",opcode) == 0) {
             if (firstVar) {
@@ -99,7 +98,9 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
 
         if (next) *next = '\n';  // then restore newline-char, just to be tidy    
         curr = next ? (next+1) : NULL;
-        // free(operandList[0]);
+        if (num > 0){
+            free(operandList[0]);
+        }
         free(operandList);
     }
     sprintf(pseudoInst,"%sCopy %s _%s\n",pseudoInst,inst.operand1,varName);
@@ -117,6 +118,7 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
         synth = run(components, spec);
         addSynthComp(spec, synth, gadgets);
     }
+    free(components);
     if (strcmp(synth,"Error") == 0) {
         return NULL; // Synthesis failed
     }

@@ -178,7 +178,7 @@ void fillArithOp(ArithOp* arithOp, char* opcode) {
         char first = opcode[0];
         opcode[0] = toupper(opcode[0]);
         arithOp->opcode = op;
-        arithOp->op = opcode;
+        arithOp->op = strdup(opcode);
         opcode[0] = first;
     }
 }
@@ -219,7 +219,7 @@ void fillSpecialOp(Special* special, char* opcode) {
         char first = opcode[0];
         opcode[0] = toupper(opcode[0]);
         special->opcode = op;
-        special->op = opcode;
+        special->op = strdup(opcode);
         opcode[0] = first;
     }
 }
@@ -235,6 +235,7 @@ void freePseudo(int progLines, Pseudo* pseudoInst) {
             case ARITH_OP: {
                 ArithOp inst = pseudoInst[i].arithOp;
                 free(inst.out);
+                free(inst.op);
                 break;
             }
             case COMP: {
@@ -255,6 +256,7 @@ void freePseudo(int progLines, Pseudo* pseudoInst) {
             case SPECIAL: {
                 Special inst = pseudoInst[i].special;
                 free(inst.operand);
+                free(inst.op);
                 break;
             }
             default :{
