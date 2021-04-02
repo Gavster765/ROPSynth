@@ -964,55 +964,73 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
     }
 }
 
-char** readProgram(char* fileName) {
+char** readProgram(char* fileName, int* length) {
     FILE *f = fopen(fileName, "r");
 
     // Get file length
     char ch;
-    int numLines = 0;
+    *length = 0;
     while(!feof(f)) {
-    ch = fgetc(f);
-    if(ch == '\n')
-        {
-            numLines++;
-        }
+        ch = fgetc(f);
+        if(ch == '\n')
+            {
+                (*length)++;
+            }
     }
     rewind(f);
 
-    char** prog = malloc(numLines * sizeof(char*));
+    char** prog = malloc(*length * sizeof(char*));
     enum { max = 100 };
     char line[max];
     int lineNum = 0;
 
+
+    fgets(line, max, f);
     while (!feof(f)) {
-        fgets(line, max, f);
         line[strcspn(line, "\r\n")] = '\0';
+        // Skip blank lines
+        if (strcmp(line, "") == 0) {
+            (*length)--;
+            fgets(line, max, f);
+            continue;
+        }
         prog[lineNum] = malloc(strlen(line)+1);
         strcpy(prog[lineNum], line);
         lineNum++;
+        fgets(line, max, f);
     }
 
     fclose(f);
     return prog;
 }
 
-int main(){
-    char** newProg = readProgram("prog.txt");
-    return 0;
-    enum { progLines = 9 };
-    char* prog[progLines] = {
-        "Var x 3",
-        "Const y 2",
+void freeProg(char** prog, int* length) {
+    for (int i = 0 ; i < *length ; i++) {
+        free(prog[i]);
+    } 
+    free(length);
+    free(prog);
+}
 
-        "Var i 0",
-        "Const end 3",
-        "Const one 1",
+int main(){
+    int* length = malloc(sizeof(int*));
+    char** prog = readProgram("prog.txt", length);
+    int progLines = *length;
+    // return 0;
+    // enum { progLines = 9 };
+    // char* prog[progLines] = {
+    //     "Var x 3",
+    //     "Const y 2",
+
+    //     "Var i 0",
+    //     "Const end 3",
+    //     "Const one 1",
         
-        "While i <= end",
-            "Mul x y",
-            "Add i one",
-        "End"
-    };
+    //     "While i <= end",
+    //         "Mul x y",
+    //         "Add i one",
+    //     "End"
+    // };
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
     vars->count = 0;
@@ -1040,6 +1058,7 @@ int main(){
         Var* v = vars->vars[i];
         printf("%s: %d\n",v->name,v->value);
     }
+    freeProg(prog, length);
     freeVars(vars);
     freeGadgets(gadgets);
     freePseudo(progLines, pseudoInst);
