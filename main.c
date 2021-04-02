@@ -51,7 +51,6 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 pseudoInst[i] = p;
             }
-            // TODO move check if arith to func?
             else if(checkArithOp(opcode)) {
                 ArithOp newArith = {
                     .out = operandList[0],
@@ -301,7 +300,6 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
     return NULL;
 }
 
-// TODO move then load?
 // Will  try to load a const from the stack into dest - can move other var out of dest
 char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
     char* varName = strdup(var->name);
@@ -330,7 +328,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
             char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 6);
-            sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);  // TODO - free
+            sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);
             return assembly;
         }
     }
@@ -347,7 +345,6 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             if (possMove != NULL){
                 *varsPtr = tmpVars;
                 *usedRegsPtr = tmpUsedRegs;
-                // WARNING memory leak!
                 int len = strlen(moveAway) + strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 6;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
@@ -361,7 +358,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             freeUsedRegs(tmpUsedRegs, count);
         }
     }
-    return NULL;  // Load not possible without move TODO
+    return NULL;
 }
 
 // Store a var in memory so doesn't need to be in a reg
@@ -399,7 +396,6 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             vars = *varsPtr;
             strcpy(vars->vars[0]->reg, "new");
         }
-        // printf("store var: %s\n",varName);
         char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
         usedRegs = *usedRegsPtr;
         if (moveData != NULL){
@@ -414,8 +410,6 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
 
             removeRegFromUsed(usedRegs,storeData,count);
             removeRegFromUsed(usedRegs,storeAddr,count);
-            // printf("store part: %s\n",assembly);
-            // printf("done\n");
             free(varName);
             free(moveData);
             free(loadAddr);
@@ -518,20 +512,13 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         free(loadAddr);
         free(move);
         free(moveBack);
-
-        // if (used(dest,usedRegs,vars->count)) {
-        //     moveRegAnywhere(dest, usedRegs, vars, gadgets);
-        // } 
     }
     free(varName);
     return NULL;
 }
 
-// Attempt to move a var into dest for use - TODO rename?
+// Attempt to move a var into dest for use
 char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets){
-    // Vars* vars = *varsPtr;
-    // char** usedRegs = *usedRegsPtr;
-    // int count = vars->count;
     // Already in correct register
     if(strcmp(var->reg,dest) == 0){
         return strdup("");  // No change needed
@@ -593,10 +580,8 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     }
     // Case in reg
     else {
-        // printf("copy %s %s\n",inst.dest,inst.src);
         // TODO check for NULL - i.e. impossible
         char** usedRegs = usedRegisters(vars);
-        // char** *usedRegsPtr = &usedRegs;
         dest->value = src->value;
         dest->constant = false;
         dest->inMemory = false;
@@ -622,7 +607,6 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         Gadget gadget = gadgets.arithOpGadgets[i];
 
         if (checkArithOpGadget(op, gadget.opcode)) {
-            // printf("gadget: %s\n",gadget.assembly);
             char* setupA = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets); 
             a = findVar(inst.operand1,tmpVars);
             b = findVar(inst.operand2,tmpVars);
@@ -644,23 +628,20 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
         freeUsedRegs(usedRegs, count);
         freeVars(tmpVars);
     }
-    // printf("alt\n");
     // Couldn't find gadget so try to find alternative
     Vars* tmpVars = copyVars(vars);
     char* alt = findAlternative(inst, tmpVars, gadgets);
     if (alt == NULL) {
         return -1;  // Synthesis failed
     }
-    // printf("%s\n",alt);
-    // printf("%d\n",strlen(alt));
+
     int lines = 0;
     for (int i = 0 ; i < strlen(alt) ; i++) {
         if (alt[i] == '\n'){
             lines++;
         }
     }
-    // printf("%s\n",alt);
-    // printf("lines: %d\n",lines);
+
     // All non fresh vars should have lifespans longer than alt prog
     for (int i = 0 ; i < tmpVars->count ; i ++) {
         if (tmpVars->vars[i]->name[0] != '_') {
@@ -669,13 +650,9 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     }
     char* altProg[lines];
     getProgLines(altProg, alt);
-    // for (int i = 0 ; i < lines ; i++){
-    //     printf("%s\n",altProg[i]);
-    // }
     Pseudo altPseudoInst[lines];
     createPseudo(lines, altProg, tmpVars, altPseudoInst);
     translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
-    // printf("done alt\n");
     // Swap variables
     for (int i = 0 ; i < tmpVars->count ; i ++) {
         if (tmpVars->vars[i]->name[0] != '_') {
@@ -805,7 +782,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     Pseudo progPseudoInst[lines];
     createPseudo(lines, prog, tmpVars, progPseudoInst);
     translatePseudo(lines, &tmpVars, progPseudoInst, gadgets);
-    // // Swap variables
+    // Swap variables
     for (int i = 0 ; i < tmpVars->count ; i ++) {
         if (tmpVars->vars[i]->name[0] != '_') {
             Var* temp = vars->vars[i];
