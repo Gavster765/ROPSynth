@@ -18,8 +18,6 @@ pub extern fn run(components_str: *const c_char, program_str: *const c_char) -> 
     };
     // env_logger::init();
 
-    let opts = Options::from_args();
-
     let mut config = z3::Config::new();
     config.set_bool_param_value("auto_config", false);
     config.set_model_generation(true);
@@ -27,14 +25,8 @@ pub extern fn run(components_str: *const c_char, program_str: *const c_char) -> 
     
     // println!("==================== P1 ====================");
     // let then = std::time::Instant::now();
-    let program = synthesize_prog(&context, &opts, components, program);
+    let program = synthesize_prog(&context, components, program);
     
-    // let elapsed = then.elapsed();
-    // println!(
-    //     "\nElapsed: {}.{:03}s\n",
-    //     elapsed.as_secs(),
-    //     elapsed.subsec_millis()
-    // );
     match program {
         Ok(prog) => {
             let ret_str = CString::new(prog.to_string()).expect("CString::new failed");
@@ -71,7 +63,6 @@ struct Options {
 
 
 fn synthesize(
-    _opts: &Options,
     context: &z3::Context,
     spec: &dyn Specification,
     library: &Library,
@@ -82,7 +73,7 @@ fn synthesize(
         .synthesize()
 }
 
-fn synthesize_prog(context: &z3::Context, opts: &Options, components: &str,
+fn synthesize_prog(context: &z3::Context, components: &str,
      program: &str) -> Result<Program> {
     let mut library = Library{components: vec![]};
 
@@ -143,5 +134,5 @@ fn synthesize_prog(context: &z3::Context, opts: &Options, components: &str,
     // let _ = builder.and(a, c);
     let spec = builder.finish();
 
-    synthesize(opts, context, &spec, &library)
+    synthesize(context, &spec, &library)
 }
