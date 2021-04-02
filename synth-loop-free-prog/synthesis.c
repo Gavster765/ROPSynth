@@ -9,6 +9,23 @@
 #include "./pseudo.h"
 #include "./utils.h"
 
+void staticSynthesis(Gadgets gadgets) {
+    // Multiplication by var
+    char* spec = strdup("Var,"
+                        "Var,"
+                        "Mul 0 1");
+
+    char* synth = strdup("!"
+                         "Const _res 0\n"
+                         "Const _count 1\n"
+                         "Const _one 1\n"
+                         "While _count <= _y\n"
+                            "Add _res _x\n"
+                            "Add _count _one\n"
+                         "End\n");
+    addSynthComp(spec, synth, gadgets);
+}
+
 char* findComponents(Gadgets gadgets) {
     char* components = malloc(gadgets.numArithOpGadgets * 4 * 3 + 1);  // Max 3 char op with comma
     components[0] = '\0';
@@ -110,18 +127,45 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
     return pseudoInst;
 }
 
+char* replaceVars(char* synth, ArithOp inst, Vars* vars) {
+    if (synth[0] == '!') {
+        char* setup = malloc(50 + strlen(inst.operand1) + strlen(inst.operand2));
+        sprintf(setup, 
+            "Const _x 0\n"
+            "Const _y 0\n"
+            "Copy _x %s\n"
+            "Copy _y %s\n",
+            inst.operand1,inst.operand2
+        );
+        char* completeSynth = malloc(strlen(synth) + strlen(setup));
+        sprintf(completeSynth,"%s%s",setup,&synth[1]);
+        free(setup);
+        // free(synth);
+        return completeSynth;
+    }
+    else {
+        return parseNewProg(synth, inst, vars);
+    }
+}
+
 char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* components = findComponents(gadgets);
     char* spec = createProgSpec(inst, vars);
     char* synth = getSynth(spec, gadgets);
     if (synth == NULL) {
         synth = run(components, spec);
+        if (strcmp(synth,"Error") == 0) {
+            free(spec);
+            free(components);
+            return NULL; // Synthesis failed
+        }
         addSynthComp(spec, synth, gadgets);
+        synth = parseNewProg(synth, inst, vars);
+    }
+    else {
+        synth = replaceVars(synth, inst, vars);
+        free(spec);
     }
     free(components);
-    if (strcmp(synth,"Error") == 0) {
-        return NULL; // Synthesis failed
-    }
-    char* pseudoCode = parseNewProg(synth, inst, vars);
-    return pseudoCode;
+    return synth;
 }

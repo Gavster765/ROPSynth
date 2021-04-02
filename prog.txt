@@ -1,5 +1,5 @@
 Var x 3
-Const y 2
+Var y 2
 
 Var i 0
 Const end 3

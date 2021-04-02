@@ -311,7 +311,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
         }
     }
     else {
-        moveAway = "";
+        moveAway = strdup("");
     }
 
     Vars* vars = *varsPtr;
@@ -328,6 +328,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             addRegToUsed(usedRegs, dest, vars->count);
             char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 6);
             sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);
+            free(moveAway);
             return assembly;
         }
     }
@@ -351,12 +352,14 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
                 free(possMove);
+                free(moveAway);
                 return assembly;
             }
             freeVars(tmpVars);
             freeUsedRegs(tmpUsedRegs, count);
         }
     }
+    free(moveAway);
     return NULL;
 }
 
@@ -1043,6 +1046,7 @@ int main(int argc, char *argv[]) {
     createPseudo(progLines, prog, vars, pseudoInst);
     // Read gadgets file
     Gadgets gadgets = loadGadgets();
+    staticSynthesis(gadgets);
     translatePseudo(progLines, &vars, pseudoInst, gadgets);
     printf("\n__Results__\n");
     for (int i = 1 ; i < vars->count ; i ++) {
