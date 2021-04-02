@@ -253,8 +253,7 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
     char* varName = strdup(var->name);
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
-    // WARNING assumes no move gagdet longer than first and MEM LEAK?
-    char* assembly;// = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + 2);
+    char* assembly;
     if (used(dest, usedRegs, vars->count)){
         char* moveExisting = moveRegAnywhere(dest, usedRegsPtr, varsPtr, gadgets);
         vars = *varsPtr;
@@ -965,7 +964,41 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
     }
 }
 
+char** readProgram(char* fileName) {
+    FILE *f = fopen(fileName, "r");
+
+    // Get file length
+    char ch;
+    int numLines = 0;
+    while(!feof(f)) {
+    ch = fgetc(f);
+    if(ch == '\n')
+        {
+            numLines++;
+        }
+    }
+    rewind(f);
+
+    char** prog = malloc(numLines * sizeof(char*));
+    enum { max = 100 };
+    char line[max];
+    int lineNum = 0;
+
+    while (!feof(f)) {
+        fgets(line, max, f);
+        line[strcspn(line, "\r\n")] = '\0';
+        prog[lineNum] = malloc(strlen(line)+1);
+        strcpy(prog[lineNum], line);
+        lineNum++;
+    }
+
+    fclose(f);
+    return prog;
+}
+
 int main(){
+    char** newProg = readProgram("prog.txt");
+    return 0;
     enum { progLines = 9 };
     char* prog[progLines] = {
         "Var x 3",
