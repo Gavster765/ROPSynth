@@ -1012,25 +1012,16 @@ void freeProg(char** prog, int* length) {
     free(prog);
 }
 
-int main(){
-    int* length = malloc(sizeof(int*));
-    char** prog = readProgram("prog.txt", length);
-    int progLines = *length;
-    // return 0;
-    // enum { progLines = 9 };
-    // char* prog[progLines] = {
-    //     "Var x 3",
-    //     "Const y 2",
+int main(int argc, char *argv[]) {
+    if ( argc != 2 ) {
+        printf("No program provided\n");
+        return -1;
+    }
 
-    //     "Var i 0",
-    //     "Const end 3",
-    //     "Const one 1",
-        
-    //     "While i <= end",
-    //         "Mul x y",
-    //         "Add i one",
-    //     "End"
-    // };
+    int* length = malloc(sizeof(int*));
+    char** prog = readProgram(argv[1], length);
+    int progLines = *length;
+
     // Allocate space for variables and pseudo instructions
     Vars *vars = malloc(sizeof(Vars) + sizeof(Var*)*(progLines+10));
     vars->count = 0;
