@@ -634,6 +634,7 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* tmpVars = copyVars(vars);
     char* alt = findAlternative(inst, tmpVars, gadgets);
     if (alt == NULL) {
+        freeVars(tmpVars);
         return -1;  // Synthesis failed
     }
 
