@@ -15,8 +15,8 @@ void staticSynthesis(Gadgets gadgets) {
                         "Var,"
                         "Mul 0 1");
 
-    char* synth = strdup("Const _res 0\n"
-                         "Const _count 1\n"
+    char* synth = strdup("Var _res 0\n"
+                         "Var _count 1\n"
                          "Const _one 1\n"
                          "While _count <= _y\n"
                             "Add _res _x\n"
