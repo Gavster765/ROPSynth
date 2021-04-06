@@ -15,8 +15,7 @@ void staticSynthesis(Gadgets gadgets) {
                         "Var,"
                         "Mul 0 1");
 
-    char* synth = strdup("!"
-                         "Const _res 0\n"
+    char* synth = strdup("Const _res 0\n"
                          "Const _count 1\n"
                          "Const _one 1\n"
                          "While _count <= _y\n"
@@ -43,6 +42,17 @@ char* findComponents(Gadgets gadgets) {
     }
     // printf("%s\n",components);
     return components;
+}
+
+// Create prog spec without constants to check whether static exists
+char* checkStatic(ArithOp inst, Vars* vars, Gadgets gadgets) {
+    // for single inst will be var,var/const,op 0 1
+    char* spec = malloc(40);  // Guess at max size
+    spec[0] = '\0';
+    sprintf(spec,"Var,Var,%s 0 1",inst.op);
+    char* synth = getSynth(spec, gadgets);
+    free(spec);
+    return synth;
 }
 
 char* createProgSpec(ArithOp inst, Vars* vars) {
@@ -128,27 +138,27 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
 }
 
 char* replaceVars(char* synth, ArithOp inst, Vars* vars) {
-    if (synth[0] == '!') {
-        char* setup = malloc(50 + strlen(inst.operand1) + strlen(inst.operand2));
-        sprintf(setup, 
-            "Const _x 0\n"
-            "Const _y 0\n"
-            "Copy _x %s\n"
-            "Copy _y %s\n",
-            inst.operand1,inst.operand2
-        );
-        char* completeSynth = malloc(strlen(synth) + strlen(setup));
-        sprintf(completeSynth,"%s%s",setup,&synth[1]);
-        free(setup);
-        // free(synth);
-        return completeSynth;
-    }
-    else {
-        return parseNewProg(synth, inst, vars);
-    }
+    char* setup = malloc(50 + strlen(inst.operand1) + strlen(inst.operand2));
+    sprintf(setup, 
+        "Const _x 0\n"
+        "Const _y 0\n"
+        "Copy _x %s\n"
+        "Copy _y %s\n",
+        inst.operand1,inst.operand2
+    );
+    char* completeSynth = malloc(strlen(synth) + strlen(setup) + 1);
+    sprintf(completeSynth,"%s%s",setup,synth);
+    free(setup);
+    return completeSynth;
 }
 
 char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
+    char* staticSynth = checkStatic(inst, vars, gadgets);
+    if (staticSynth != NULL) {
+        char* synth = replaceVars(staticSynth, inst, vars);
+        return synth;
+    }
+    
     char* components = findComponents(gadgets);
     char* spec = createProgSpec(inst, vars);
     char* synth = getSynth(spec, gadgets);
@@ -157,14 +167,15 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
         if (strcmp(synth,"Error") == 0) {
             free(spec);
             free(components);
+            free(synth);
             return NULL; // Synthesis failed
         }
         addSynthComp(spec, synth, gadgets);
         synth = parseNewProg(synth, inst, vars);
     }
     else {
-        synth = replaceVars(synth, inst, vars);
         free(spec);
+        synth = parseNewProg(synth, inst, vars);
     }
     free(components);
     return synth;
