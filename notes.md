@@ -1,6 +1,9 @@
 Issues:
 • Variables can get stuck <- i.e moved to rdx but no gadgets to move them out of rdx
 • May need to look ahead a little <- on fail go back and try again?? <- some kind of tree?
+• Add x x doesn't work
+• Says warning since something is in rax already when storing - could try to store this first or just let it get moved to rcx
+  Moved load data to be first <- think this fixe?
 
 Report notes:
 mention stale vars
@@ -14,6 +17,7 @@ TODO?:
 • Vary number of components given to cegis
 • Allow more operations in cegis api
 • Double moves?
+• Check new store order
 
 DONE:
 • Extend language to include basic loops using jump gadgets

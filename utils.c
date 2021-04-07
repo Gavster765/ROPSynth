@@ -143,6 +143,9 @@ char getArithOpChar(char* opcode) {
     else if(strcmp(opcode,"mul") == 0) {
         op = '*';
     }
+    else if(strcmp(opcode,"div") == 0) {
+        op = '/';
+    }
     else if(strcmp(opcode,"and") == 0) {
         op = '&';
     }

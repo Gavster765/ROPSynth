@@ -9,6 +9,37 @@
 #include "./pseudo.h"
 #include "./utils.h"
 
+// Rules for finding replacements that require loops
+// Assumes operands are in _x and _y with result in _res
+void staticSynthesis(Gadgets gadgets) {
+    // Multiplication by var
+    char* spec = strdup("Var,"
+                        "Var,"
+                        "Mul 0 1");
+
+    char* synth = strdup("Var _res 0\n"
+                         "Var _count 1\n"
+                         "Const _one 1\n"
+                         "While _count <= _y\n"
+                            "Add _res _x\n"
+                            "Add _count _one\n"
+                         "End\n");
+    addSynthComp(spec, synth, gadgets);
+    // Division by var
+    spec = strdup("Var,"
+                  "Var,"
+                  "Div 0 1");
+
+    synth = strdup("Var _res 0\n"
+                   "Const _one 1\n"
+                   "Sub _x _y\n"
+                   "While _x >= _one\n"
+                       "Add _res _one\n"
+                       "Sub _x _y\n"
+                   "End\n");
+    addSynthComp(spec, synth, gadgets);
+}
+
 char* findComponents(Gadgets gadgets) {
     char* components = malloc(gadgets.numArithOpGadgets * 4 * 3 + 1);  // Max 3 char op with comma
     components[0] = '\0';
@@ -26,6 +57,17 @@ char* findComponents(Gadgets gadgets) {
     }
     // printf("%s\n",components);
     return components;
+}
+
+// Create prog spec without constants to check whether static exists
+char* checkStatic(ArithOp inst, Vars* vars, Gadgets gadgets) {
+    // for single inst will be var,var/const,op 0 1
+    char* spec = malloc(40);  // Guess at max size
+    spec[0] = '\0';
+    sprintf(spec,"Var,Var,%s 0 1",inst.op);
+    char* synth = getSynth(spec, gadgets);
+    free(spec);
+    return synth;
 }
 
 char* createProgSpec(ArithOp inst, Vars* vars) {
@@ -110,18 +152,52 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
     return pseudoInst;
 }
 
+char* replaceVars(char* synth, ArithOp inst, Vars* vars) {
+    char* setup = malloc(50 + strlen(inst.operand1) + strlen(inst.operand2));
+    sprintf(setup, 
+        "Const _x 0\n"
+        "Const _y 0\n"
+        "Copy _x %s\n"
+        "Copy _y %s\n",
+        inst.operand1,inst.operand2
+    );
+    char* finish = malloc(20 + strlen(inst.operand1));
+    sprintf(finish,
+        "Copy %s _res\n",
+        inst.operand1
+    );
+    char* completeSynth = malloc(strlen(synth) + strlen(setup) + strlen(finish) + 1);
+    sprintf(completeSynth,"%s%s%s",setup,synth,finish);
+    free(setup);
+    free(finish);
+    return completeSynth;
+}
+
 char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
+    char* staticSynth = checkStatic(inst, vars, gadgets);
+    if (staticSynth != NULL) {
+        char* synth = replaceVars(staticSynth, inst, vars);
+        return synth;
+    }
+    
     char* components = findComponents(gadgets);
     char* spec = createProgSpec(inst, vars);
     char* synth = getSynth(spec, gadgets);
     if (synth == NULL) {
         synth = run(components, spec);
+        if (strcmp(synth,"Error") == 0) {
+            free(spec);
+            free(components);
+            free(synth);
+            return NULL; // Synthesis failed
+        }
         addSynthComp(spec, synth, gadgets);
+        synth = parseNewProg(synth, inst, vars);
+    }
+    else {
+        free(spec);
+        synth = parseNewProg(synth, inst, vars);
     }
     free(components);
-    if (strcmp(synth,"Error") == 0) {
-        return NULL; // Synthesis failed
-    }
-    char* pseudoCode = parseNewProg(synth, inst, vars);
-    return pseudoCode;
+    return synth;
 }

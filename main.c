@@ -239,7 +239,7 @@ char* moveRegAnywhere(char* src, char** *usedRegsPtr, Vars* *varsPtr, Gadgets ga
                 strcpy(var->reg, moveGadget.operands[0]);
                 removeRegFromUsed(usedRegs, src, vars->count);
                 addRegToUsed(usedRegs, var->reg, vars->count);
-                return moveGadget.assembly;
+                return strdup(moveGadget.assembly);
         }
     }
     return NULL;
@@ -311,7 +311,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
         }
     }
     else {
-        moveAway = "";
+        moveAway = strdup("");
     }
 
     Vars* vars = *varsPtr;
@@ -328,6 +328,7 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             addRegToUsed(usedRegs, dest, vars->count);
             char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 6);
             sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);
+            free(moveAway);
             return assembly;
         }
     }
@@ -351,12 +352,14 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
                 free(possMove);
+                free(moveAway);
                 return assembly;
             }
             freeVars(tmpVars);
             freeUsedRegs(tmpUsedRegs, count);
         }
     }
+    free(moveAway);
     return NULL;
 }
 
@@ -374,7 +377,10 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
 
         char* clearReg;
         char* loadAddr;
-
+        char* moveData = moveReg(var, storeData, usedRegsPtr, varsPtr, gadgets);
+        vars = *varsPtr;
+        usedRegs = *usedRegsPtr;
+        var = findVar(varName, vars);
         if (used(storeAddr,usedRegs,vars->count)) {
             printf("Warning!\n");
             continue;
@@ -395,13 +401,13 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             vars = *varsPtr;
             strcpy(vars->vars[0]->reg, "new");
         }
-        char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
+        // char* moveData = moveReg(findVar(varName, vars), storeData, usedRegsPtr, varsPtr, gadgets);
         usedRegs = *usedRegsPtr;
         if (moveData != NULL){
             int len = strlen(storeGadget.assembly) + strlen(clearReg) + strlen(moveData) +
                     strlen(loadAddr) + 4;
             char* assembly = malloc(len);
-            snprintf(assembly, len, "%s\n%s\n%s\n%s",clearReg,loadAddr,moveData,
+            snprintf(assembly, len, "%s\n%s\n%s\n%s",moveData,clearReg,loadAddr,
                     storeGadget.assembly);
             Var* v = findVar(varName, vars);
             v->inMemory = true;
@@ -829,12 +835,12 @@ void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
             char* assembly = storeMem(v, &usedRegs, varsPtr, gadgets);
             if (assembly != NULL) {
                 printf("%s\n",assembly);
+                free(assembly);
             }
             else {
                 printf("Warning could not store\n");
             }
             freeUsedRegs(usedRegs, count);
-            free(assembly);
         }
     }
 }
@@ -878,6 +884,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                             findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
                             break;
                         case '*':
+                            findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
+                            break;
+                        case '/':
                             findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
                             break;
                         case '&':
@@ -1044,6 +1053,7 @@ int main(int argc, char *argv[]) {
     createPseudo(progLines, prog, vars, pseudoInst);
     // Read gadgets file
     Gadgets gadgets = loadGadgets();
+    staticSynthesis(gadgets);
     translatePseudo(progLines, &vars, pseudoInst, gadgets);
     printf("\n__Results__\n");
     for (int i = 1 ; i < vars->count ; i ++) {
