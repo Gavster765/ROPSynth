@@ -1,0 +1,151 @@
+
+pop rax (0)
+
+
+pop rcx (1001)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1)
+
+
+pop rcx (1002)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (0)
+
+
+pop rcx (1003)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (0)
+
+
+pop rcx (1005)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1)
+
+
+pop rcx (1006)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+
+pop rax (5)
+
+
+
+pop rcx (1008)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1005)
+mov rax, DWORD PTR[rax]
+mov rcx, rax
+
+
+pop rax (1008)
+mov rax, DWORD PTR[rax]
+
+
+sub rax, rcx
+
+pop rax (0)
+
+adc rax, rax
+
+neg rax
+
+
+pop rcx (2011)
+and rax, rcx
+
+
+add rsp, rax
+
+
+pop rax (1002)
+mov rax, DWORD PTR[rax]
+
+
+
+
+
+pop rcx (1003)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1002)
+mov rax, DWORD PTR[rax]
+
+
+
+
+
+pop rcx (1002)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1001)
+mov rax, DWORD PTR[rax]
+mov rbx, rax
+
+
+pop rax (1002)
+mov rax, DWORD PTR[rax]
+
+
+add rax, rbx
+
+
+
+pop rcx (1002)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1003)
+mov rax, DWORD PTR[rax]
+
+
+
+
+
+pop rcx (1001)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1005)
+mov rax, DWORD PTR[rax]
+
+
+
+
+
+pop rcx (1005)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+pop rax (1006)
+mov rax, DWORD PTR[rax]
+mov rbx, rax
+
+
+pop rax (1005)
+mov rax, DWORD PTR[rax]
+
+
+add rax, rbx
+
+
+
+pop rcx (1005)
+mov rbx, rcx
+mov DWORD PTR[rbx], rax
+
+
+pop rax (-2006)
+add rsp, rax

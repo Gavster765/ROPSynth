@@ -1,0 +1,33 @@
+Var num 1
+Const r1 0
+Const r2 0
+
+Var fizz 0
+Var buzz 0
+Var fizzbuzz 0
+
+Const n 30
+Const zero 0
+Const one 1
+Const three 3
+Const five 5
+
+While num <= n
+    Copy r1 num
+    Copy r2 num
+    Mod r1 three
+    Mod r2 five
+    
+    If r1 = zero
+        If r2 = zero
+            Add fizzbuzz one
+        Else 
+            Add fizz one
+        End
+    ElseIf r2 = zero
+        Add buzz one
+    End
+
+    Add num one
+End
+    
