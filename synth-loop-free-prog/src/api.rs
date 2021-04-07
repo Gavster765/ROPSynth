@@ -69,7 +69,7 @@ fn synthesize(
 ) -> Result<Program> {
     Synthesizer::new(context, library, spec)?
         // .set_timeout(Some(20000))//opts.timeout)
-        .set_timeout(Some(120000))//opts.timeout)
+        .set_timeout(Some(20000))//opts.timeout)
         .should_synthesize_minimal_programs(true)//opts.minimal)
         .synthesize()
 }
