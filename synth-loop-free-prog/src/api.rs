@@ -68,7 +68,8 @@ fn synthesize(
     library: &Library,
 ) -> Result<Program> {
     Synthesizer::new(context, library, spec)?
-        .set_timeout(Some(20000))//opts.timeout)
+        // .set_timeout(Some(20000))//opts.timeout)
+        .set_timeout(Some(120000))//opts.timeout)
         .should_synthesize_minimal_programs(true)//opts.minimal)
         .synthesize()
 }
@@ -84,6 +85,7 @@ fn synthesize_prog(context: &z3::Context, components: &str,
             "sub" => library.components.push(component::sub()),
             "xor" => library.components.push(component::xor()),
             "and" => library.components.push(component::and()),
+            "mul" => library.components.push(component::mul()),
             _ => println!("Unknown Component"),
         }
         // println!("{}", comp);
@@ -117,6 +119,11 @@ fn synthesize_prog(context: &z3::Context, components: &str,
                 let a: usize = operands[1].parse().unwrap();
                 let b: usize = operands[2].parse().unwrap();
                 vars.push(builder.mul(vars[a], vars[b]));
+            },
+            "Div" => {
+                let a: usize = operands[1].parse().unwrap();
+                let b: usize = operands[2].parse().unwrap();
+                vars.push(builder.div_s(vars[a], vars[b]));
             },
             "Xor" => {
                 let a: usize = operands[1].parse().unwrap();
