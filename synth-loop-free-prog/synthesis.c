@@ -9,6 +9,8 @@
 #include "./pseudo.h"
 #include "./utils.h"
 
+// Rules for finding replacements that require loops
+// Assumes operands are in _x and _y with result in _res
 void staticSynthesis(Gadgets gadgets) {
     // Multiplication by var
     char* spec = strdup("Var,"
@@ -32,8 +34,8 @@ void staticSynthesis(Gadgets gadgets) {
                    "Const _one 1\n"
                    "Sub _x _y\n"
                    "While _x >= _one\n"
-                   "Add _res _one\n"
-                   "Sub _x _y\n"
+                       "Add _res _one\n"
+                       "Sub _x _y\n"
                    "End\n");
     addSynthComp(spec, synth, gadgets);
 }
@@ -159,9 +161,15 @@ char* replaceVars(char* synth, ArithOp inst, Vars* vars) {
         "Copy _y %s\n",
         inst.operand1,inst.operand2
     );
-    char* completeSynth = malloc(strlen(synth) + strlen(setup) + 1);
-    sprintf(completeSynth,"%s%s",setup,synth);
+    char* finish = malloc(20 + strlen(inst.operand1));
+    sprintf(finish,
+        "Copy %s _res\n",
+        inst.operand1
+    );
+    char* completeSynth = malloc(strlen(synth) + strlen(setup) + strlen(finish) + 1);
+    sprintf(completeSynth,"%s%s%s",setup,synth,finish);
     free(setup);
+    free(finish);
     return completeSynth;
 }
 
