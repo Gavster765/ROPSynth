@@ -15,7 +15,8 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 
 // Read user program and parse into pseudo instructions
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
-    Comp *currIf;  // Currently open if - TODO nested?
+    Comp* *currIf = malloc(sizeof(Comp*)*5);
+    int currIfNum = -1; 
     bool loop = false;
 
     for (int i = 0 ; i < progLines ; i++){
@@ -99,19 +100,20 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .comp = c
                 };
                 pseudoInst[i] = p;
-                currIf = &pseudoInst[i].comp;
+                currIfNum++;
+                currIf[currIfNum] = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"ElseIf") == 0) {
                 updateLifespan(operandList[0], vars, i, loop);
                 updateLifespan(operandList[2], vars, i, loop);
-                currIf->end = i;
+                currIf[currIfNum]->end = i;
                 
                 Comp c = {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
                     .operand2 = operandList[2],
                     .end = i+1,  // Default end to next line
-                    .joinedIf = currIf
+                    .joinedIf = currIf[currIfNum]
                 };
                 
                 Pseudo p = {
@@ -120,15 +122,15 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 
                 pseudoInst[i] = p;
-                currIf = &pseudoInst[i].comp;
+                currIf[currIfNum] = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"Else") == 0) {
-                currIf->end = i;
+                currIf[currIfNum]->end = i;
                 
                 Comp c = {
                     .opcode = "",
                     .end = i+1,  // Default end to next line
-                    .joinedIf = currIf
+                    .joinedIf = currIf[currIfNum]
                 };
                 
                 Pseudo p = {
@@ -137,7 +139,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 
                 pseudoInst[i] = p;
-                currIf = &pseudoInst[i].comp;
+                currIf[currIfNum] = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"While") == 0) {
                 loop = true;
@@ -160,12 +162,13 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 };
                 
                 pseudoInst[i] = p;
-                currIf = &pseudoInst[i].comp;
+                currIfNum++;
+                currIf[currIfNum] = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"End") == 0) {
-                currIf->end = i;
+                currIf[currIfNum]->end = i;
                 // Set the finish point for all ifs in chain
-                Comp* prev = currIf->joinedIf;
+                Comp* prev = currIf[currIfNum]->joinedIf;
                 while (prev != NULL) {
                     prev->finish = i;
                     prev = prev->joinedIf;
@@ -174,7 +177,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 End e = {.loop = NULL};
                 if (loop) {
                     updateLoopVars(vars, i);
-                    e.loop = currIf;
+                    e.loop = currIf[currIfNum];
                     loop = false;
                 }
 
@@ -183,6 +186,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .end = e
                 };
                 pseudoInst[i] = p;
+                currIfNum--;
             }
             else if(strcmp(opcode, "Jump") == 0) {
                 updateLifespan(operandList[1], vars, i, loop);
@@ -219,6 +223,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             free(operandList);
             free(line);
         }
+    free(currIf);
 }
 
 // Attempt to free src by moving the store var anywhere it can
