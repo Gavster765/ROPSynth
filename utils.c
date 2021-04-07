@@ -15,6 +15,12 @@ void removeChars(char* str, char c) {
     *pw = '\0';
 }
 
+void removeLeadingSpaces(char** line) {   
+   int i; 
+   for(i = 0; (*line)[i] == ' '; i++) { }
+   *line += i;
+} 
+
 // Work out the registers used by the gadget
 int getGadgetOperands(char** operandList, char* operandString) {
     if (operandString == NULL) {

@@ -3,6 +3,7 @@
 #include "pseudo.h"
 
 void removeChars(char* str, char c);
+void removeLeadingSpaces(char** line); 
 
 int getGadgetOperands(char** operandList, char* operandString);
 int getOperands(char** operandList, char* operandString);

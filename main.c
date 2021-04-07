@@ -997,26 +997,30 @@ char** readProgram(char* fileName, int* length) {
     rewind(f);
 
     char** prog = malloc(*length * sizeof(char*));
-    enum { max = 100 };
-    char line[max];
+    int max = 100;
+    char* line = malloc(max);
+    char* lineStart = line;
     int lineNum = 0;
 
 
     fgets(line, max, f);
     while (!feof(f)) {
         line[strcspn(line, "\r\n")] = '\0';
+        removeLeadingSpaces(&line);
         // Skip blank lines
         if (strcmp(line, "") == 0) {
             (*length)--;
+            line = lineStart;
             fgets(line, max, f);
             continue;
         }
         prog[lineNum] = malloc(strlen(line)+1);
         strcpy(prog[lineNum], line);
         lineNum++;
+        line = lineStart;
         fgets(line, max, f);
     }
-
+    free(line);
     fclose(f);
     return prog;
 }
