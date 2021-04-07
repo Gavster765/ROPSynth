@@ -6,6 +6,6 @@ Const end 3
 Const one 1
 
 While i <= end
-    Div x y
+    Mul x y
     Add i one
 End
