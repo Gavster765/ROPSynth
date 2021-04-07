@@ -23,6 +23,19 @@ void staticSynthesis(Gadgets gadgets) {
                             "Add _count _one\n"
                          "End\n");
     addSynthComp(spec, synth, gadgets);
+    // Division by var
+    spec = strdup("Var,"
+                  "Var,"
+                  "Div 0 1");
+
+    synth = strdup("Var _res 0\n"
+                   "Const _one 1\n"
+                   "Sub _x _y\n"
+                   "While _x >= _one\n"
+                   "Add _res _one\n"
+                   "Sub _x _y\n"
+                   "End\n");
+    addSynthComp(spec, synth, gadgets);
 }
 
 char* findComponents(Gadgets gadgets) {
