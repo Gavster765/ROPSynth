@@ -879,7 +879,6 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         case '+':
                             findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
                             break;
-                        
                         case '-':
                             findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
                             break;
@@ -891,6 +890,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                             break;
                         case '&':
                             findVar(inst.operand1,vars)->value &= findVar(inst.operand2,vars)->value;
+                            break;
+                        case '%':
+                            findVar(inst.operand1,vars)->value %= findVar(inst.operand2,vars)->value;
                             break;
                     }
                 }

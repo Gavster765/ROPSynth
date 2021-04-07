@@ -155,6 +155,9 @@ char getArithOpChar(char* opcode) {
     else if(strcmp(opcode,"adc") == 0) {
         op = 'a';
     }
+    else if(strcmp(opcode,"mod") == 0) {
+        op = '%';
+    }
     opcode[0] = first;
     return op;
 }

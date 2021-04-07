@@ -32,11 +32,27 @@ void staticSynthesis(Gadgets gadgets) {
 
     synth = strdup("Var _res 0\n"
                    "Const _one 1\n"
+                   "Const _zero 0\n"
                    "Sub _x _y\n"
-                   "While _x >= _one\n"
+                   "While _x >= _zero\n"
                        "Add _res _one\n"
                        "Sub _x _y\n"
                    "End\n");
+    addSynthComp(spec, synth, gadgets);
+    // Modulus
+    spec = strdup("Var,"
+                  "Var,"
+                  "Mod 0 1");
+
+    synth = strdup("Const _res 0\n"
+                   "Const _one 1\n"
+                   "Const _zero 0\n"
+                   "Sub _x _y\n"
+                   "While _x >= _zero\n"
+                       "Sub _x _y\n"
+                   "End\n"
+                   "Add _x _y\n"
+                   "Copy _res _x\n");
     addSynthComp(spec, synth, gadgets);
 }
 
