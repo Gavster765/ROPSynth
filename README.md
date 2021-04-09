@@ -46,7 +46,7 @@ Conditionals:
 ```
 If <var> <comp op> <var> 
     code
-ElseIF <var> <comp op> <var>
+ElseIf <var> <comp op> <var>
     code
 Else
     code
