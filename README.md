@@ -21,7 +21,7 @@ Comparison Operators:
 
 `= < <= > >= `
 
-Binary operations:
+Operations:
 
 `Add <var> <var>`
 
@@ -34,6 +34,12 @@ Binary operations:
 `Mod <var> <var>`
 
 `Xor <var> <var>`
+
+`And <var> <var>`
+
+`Neg <var>`
+
+`Not <var>`
 
 Conditionals:
 
