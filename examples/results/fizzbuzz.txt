@@ -2,29 +2,25 @@
 pop rax (1)
 
 
-pop rcx (1001)
-mov rbx, rcx
+pop rbx (1001)
 mov DWORD PTR[rbx], rax
 
 pop rax (0)
 
 
-pop rcx (1004)
-mov rbx, rcx
+pop rbx (1004)
 mov DWORD PTR[rbx], rax
 
 pop rax (0)
 
 
-pop rcx (1005)
-mov rbx, rcx
+pop rbx (1005)
 mov DWORD PTR[rbx], rax
 
 pop rax (0)
 
 
-pop rcx (1006)
-mov rbx, rcx
+pop rbx (1006)
 mov DWORD PTR[rbx], rax
 
 
@@ -32,8 +28,7 @@ pop rax (30)
 
 
 
-pop rcx (1013)
-mov rbx, rcx
+pop rbx (1013)
 mov DWORD PTR[rbx], rax
 
 pop rax (1001)
@@ -68,8 +63,7 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (1002)
-mov rbx, rcx
+pop rbx (1002)
 mov DWORD PTR[rbx], rax
 
 pop rax (1001)
@@ -79,8 +73,7 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (1003)
-mov rbx, rcx
+pop rbx (1003)
 mov DWORD PTR[rbx], rax
 
 pop rax (1002)
@@ -95,8 +88,7 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
-mov rbx, rcx
+pop rbx (1012)
 mov DWORD PTR[rbx], rax
 
 
@@ -133,8 +125,7 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
-mov rbx, rcx
+pop rbx (1012)
 mov DWORD PTR[rbx], rax
 
 
@@ -147,20 +138,17 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (3)
-mov rbx, rcx
+pop rbx (3)
 add rax, rbx
 
 
 
-pop rcx (1012)
-mov rbx, rcx
+pop rbx (1012)
 mov DWORD PTR[rbx], rax
 
 
 
-pop rcx (1002)
-mov rbx, rcx
+pop rbx (1002)
 mov DWORD PTR[rbx], rax
 
 
@@ -176,8 +164,7 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
-mov rbx, rcx
+pop rbx (1012)
 mov DWORD PTR[rbx], rax
 
 
@@ -214,8 +201,7 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
-mov rbx, rcx
+pop rbx (1012)
 mov DWORD PTR[rbx], rax
 
 
@@ -228,20 +214,17 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (5)
-mov rbx, rcx
+pop rbx (5)
 add rax, rbx
 
 
 
-pop rcx (1012)
-mov rbx, rcx
+pop rbx (1012)
 mov DWORD PTR[rbx], rax
 
 
 
-pop rcx (1003)
-mov rbx, rcx
+pop rbx (1003)
 mov DWORD PTR[rbx], rax
 
 
@@ -300,14 +283,12 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (1)
-mov rbx, rcx
+pop rbx (1)
 add rax, rbx
 
 
 
-pop rcx (1006)
-mov rbx, rcx
+pop rbx (1006)
 mov DWORD PTR[rbx], rax
 
 
@@ -320,14 +301,12 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (1)
-mov rbx, rcx
+pop rbx (1)
 add rax, rbx
 
 
 
-pop rcx (1004)
-mov rbx, rcx
+pop rbx (1004)
 mov DWORD PTR[rbx], rax
 
 
@@ -369,15 +348,13 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (1)
-mov rbx, rcx
+pop rbx (1)
 add rax, rbx
 
 pop rax (1)
 
 
-pop rcx (1005)
-mov rbx, rcx
+pop rbx (1005)
 mov DWORD PTR[rbx], rax
 
 
@@ -386,13 +363,11 @@ mov rax, DWORD PTR[rax]
 
 
 
-pop rcx (1)
-mov rbx, rcx
+pop rbx (1)
 add rax, rbx
 
 pop rax (2)
 
 
-pop rcx (1001)
-mov rbx, rcx
+pop rbx (1001)
 mov DWORD PTR[rbx], rax

@@ -6,9 +6,13 @@ Issues:
   Moved load data to be first <- think this fixe?
 
 Report notes:
-mention stale vars
-gadgets that end in jumps not return? (jop)
-talk about fresh variables
+• mention stale vars
+• gadgets that end in jumps not return? (jop)
+• talk about fresh variables
+• gadgets that clobber unused registers not considered
+• movs directly to mem instead of mem gadget and mov <- maybe ?
+• mention rax vs eax
+
 
 TODO?:
 • Extend language to allow output via a syscall gadget
