@@ -455,45 +455,46 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         char* loadAddr = NULL;
         char* move;
         char* moveBack;
+        Vars* tmpVars = copyVars(*varsPtr);
 
         // Only gadgets have srcAddr = dest for now .. TODO
-        if (used(srcAddr,*usedRegsPtr,(*varsPtr)->count)) {
-            clearReg = moveRegAnywhere(srcAddr, usedRegsPtr, varsPtr, gadgets);
+        if (used(srcAddr,*usedRegsPtr,tmpVars->count)) {
+            clearReg = moveRegAnywhere(srcAddr, usedRegsPtr, &tmpVars, gadgets);
         }
         else {
             clearReg = strdup("");
         }
 
         if (clearReg != NULL) {
-            Var* v = findVar(varName,*varsPtr);
+            Var* v = findVar(varName,tmpVars);
             int value = v->value;
             v->value = v->memAddress;
-            loadAddr = loadConstValue(v, srcAddr, usedRegsPtr, varsPtr, gadgets);
-            v = findVar(varName,*varsPtr);
+            loadAddr = loadConstValue(v, srcAddr, usedRegsPtr, &tmpVars, gadgets);
+            v = findVar(varName, tmpVars);
             v->value = value;
         }
 
         if (loadAddr != NULL) {
-            var = findVar(varName, *varsPtr);
+            var = findVar(varName, tmpVars);
             strcpy(var->reg, loadDest);
             if (strcmp(dest,"any") == 0){
                 move = strdup("");
             } 
             else {
-                move = moveReg(var, dest, usedRegsPtr, varsPtr, gadgets);
+                move = moveReg(var, dest, usedRegsPtr, &tmpVars, gadgets);
             }
         }
         
-        if (noMove != NULL) {
-            Var* noMoveVar = findVar(noMoveVarName, *varsPtr);
-            var = findVar(varName, *varsPtr);
+        if (noMove != NULL &&  move != NULL) {
+            Var* noMoveVar = findVar(noMoveVarName, tmpVars);
+            var = findVar(varName, tmpVars);
             if (strcmp(noMoveVarReg, noMoveVar->reg) != 0){
                 // TODO - combine with prev move? so can make move safe
                 if (noMoveVar->inMemory) {
                     // Possible infinite recursion - consider NULL for var with clobber check?
-                    moveBack = loadMem(noMoveVar, noMoveVarReg, var, usedRegsPtr, varsPtr, gadgets);
+                    moveBack = loadMem(noMoveVar, noMoveVarReg, var, usedRegsPtr, &tmpVars, gadgets);
                 } else {
-                    moveBack = moveReg(noMoveVar, noMoveVarReg, usedRegsPtr, varsPtr, gadgets);
+                    moveBack = moveReg(noMoveVar, noMoveVarReg, usedRegsPtr, &tmpVars, gadgets);
                 }
             }
             else {
@@ -511,6 +512,9 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             char* assembly = malloc(len);
             snprintf(assembly, len, "%s\n%s\n%s\n%s\n%s",clearReg,loadAddr,
                     loadGadget.assembly,move,moveBack);
+            Vars* tmp = *varsPtr;
+            *varsPtr = tmpVars;
+            freeVars(tmp);
             free(clearReg);
             free(loadAddr);
             free(move);
@@ -518,6 +522,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             free(varName);
             return assembly;
         }
+        freeVars(tmpVars);
         free(clearReg);
         free(loadAddr);
         free(move);
