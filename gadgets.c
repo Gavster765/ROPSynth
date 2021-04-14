@@ -76,12 +76,12 @@ Gadgets loadGadgets(){
         }
         else if(strcmp(line,"loadMem") == 0){
             curr = loadMemGadgets;
-            type = SPECIAL;
+            type = LOAD_MEM;
             count = 0;
         }
         else if(strcmp(line,"special") == 0){
             curr = specialGadgets;
-            type = LOAD_MEM;
+            type = SPECIAL;
             count = 0;
         }
         else {
