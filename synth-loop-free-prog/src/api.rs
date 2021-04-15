@@ -130,6 +130,11 @@ fn synthesize_prog(context: &z3::Context, components: &str,
                 let b: usize = operands[2].parse().unwrap();
                 vars.push(builder.xor(vars[a], vars[b]));
             },
+            "Not" => {
+                let a: usize = operands[1].parse().unwrap();
+                vars.push(builder.const_(std::u64::MAX));
+                vars.push(builder.xor(vars[a], vars[vars.len()-1]));
+            }
             _ => println!("Unknown program line"),
         }
     }
