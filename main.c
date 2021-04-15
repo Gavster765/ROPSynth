@@ -443,6 +443,7 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         if (strcmp(dest,noMoveVarReg) == 0) {
             // Impossible since both vars need to be in same reg
             free(varName);
+            free(noMoveVarName);
             return NULL;
         }
     }
@@ -452,20 +453,27 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         char* loadDest = loadGadget.operands[0];
         char* srcAddr = loadGadget.operands[1];
         char* clearReg = NULL;
+        char* clearRegAddr = NULL;
         char* loadAddr = NULL;
         char* move;
         char* moveBack;
         Vars* tmpVars = copyVars(*varsPtr);
 
-        // Only gadgets have srcAddr = dest for now .. TODO
-        if (used(srcAddr,*usedRegsPtr,tmpVars->count)) {
-            clearReg = moveRegAnywhere(srcAddr, usedRegsPtr, &tmpVars, gadgets);
+        if (used(loadDest,*usedRegsPtr,tmpVars->count)) {
+            clearReg = moveRegAnywhere(loadDest, usedRegsPtr, &tmpVars, gadgets);
         }
         else {
             clearReg = strdup("");
         }
 
-        if (clearReg != NULL) {
+        if (used(srcAddr,*usedRegsPtr,tmpVars->count)) {
+            clearRegAddr = moveRegAnywhere(srcAddr, usedRegsPtr, &tmpVars, gadgets);
+        }
+        else {
+            clearRegAddr = strdup("");
+        }
+
+        if (clearReg != NULL && clearRegAddr != NULL) {
             Var* v = findVar(varName,tmpVars);
             int value = v->value;
             v->value = v->memAddress;
@@ -506,16 +514,17 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             moveBack = strdup("");
         }
         
-        if (clearReg != NULL && loadAddr != NULL && move != NULL && moveBack != NULL){
-            int len = strlen(loadGadget.assembly) + strlen(loadAddr) + strlen(clearReg) +
-                      strlen(move) + strlen(moveBack) + 5;
+        if (clearReg != NULL && clearRegAddr != NULL && loadAddr != NULL && move != NULL && moveBack != NULL){
+            int len = strlen(loadGadget.assembly) + strlen(loadAddr) + strlen(clearReg) + 
+                      strlen(clearRegAddr) + strlen(move) + strlen(moveBack) + 6;
             char* assembly = malloc(len);
-            snprintf(assembly, len, "%s\n%s\n%s\n%s\n%s",clearReg,loadAddr,
+            snprintf(assembly, len, "%s\n%s\n%s\n%s\n%s\n%s",clearReg,clearRegAddr,loadAddr,
                     loadGadget.assembly,move,moveBack);
             Vars* tmp = *varsPtr;
             *varsPtr = tmpVars;
             freeVars(tmp);
             free(clearReg);
+            free(clearRegAddr);
             free(loadAddr);
             free(move);
             free(moveBack);
@@ -524,11 +533,15 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         }
         freeVars(tmpVars);
         free(clearReg);
+        free(clearRegAddr);
         free(loadAddr);
         free(move);
         free(moveBack);
     }
     free(varName);
+    if (noMove != NULL) {
+        free(noMoveVarName);
+    }
     return NULL;
 }
 
