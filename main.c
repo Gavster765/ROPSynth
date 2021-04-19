@@ -1086,11 +1086,11 @@ int main(int argc, char *argv[]) {
     Gadgets gadgets = loadGadgets();
     staticSynthesis(gadgets);
     translatePseudo(progLines, &vars, pseudoInst, gadgets);
-    printf("\n__Results__\n");
-    for (int i = 1 ; i < vars->count ; i ++) {
-        Var* v = vars->vars[i];
-        printf("%s: %d\n",v->name,v->value);
-    }
+    // printf("\n__Results__\n");
+    // for (int i = 1 ; i < vars->count ; i ++) {
+    //     Var* v = vars->vars[i];
+    //     printf("%s: %d\n",v->name,v->value);
+    // }
     freeProg(prog, length);
     freeVars(vars);
     freeGadgets(gadgets);
