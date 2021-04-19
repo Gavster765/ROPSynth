@@ -316,10 +316,6 @@ pop rcx (1004)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (-2000)
-add rsp, rax
-
-
 pop rax (2024)
 add rsp, rax
 
@@ -359,7 +355,6 @@ mov rax, QWORD PTR[rax]
 pop rcx (1)
 add rax, rcx
 
-pop rax (1)
 
 
 pop rcx (1005)
@@ -375,8 +370,11 @@ mov rax, QWORD PTR[rax]
 pop rcx (1)
 add rax, rcx
 
-pop rax (2)
 
 
 pop rcx (1001)
 mov QWORD PTR[rcx], rax
+
+
+pop rax (-2011)
+add rsp, rax
