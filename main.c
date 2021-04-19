@@ -15,7 +15,8 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets);
 
 // Read user program and parse into pseudo instructions
 void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
-    Comp* *currIf = malloc(sizeof(Comp*)*5);
+    Comp* *currIf = malloc(sizeof(Comp*)*20);
+
     int currIfNum = -1; 
     bool loop = false;
 
@@ -215,9 +216,15 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             else if(strcmp(opcode, "Break") == 0) {                
                 Jump j = {
                     .dest = -1,
-                    .breakDest = &currIf[currIfNum]->finish,
                     .opcode = "_"
                 };
+
+                for (int c = currIfNum ; c >= 0 ; c--) {
+                    if (currIf[c]->loop) {
+                        j.breakDest = &currIf[c]->finish;
+                        break;
+                    }
+                }
 
                 Pseudo p = {
                     .type = JUMP,
@@ -996,6 +1003,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 Jump inst = pseudoInst[i].jump;
                 if (inst.dest == -1) {
                     inst.dest = *inst.breakDest + 2000;
+                }
+                else {
+                    inst.dest += 2000;
                 }
                 synthesizeJump(inst, vars, gadgets);
                 break;
