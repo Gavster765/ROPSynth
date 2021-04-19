@@ -34,7 +34,7 @@ int getGadgetOperands(char** operandList, char* operandString) {
     while(operand != NULL){
         removeChars(operand,' ');
         // For now ignore length of data read/written
-        int a = strspn(operand, "DWORDPTR[");
+        int a = strspn(operand, "QWORDPTR[");
         if (a == 9){
             memcpy(operand, operand+9, 3);
             operand[3] = '\0';
