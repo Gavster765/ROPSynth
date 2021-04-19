@@ -15,7 +15,7 @@ Variables:
 
 `Const <var> <value>`
 
-`Copy <var> <var>`
+`Copy <var> <var/value>`
 
 Comparison Operators:
 
