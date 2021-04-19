@@ -568,10 +568,11 @@ char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsP
 char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     Var* dest = findVar(inst.dest, vars);
+    int number;
     
-    // Copy number (must be hex 0x...)
-    if (inst.src[0] == '0') {
-        dest->value = (int)strtol(inst.dest, NULL, 0);
+    // Copy number
+    if (inst.src[0] == '0' || sscanf(inst.src,"%d", &number) == 1) {
+        dest->value = (int)strtol(inst.src, NULL, 0);
         strcpy(dest->reg, "new");
         dest->constant = true;
         dest->inMemory = false;
@@ -846,6 +847,7 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
         freeUsedRegs(usedRegs, tmpVars->count);
         freeVars(tmpVars);
     }
+    // TODO - call cegis on fail - e.g. for not
 }
 
 // Make sure all non constants are in memory so location is known
@@ -1084,11 +1086,11 @@ int main(int argc, char *argv[]) {
     Gadgets gadgets = loadGadgets();
     staticSynthesis(gadgets);
     translatePseudo(progLines, &vars, pseudoInst, gadgets);
-    // printf("\n__Results__\n");
-    // for (int i = 1 ; i < vars->count ; i ++) {
-    //     Var* v = vars->vars[i];
-    //     printf("%s: %d\n",v->name,v->value);
-    // }
+    printf("\n__Results__\n");
+    for (int i = 1 ; i < vars->count ; i ++) {
+        Var* v = vars->vars[i];
+        printf("%s: %d\n",v->name,v->value);
+    }
     freeProg(prog, length);
     freeVars(vars);
     freeGadgets(gadgets);
