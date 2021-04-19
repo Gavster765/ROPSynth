@@ -2,42 +2,34 @@
 pop rax (1)
 
 
-pop rbx (1001)
-mov DWORD PTR[rbx], rax
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
 
-pop rbx (1004)
-mov DWORD PTR[rbx], rax
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
 
-pop rbx (1005)
-mov DWORD PTR[rbx], rax
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
 
-pop rbx (1006)
-mov DWORD PTR[rbx], rax
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (30)
 
 
 
-pop rbx (1013)
-mov DWORD PTR[rbx], rax
-
-pop rax (1001)
-mov rax, DWORD PTR[rax]
-mov rcx, rax
-
-
-pop rax (1013)
-mov rax, DWORD PTR[rax]
+pop rdi (1001)
+mov rcx, QWORD PTR[rdi]
 
 
 sub rax, rcx
@@ -56,28 +48,31 @@ and rax, rcx
 add rsp, rax
 
 
-pop rax (1001)
-mov rax, DWORD PTR[rax]
-
-
-
-
-
-pop rbx (1002)
-mov DWORD PTR[rbx], rax
 
 pop rax (1001)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
 
 
-pop rbx (1003)
-mov DWORD PTR[rbx], rax
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
+
 
 pop rax (1002)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -88,12 +83,13 @@ sub rax, rcx
 
 
 
-pop rbx (1012)
-mov DWORD PTR[rbx], rax
+pop rcx (1012)
+mov QWORD PTR[rcx], rax
+
 
 
 pop rax (1012)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -115,8 +111,9 @@ and rax, rcx
 add rsp, rax
 
 
+
 pop rax (1012)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -125,35 +122,37 @@ sub rax, rcx
 
 
 
-pop rbx (1012)
-mov DWORD PTR[rbx], rax
+pop rcx (1012)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (-2008)
 add rsp, rax
 
 
+
 pop rax (1012)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (3)
-add rax, rbx
+pop rcx (3)
+add rax, rcx
 
 
 
-pop rbx (1012)
-mov DWORD PTR[rbx], rax
+pop rcx (1012)
+mov QWORD PTR[rcx], rax
 
 
 
-pop rbx (1002)
-mov DWORD PTR[rbx], rax
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+
 
 
 pop rax (1003)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -164,12 +163,13 @@ sub rax, rcx
 
 
 
-pop rbx (1012)
-mov DWORD PTR[rbx], rax
+pop rcx (1012)
+mov QWORD PTR[rcx], rax
+
 
 
 pop rax (1012)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -191,8 +191,9 @@ and rax, rcx
 add rsp, rax
 
 
+
 pop rax (1012)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -201,35 +202,37 @@ sub rax, rcx
 
 
 
-pop rbx (1012)
-mov DWORD PTR[rbx], rax
+pop rcx (1012)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (-2008)
 add rsp, rax
 
 
+
 pop rax (1012)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (5)
-add rax, rbx
+pop rcx (5)
+add rax, rcx
 
 
 
-pop rbx (1012)
-mov DWORD PTR[rbx], rax
+pop rcx (1012)
+mov QWORD PTR[rcx], rax
 
 
 
-pop rbx (1003)
-mov DWORD PTR[rbx], rax
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
+
 
 
 pop rax (1002)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -253,8 +256,9 @@ and rax, rcx
 add rsp, rax
 
 
+
 pop rax (1003)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -278,36 +282,38 @@ and rax, rcx
 add rsp, rax
 
 
+
 pop rax (1006)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (1)
-add rax, rbx
+pop rcx (1)
+add rax, rcx
 
 
 
-pop rbx (1006)
-mov DWORD PTR[rbx], rax
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (2021)
 add rsp, rax
 
 
+
 pop rax (1004)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (1)
-add rax, rbx
+pop rcx (1)
+add rax, rcx
 
 
 
-pop rbx (1004)
-mov DWORD PTR[rbx], rax
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (-2000)
@@ -318,8 +324,9 @@ pop rax (2024)
 add rsp, rax
 
 
+
 pop rax (1003)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
@@ -343,31 +350,33 @@ and rax, rcx
 add rsp, rax
 
 
+
 pop rax (1005)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (1)
-add rax, rbx
+pop rcx (1)
+add rax, rcx
 
 pop rax (1)
 
 
-pop rbx (1005)
-mov DWORD PTR[rbx], rax
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
+
 
 
 pop rax (1001)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (1)
-add rax, rbx
+pop rcx (1)
+add rax, rcx
 
 pop rax (2)
 
 
-pop rbx (1001)
-mov DWORD PTR[rbx], rax
+pop rcx (1001)
+mov QWORD PTR[rcx], rax

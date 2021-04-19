@@ -2,48 +2,40 @@
 pop rax (0)
 
 
-pop rbx (1001)
-mov DWORD PTR[rbx], rax
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
 
 pop rax (1)
 
 
-pop rbx (1002)
-mov DWORD PTR[rbx], rax
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
 
-pop rbx (1003)
-mov DWORD PTR[rbx], rax
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
 
-pop rbx (1005)
-mov DWORD PTR[rbx], rax
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
 
 pop rax (1)
 
 
-pop rbx (1006)
-mov DWORD PTR[rbx], rax
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (5)
 
 
 
-pop rbx (1008)
-mov DWORD PTR[rbx], rax
-
-pop rax (1005)
-mov rax, DWORD PTR[rax]
-mov rcx, rax
-
-
-pop rax (1008)
-mov rax, DWORD PTR[rax]
+pop rdi (1005)
+mov rcx, QWORD PTR[rdi]
 
 
 sub rax, rcx
@@ -62,77 +54,65 @@ and rax, rcx
 add rsp, rax
 
 
-pop rax (1002)
-mov rax, DWORD PTR[rax]
-
-
-
-
-
-pop rbx (1003)
-mov DWORD PTR[rbx], rax
 
 pop rax (1002)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
 
 
-pop rbx (1002)
-mov DWORD PTR[rbx], rax
-
-pop rax (1001)
-mov rax, DWORD PTR[rax]
-mov rbx, rax
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (1002)
-mov rax, DWORD PTR[rax]
-
-
-add rax, rbx
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (1002)
-mov DWORD PTR[rbx], rax
+
+
+pop rcx (1001)
+mov rdx, QWORD PTR[rcx]
+
+
+add rax, rdx
+
+
+
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+
 
 pop rax (1003)
-mov rax, DWORD PTR[rax]
+mov rax, QWORD PTR[rax]
 
 
 
 
 
-pop rbx (1001)
-mov DWORD PTR[rbx], rax
-
-pop rax (1005)
-mov rax, DWORD PTR[rax]
-
-
-
-
-
-pop rbx (1005)
-mov DWORD PTR[rbx], rax
-
-pop rax (1006)
-mov rax, DWORD PTR[rax]
-mov rbx, rax
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (1005)
-mov rax, DWORD PTR[rax]
-
-
-add rax, rbx
+mov rax, QWORD PTR[rax]
 
 
 
-pop rbx (1005)
-mov DWORD PTR[rbx], rax
+
+
+pop rcx (1006)
+mov rdx, QWORD PTR[rcx]
+
+
+add rax, rdx
+
+
+
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
 
 
 pop rax (-2006)
