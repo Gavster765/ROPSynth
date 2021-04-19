@@ -58,6 +58,8 @@ Loops:
 While <var> <comp op> <var>
     code
 End
+
+Break
 ```
 
 
