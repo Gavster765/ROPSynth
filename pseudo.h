@@ -25,6 +25,7 @@ typedef struct Comp {
     int end;  // Jump location if not true
     int finish;  // Jump location for end of if else chain
     struct Comp* joinedIf;
+    struct Comp* and;
 } Comp;
 
 typedef struct End {

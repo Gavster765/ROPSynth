@@ -24,7 +24,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             char* line = strdup(prog[i]);
             char* opcode = strtok(line, " ");
             char* operands = strtok(NULL, "");  // Save all operands
-            char** operandList = malloc(3*20);  // Max 3 operands at 20 chars each
+            char** operandList = calloc(6,20);  // Max 6 operands at 20 chars each
             getOperands(operandList, operands);
             if(strcmp(opcode,"Const") == 0){
                 Var* newVar = addVar(operandList[0], vars);
@@ -94,8 +94,22 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .operand2 = operandList[2],
                     .loop = false,
                     .end = i+1,  // Default end to next line
-                    .joinedIf = NULL
+                    .joinedIf = NULL,
+                    .and = NULL
                 };
+
+                if (operandList[3] != NULL && strcmp(operandList[3],"And") == 0) {
+                    Comp* and = malloc(sizeof(Comp));
+                    and->opcode = operandList[5];
+                    and->operand1 = operandList[4];
+                    and->operand2 = operandList[6];
+                    and->loop = true;
+                    and->start = i;
+                    and->end = i+1;  // Default end to next line
+                    and->joinedIf = NULL;
+                    and->and = NULL;
+                    c.and = and;
+                }
 
                 Pseudo p = {
                     .type = COMP,
@@ -116,8 +130,22 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .operand2 = operandList[2],
                     .loop = false,
                     .end = i+1,  // Default end to next line
-                    .joinedIf = currIf[currIfNum]
+                    .joinedIf = currIf[currIfNum],
+                    .and = NULL
                 };
+
+                if (operandList[3] != NULL && strcmp(operandList[3],"And") == 0) {
+                    Comp* and = malloc(sizeof(Comp));
+                    and->opcode = operandList[5];
+                    and->operand1 = operandList[4];
+                    and->operand2 = operandList[6];
+                    and->loop = true;
+                    and->start = i;
+                    and->end = i+1;  // Default end to next line
+                    and->joinedIf = NULL;
+                    and->and = NULL;
+                    c.and = and;
+                }
                 
                 Pseudo p = {
                     .type = COMP,
@@ -134,7 +162,8 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .opcode = "",
                     .loop = false,
                     .end = i+1,  // Default end to next line
-                    .joinedIf = currIf[currIfNum]
+                    .joinedIf = currIf[currIfNum],
+                    .and = NULL
                 };
                 
                 Pseudo p = {
@@ -158,9 +187,23 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .loop = true,
                     .start = i,
                     .end = i+1,  // Default end to next line
-                    .joinedIf = NULL
+                    .joinedIf = NULL,
+                    .and = NULL
                 };
                 
+                if (operandList[3] != NULL && strcmp(operandList[3],"And") == 0) {
+                    Comp* and = malloc(sizeof(Comp));
+                    and->opcode = operandList[5];
+                    and->operand1 = operandList[4];
+                    and->operand2 = operandList[6];
+                    and->loop = true;
+                    and->start = i;
+                    and->end = i+1;  // Default end to next line
+                    and->joinedIf = NULL;
+                    and->and = NULL;
+                    c.and = and;
+                }
+
                 Pseudo p = {
                     .type = COMP,
                     .comp = c
@@ -173,9 +216,17 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             else if(strcmp(opcode,"End") == 0) {
                 Comp* curr = currIf[currIfNum];
                 curr->end = i;
+                if (curr->and != NULL) {
+                    curr->and->finish = i;
+                    curr->and->end = i;
+                }
                 // Set the finish point for all ifs in chain
                 Comp* prev = curr->joinedIf;
                 while (prev != NULL) {
+                    if (prev->and != NULL) {
+                        prev->and->finish = i;
+                        prev->and->end = prev->end;
+                    }
                     prev->finish = i;
                     prev = prev->joinedIf;
                 }
@@ -965,14 +1016,13 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 storeAllVar(varsPtr, gadgets);
                 vars = *varsPtr;
                 // Jump over elseif/else if required
-                if(inst->joinedIf != NULL) {
+                if (inst->joinedIf != NULL) {
                     Jump j = {
                         .dest = 2000 + inst->joinedIf->finish,
                         .opcode = "_"
                     };
                     synthesizeJump(j, vars, gadgets);
                 } 
-
                 // No jump for else
                 if (strcmp(inst->opcode, "") != 0 ) {
                     Jump j = {
@@ -982,6 +1032,15 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         .operand2 = inst->operand2
                     };
                     synthesizeJump(j, vars, gadgets);
+                    if (inst->and != NULL) {
+                        Jump j2 = {
+                            .dest = inst->and->end + 2000,
+                            .opcode = inst->and->opcode,
+                            .operand1 = inst->and->operand1,
+                            .operand2 = inst->and->operand2
+                        };
+                        synthesizeJump(j2, vars, gadgets);
+                    }
                 }
                 break;
             }

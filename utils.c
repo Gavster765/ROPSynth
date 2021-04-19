@@ -253,6 +253,7 @@ void freePseudo(int progLines, Pseudo* pseudoInst) {
             case COMP: {
                 Comp inst = pseudoInst[i].comp;
                 free(inst.operand1);
+                free(inst.and);
                 break;
             }
             case COPY: {
