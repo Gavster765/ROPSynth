@@ -21,6 +21,8 @@ Comparison Operators:
 
 `= < <= > >= `
 
+`<comp> And <comp>`
+
 Operations:
 
 `Add <var> <var>`
