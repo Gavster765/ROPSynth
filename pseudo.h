@@ -20,6 +20,7 @@ typedef struct Comp {
     char* opcode;
     char* operand1;
     char* operand2;
+    bool loop;
     int start;  // Jump location for while loops
     int end;  // Jump location if not true
     int finish;  // Jump location for end of if else chain
@@ -37,6 +38,7 @@ typedef struct Copy {
 
 typedef struct Jump {
     int dest;
+    int* breakDest;
     char* opcode;
     char* operand1;
     char* operand2;

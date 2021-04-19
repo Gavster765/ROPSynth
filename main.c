@@ -91,6 +91,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
                     .operand2 = operandList[2],
+                    .loop = false,
                     .end = i+1,  // Default end to next line
                     .joinedIf = NULL
                 };
@@ -112,6 +113,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
                     .operand2 = operandList[2],
+                    .loop = false,
                     .end = i+1,  // Default end to next line
                     .joinedIf = currIf[currIfNum]
                 };
@@ -129,6 +131,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 
                 Comp c = {
                     .opcode = "",
+                    .loop = false,
                     .end = i+1,  // Default end to next line
                     .joinedIf = currIf[currIfNum]
                 };
@@ -151,6 +154,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                     .opcode = operandList[1],
                     .operand1 = operandList[0],
                     .operand2 = operandList[2],
+                    .loop = true,
                     .start = i,
                     .end = i+1,  // Default end to next line
                     .joinedIf = NULL
@@ -166,18 +170,20 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 currIf[currIfNum] = &pseudoInst[i].comp;
             }
             else if(strcmp(opcode,"End") == 0) {
-                currIf[currIfNum]->end = i;
+                Comp* curr = currIf[currIfNum];
+                curr->end = i;
                 // Set the finish point for all ifs in chain
-                Comp* prev = currIf[currIfNum]->joinedIf;
+                Comp* prev = curr->joinedIf;
                 while (prev != NULL) {
                     prev->finish = i;
                     prev = prev->joinedIf;
                 }
 
                 End e = {.loop = NULL};
-                if (loop) {
+                if (curr->loop) {
+                    curr->finish = i;
                     updateLoopVars(vars, i);
-                    e.loop = currIf[currIfNum];
+                    e.loop = curr;
                     loop = false;
                 }
 
@@ -194,9 +200,23 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 
                 Jump j = {
                     .dest = atoi(operandList[0]),
+                    .breakDest = NULL,
                     .opcode = operandList[2],
                     .operand1 = operandList[1],
                     .operand2 = operandList[3]
+                };
+
+                Pseudo p = {
+                    .type = JUMP,
+                    .jump = j
+                };
+                pseudoInst[i] = p;
+            }
+            else if(strcmp(opcode, "Break") == 0) {                
+                Jump j = {
+                    .dest = -1,
+                    .breakDest = &currIf[currIfNum]->finish,
+                    .opcode = "_"
                 };
 
                 Pseudo p = {
@@ -974,6 +994,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case JUMP: {
                 Jump inst = pseudoInst[i].jump;
+                if (inst.dest == -1) {
+                    inst.dest = *inst.breakDest + 2000;
+                }
                 synthesizeJump(inst, vars, gadgets);
                 break;
             }
