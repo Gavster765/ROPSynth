@@ -863,6 +863,23 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
             inst.dest,inst.operand1,inst.operand2
         );
     }
+    else if (strcmp(inst.opcode, "!=") == 0) {
+        lines = 10;
+        sprintf(progString,
+            "Const _0 0\n"
+            "Const _1 0\n"
+            "Const _2 %d\n"
+            "Copy _0 %s\n"
+            "Sub _0 %s\n"
+            "Neg _0\n"
+            "Adc _1 _1\n"
+            "Neg _1\n"
+            "Not _1\n"
+            "And _1 _2\n"
+            "Add _rsp _1\n",
+            inst.dest,inst.operand1,inst.operand2
+        );
+    }
     // Always jump
     else if (strcmp(inst.opcode, "_") == 0) {
         lines = 2;
