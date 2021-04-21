@@ -1,0 +1,4 @@
+Var x 42
+Var y 12
+
+Xor x y

@@ -1,0 +1,43 @@
+
+pop rax (1)
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
+
+pop rax (2)
+
+
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+
+pop rdi (1002)
+mov rcx, QWORD PTR[rdi]
+
+
+sub rax, rcx
+
+pop rax (0)
+
+adc rax, rax
+
+neg rax
+
+not rax
+
+
+pop rcx (2003)
+and rax, rcx
+
+
+add rsp, rax

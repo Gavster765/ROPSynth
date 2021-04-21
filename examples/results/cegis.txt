@@ -1,0 +1,103 @@
+
+pop rax (42)
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
+
+pop rax (12)
+
+
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
+
+
+pop rax (1002)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
+
+
+pop rax (1003)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+
+pop rdi (1004)
+mov rcx, QWORD PTR[rdi]
+
+
+and rax, rcx
+
+
+
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
+
+
+
+
+pop rcx (1005)
+mov rdx, QWORD PTR[rcx]
+
+
+add rax, rdx
+
+
+
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
+
+
+pop rax (1004)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+
+pop rdi (1006)
+mov rcx, QWORD PTR[rdi]
+
+
+sub rax, rcx
+
+
+
+pop rcx (1007)
+mov QWORD PTR[rcx], rax
+
+
+
+
+pop rcx (1003)
+mov rdx, QWORD PTR[rcx]
+
+
+add rax, rdx
+
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
