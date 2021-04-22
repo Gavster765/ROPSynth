@@ -49,6 +49,7 @@ Var* addVar(char* name, Vars* vars) {
     v->constant = true;
     v->inMemory = false;
     v->address = false;
+    v->noKill = false;
     v->memAddress = vars->count + 1000;
     strcpy(v->reg, "new");
     strcpy(v->name, name);
@@ -118,6 +119,7 @@ Vars* copyVars(Vars* vars){
         newVar->inMemory = var->inMemory;
         newVar->memAddress = var->memAddress;
         newVar->address = var->address;
+        newVar->noKill = var->noKill;
 
         copy->vars[i] = newVar;
     }
@@ -136,7 +138,10 @@ void freeVars(Vars* vars) {
 void deleteStaleVars(int line, Vars* vars) {
     for (int i = 0 ; i < vars->count ; i++) {
         Var* v = vars->vars[i];
-
+        
+        if (v->noKill) {
+            continue;
+        }
         if (v->lifeSpan == line || v->constant || v->inMemory){
             strcpy(v->reg, "new");
         }
