@@ -113,7 +113,9 @@ Gadgets loadGadgets(){
 
 void freeGadget(Gadget gadget) {
     free(gadget.assembly);
-    free(gadget.operands[0]);
+    if (gadget.numOperands > 0) {
+        free(gadget.operands[0]);
+    }
     free(gadget.operands);
     free(gadget.opcode);
 }

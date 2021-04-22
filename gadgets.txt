@@ -1,4 +1,4 @@
-4,6,1,1,3,2
+4,6,1,1,3,3
 
 loadConst
 pop rax
@@ -28,3 +28,4 @@ mov rdx, QWORD PTR[rcx]
 special
 neg rax
 not rax
+syscall
