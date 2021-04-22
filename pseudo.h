@@ -6,6 +6,7 @@
 typedef struct LoadConst {
     char* out;
     int value;
+    bool instLoad;
 } LoadConst;
 
 typedef struct ArithOp {
