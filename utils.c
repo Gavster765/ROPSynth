@@ -205,6 +205,12 @@ char getSpecialOpChar(char* opcode) {
     else if(strcmp(opcode,"not") == 0) {
         op = '!';
     }
+    else if(strcmp(opcode,"read") == 0) {
+        op = 'r';
+    }
+    else if(strcmp(opcode,"write") == 0) {
+        op = 'w';
+    }
     opcode[0] = first;
     return op;
 }
