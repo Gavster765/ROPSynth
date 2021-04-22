@@ -64,6 +64,14 @@ End
 Break
 ```
 
+Input/Output:
+
+Both operations operate on only a single byte from stdin/stdout respectively
+```
+Read <var> 
+
+Write <var>
+```
 
 ## References
 
