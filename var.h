@@ -11,6 +11,7 @@ typedef struct Var {
     bool constant;  // not changed so can be reloaded from stack at will
     bool inMemory;
     bool address;  // Marks placeholder variable 
+    bool noKill;
     int memAddress;
     char reg[4];
     char name[];
