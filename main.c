@@ -29,9 +29,11 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             if(strcmp(opcode,"Const") == 0){
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
+                newVar->value = atoi(operandList[1]);
                 LoadConst newConst = {
                     .out = operandList[0],
-                    .value = atoi(operandList[1])
+                    .value = atoi(operandList[1]),
+                    .instLoad = false
                 };
                 Pseudo p = {
                     .type = LOAD_CONST,
@@ -45,7 +47,29 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 newVar->constant = false;
                 LoadConst newConst = {
                     .out = operandList[0],
-                    .value = atoi(operandList[1])
+                    .value = atoi(operandList[1]),
+                    .instLoad = false
+                };
+                Pseudo p = {
+                    .type = LOAD_CONST,
+                    .loadConst = newConst
+                };
+                pseudoInst[i] = p;
+            }
+            else if(strcmp(opcode,"Load") == 0){
+                Var* newVar = addVar(operandList[0], vars);
+                newVar->lifeSpan = i+1;
+                newVar->constant = true;
+                newVar->noKill = true;
+                strcpy(newVar->reg,operandList[2]);
+                Var* copyVar = findVar(operandList[1],vars);
+                if (!copyVar->constant) {
+                    newVar->memAddress = copyVar->memAddress;
+                }
+                LoadConst newConst = {
+                    .out = operandList[0],
+                    .value = copyVar->value,
+                    .instLoad = true
                 };
                 Pseudo p = {
                     .type = LOAD_CONST,
@@ -643,6 +667,26 @@ char* checkRegisterPossible(Var* var, char* dest, Var* noMove, char** *usedRegsP
     return NULL;
 }
 
+// Make sure all non constants are in memory so location is known
+void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
+    int count = (*varsPtr)->count;
+    for (int i = 0 ; i < count ; i++) {
+        Var* v = (*varsPtr)->vars[i];
+        if (!v->constant && !v->inMemory) {
+            char** usedRegs = usedRegisters(*varsPtr);
+            char* assembly = storeMem(v, &usedRegs, varsPtr, gadgets);
+            if (assembly != NULL) {
+                printf("%s\n",assembly);
+                free(assembly);
+            }
+            else {
+                printf("Warning could not store\n");
+            }
+            freeUsedRegs(usedRegs, count);
+        }
+    }
+}
+
 char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     Var* dest = findVar(inst.dest, vars);
@@ -921,6 +965,119 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
     freePseudo(lines, progPseudoInst);
 }
 
+void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
+    char* syscallGadget = NULL;
+    for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
+        if (strcmp(gadgets.specialGadgets[i].opcode,"syscall") == 0) {
+            syscallGadget = gadgets.specialGadgets[i].assembly;
+            break;
+        }
+    }
+    if (syscallGadget == NULL) {
+        printf("No syscall gadget\n");
+        return;
+    }
+
+    storeAllVar(varsPtr, gadgets);
+
+    Vars* vars = *varsPtr;
+    Vars* tmpVars = copyVars(vars);
+    char* progString = malloc(200);  // TODO - actual size
+    int lines;
+    progString[0] = '\0';
+
+    int bufferLocation = findVar(inst.operand, tmpVars)->memAddress;
+    switch (inst.opcode) {
+        case 'r': {
+            lines = 7;
+            sprintf(progString,
+                "Const _0 0\n"
+                "Var _1 1\n"
+                "Const _2 %d\n"
+                "Load _rax _0 rax\n"
+                "Load _rdi _0 rdi\n"
+                "Load _rsi _2 rsi\n"
+                "Load _rdx _1 rdx\n",
+                bufferLocation
+            );
+            break;
+        }
+        case 'w': {
+            lines = 7;
+            sprintf(progString,
+                "Const _0 1\n"
+                "Var _1 1\n"
+                "Const _2 %d\n"
+                "Load _rax _0 rax\n"
+                "Load _rdi _0 rdi\n"
+                "Load _rsi _2 rsi\n"
+                "Load _rdx _1 rdx\n",
+                bufferLocation
+            );
+            break;
+        }
+        default: {
+            printf("Invalid syscall\n");
+            freeVars(tmpVars);
+            free(progString);
+            return;
+        }
+    }
+
+    // All non fresh vars should have lifespans longer than alt prog
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            tmpVars->vars[i]->lifeSpan = lines + 1;
+        }
+    }
+    char* prog[lines];
+    getProgLines(prog, progString);
+
+    Pseudo progPseudoInst[lines];
+    createPseudo(lines, prog, tmpVars, progPseudoInst);
+    translatePseudo(lines, &tmpVars, progPseudoInst, gadgets);
+    // Swap variables
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            Var* temp = vars->vars[i];
+            vars->vars[i] = tmpVars->vars[i];
+            vars->vars[i]->lifeSpan = temp->lifeSpan;  // Reset lifespan
+            tmpVars->vars[i] = temp;
+        }
+    }
+
+    printf("%s\n",syscallGadget);
+
+    free(progString);
+    freeVars(tmpVars);
+    freePseudo(lines, progPseudoInst);
+}
+
+void synthesizeSyscallOld(Special inst, Vars* *varsPtr, Gadgets gadgets) {
+    storeAllVar(varsPtr, gadgets); // Ensure all regs free
+
+    printf("%s %c %s\n",inst.op,inst.opcode,inst.operand);
+    char** usedRegs = usedRegisters(*varsPtr);
+    Var* tmpVar = (*varsPtr)->vars[0];
+    tmpVar->value = 0;
+    char* loadOp = loadConstValue(tmpVar, "rax", &usedRegs, varsPtr, gadgets);
+    char* loadFd = loadConstValue(tmpVar, "rdi", &usedRegs, varsPtr, gadgets);
+    tmpVar->value = findVar(inst.operand, *varsPtr)->memAddress;
+    char* loadBuf = loadConstValue(tmpVar, "rsi", &usedRegs, varsPtr, gadgets);
+    tmpVar->value = 1;
+    char* storeTmp =  storeMem(tmpVar, &usedRegs, varsPtr, gadgets);
+    tmpVar = (*varsPtr)->vars[0];
+
+    char* loadCount = loadConstValue(tmpVar, "rdx", &usedRegs, varsPtr, gadgets);
+    printf("%s %s %s %s %s\n",loadOp,loadFd,loadBuf,storeTmp,loadCount);
+    
+    freeUsedRegs(usedRegs,(*varsPtr)->count);
+    free(loadOp);
+    free(loadFd);
+    free(loadBuf);
+    free(loadCount);
+}
+
 void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
@@ -945,26 +1102,6 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     // TODO - call cegis on fail - e.g. for not
 }
 
-// Make sure all non constants are in memory so location is known
-void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
-    int count = (*varsPtr)->count;
-    for (int i = 0 ; i < count ; i++) {
-        Var* v = (*varsPtr)->vars[i];
-        if (!v->constant && !v->inMemory) {
-            char** usedRegs = usedRegisters(*varsPtr);
-            char* assembly = storeMem(v, &usedRegs, varsPtr, gadgets);
-            if (assembly != NULL) {
-                printf("%s\n",assembly);
-                free(assembly);
-            }
-            else {
-                printf("Warning could not store\n");
-            }
-            freeUsedRegs(usedRegs, count);
-        }
-    }
-}
-
 // Read list of pseudo instructions and write required asm
 void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets gadgets){
     for (int i = 0 ; i < progLines ; i++){
@@ -979,6 +1116,21 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                     char** usedRegs = usedRegisters(vars);
                     char* res = storeMem(v, &usedRegs, varsPtr, gadgets);
                     freeUsedRegs(usedRegs, (*varsPtr)->count);
+                    printf("%s\n",res);
+                    free(res);
+                }
+                else if (inst.instLoad) {
+                    char** usedRegs = usedRegisters(vars);
+                    // removeRegFromUsed(usedRegs, v->reg, (*varsPtr)->count);
+                    char* dest = strdup(v->reg);
+                    char* res = loadConstValue(v,dest,&usedRegs,varsPtr,gadgets);
+
+                    if (res == NULL) {
+                        res = loadMem(v, dest, NULL, &usedRegs, varsPtr, gadgets);
+                    }
+
+                    freeUsedRegs(usedRegs, (*varsPtr)->count);
+                    free(dest);
                     printf("%s\n",res);
                     free(res);
                 }
@@ -1088,19 +1240,36 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case SPECIAL: {
                 Special inst = pseudoInst[i].special;
-                synthesizeSpecial(inst, varsPtr, gadgets);
-                vars = *varsPtr;
-                Var* v = findVar(inst.operand,vars);
-                v->constant = false;    
+                switch (inst.opcode) {
+                    case 'r': {
+                        synthesizeSyscall(inst, varsPtr, gadgets);
+                        break;
+                    }
+                    case 'w': {
+                        synthesizeSyscall(inst, varsPtr, gadgets);
+                        break;
+                    }
+                    default: {
+                        synthesizeSpecial(inst, varsPtr, gadgets);
+                    }
+                }
+                Var* v = findVar(inst.operand,*varsPtr);
                 switch (inst.opcode) {
                     case '~': {
+                        v->constant = false;
                         v->value = ~v->value;
                         v->value ++;
                         break;
                     }
-                    case '!': 
+                    case '!': {
+                        v->constant = false;
                         v->value = ~v->value;
                         break;
+                    }
+                    case 'w': {
+                        v->constant = false;
+                        break;
+                    }
                 }
                 break;
             }
@@ -1184,6 +1353,7 @@ int main(int argc, char *argv[]) {
     addressVar->constant = true;
     addressVar->inMemory = false;
     addressVar->address = true;
+    addressVar->noKill = false;
 
     vars->vars[0] = addressVar;
     vars->count = 1;
