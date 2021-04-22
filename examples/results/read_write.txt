@@ -1,0 +1,46 @@
+
+pop rax (0)
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
+
+pop rax (0)
+
+pop rdi (0)
+
+pop rsi (1001)
+
+
+
+pop rcx (1003)
+mov rdx, QWORD PTR[rcx]
+
+
+syscall
+
+pop rax (1)
+
+
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+pop rdi (1)
+
+pop rsi (1001)
+
+
+
+pop rcx (1003)
+mov rdx, QWORD PTR[rcx]
+
+
+syscall
