@@ -691,10 +691,10 @@ void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
 char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
     Var* dest = findVar(inst.dest, vars);
-    int number;
+    int64_t number;
     
     // Copy number
-    if (inst.src[0] == '0' || sscanf(inst.src,"%d", &number) == 1) {
+    if (inst.src[0] == '0' || sscanf(inst.src,"%ld", &number) == 1) {
         dest->value = (int)strtol(inst.src, NULL, 0);
         strcpy(dest->reg, "new");
         dest->constant = true;
