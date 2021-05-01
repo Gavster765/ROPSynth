@@ -992,7 +992,7 @@ void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
             lines = 7;
             sprintf(progString,
                 "Const _0 0\n"
-                "Var _1 4\n"
+                "Var _1 8\n"
                 "Const _2 %d\n"
                 "Load _rax _0 rax\n"
                 "Load _rdi _0 rdi\n"
@@ -1006,7 +1006,7 @@ void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
             lines = 7;
             sprintf(progString,
                 "Const _0 1\n"
-                "Var _1 4\n"
+                "Var _1 8\n"
                 "Const _2 %d\n"
                 "Load _rax _0 rax\n"
                 "Load _rdi _0 rdi\n"
