@@ -33,7 +33,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 newVar->value = atol(operandList[1]);
                 LoadConst newConst = {
                     .out = operandList[0],
-                    .value = atoi(operandList[1]),
+                    .value = atol(operandList[1]),
                     .instLoad = false
                 };
                 Pseudo p = {
@@ -372,14 +372,14 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
             return NULL;
         }
         assembly = malloc(strlen(gadgets.moveRegGadgets[0].assembly) +
-                          strlen(moveExisting) + sizeof(int64_t) + 2);
+                          strlen(moveExisting) + sizeof(int64_t) + 20);
         assembly[0] = '\0';    
         strcat(assembly,moveExisting);
         strcat(assembly,"\n");
         free(moveExisting);
     }
     else {
-        assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + sizeof(int64_t) + 2);
+        assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + sizeof(int64_t) + 20);
         assembly[0] = '\0';    
     }
     if (strcmp(var->reg, "new") == 0) {
