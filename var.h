@@ -2,10 +2,11 @@
 #define VAR_H
 
 #include <stdbool.h>
+#include <inttypes.h>
 
 // Consider changing data structure
 typedef struct Var {
-    int value;
+    int64_t value;
     int lifeSpan;  // from this line on don't need var
     bool loop;  // used inside loop so don't kill until loop end
     bool constant;  // not changed so can be reloaded from stack at will

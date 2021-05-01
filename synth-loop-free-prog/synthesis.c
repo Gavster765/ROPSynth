@@ -94,7 +94,7 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
 
     Var* b = findVar(inst.operand2, vars);
     if (b->constant) {
-        sprintf(spec, "%sConst %d,",spec,b->value);
+        sprintf(spec, "%sConst %ld,",spec,b->value);
     }
     else {
         strcat(spec,"Var,");

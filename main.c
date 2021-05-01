@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include "gadgets.h"
 #include "utils.h"
@@ -29,7 +30,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             if(strcmp(opcode,"Const") == 0){
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
-                newVar->value = atoi(operandList[1]);
+                newVar->value = atol(operandList[1]);
                 LoadConst newConst = {
                     .out = operandList[0],
                     .value = atoi(operandList[1]),
@@ -47,7 +48,7 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 newVar->constant = false;
                 LoadConst newConst = {
                     .out = operandList[0],
-                    .value = atoi(operandList[1]),
+                    .value = atol(operandList[1]),
                     .instLoad = false
                 };
                 Pseudo p = {
@@ -371,14 +372,14 @@ char* moveReg(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, Gadgets
             return NULL;
         }
         assembly = malloc(strlen(gadgets.moveRegGadgets[0].assembly) +
-                          strlen(moveExisting) + sizeof(int) + 2);
+                          strlen(moveExisting) + sizeof(int64_t) + 2);
         assembly[0] = '\0';    
         strcat(assembly,moveExisting);
         strcat(assembly,"\n");
         free(moveExisting);
     }
     else {
-        assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + sizeof(int) + 2);
+        assembly = malloc(2 * strlen(gadgets.moveRegGadgets[0].assembly) + sizeof(int64_t) + 2);
         assembly[0] = '\0';    
     }
     if (strcmp(var->reg, "new") == 0) {
@@ -433,8 +434,8 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
         if (strcmp(loadGadget.operands[0],dest) == 0){
             strcpy(var->reg, dest);
             addRegToUsed(usedRegs, dest, vars->count);
-            char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int) + 6);
-            sprintf(assembly, "%s\n%s (%d)",moveAway,loadGadget.assembly,var->value);
+            char* assembly = malloc(strlen(moveAway) + strlen(loadGadget.assembly) + sizeof(int64_t) + 20);
+            sprintf(assembly, "%s\n%s (%ld)",moveAway,loadGadget.assembly,var->value);
             free(moveAway);
             return assembly;
         }
@@ -452,10 +453,10 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
             if (possMove != NULL){
                 *varsPtr = tmpVars;
                 *usedRegsPtr = tmpUsedRegs;
-                int len = strlen(moveAway) + strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int) + 6;
+                int len = strlen(moveAway) + strlen(loadGadget.assembly) + strlen(possMove) + sizeof(int64_t) + 20;
                 char* assembly = malloc(len);
                 assembly[0] = '\0';
-                snprintf(assembly, len, "%s\n%s (%d)\n%s", moveAway, loadGadget.assembly, tmpVar->value, possMove);
+                snprintf(assembly, len, "%s\n%s (%ld)\n%s", moveAway, loadGadget.assembly, tmpVar->value, possMove);
                 freeVars(vars);
                 freeUsedRegs(usedRegs, count);
                 free(possMove);

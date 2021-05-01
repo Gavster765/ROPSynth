@@ -2,10 +2,11 @@
 #define PSEUDO_H
 
 #include "gadgets.h"
+#include <inttypes.h>
 
 typedef struct LoadConst {
     char* out;
-    int value;
+    int64_t value;
     bool instLoad;
 } LoadConst;
 
