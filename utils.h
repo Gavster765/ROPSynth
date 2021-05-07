@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <inttypes.h>
 #include "var.h"
 #include "pseudo.h"
 
@@ -7,6 +8,7 @@ void removeLeadingSpaces(char** line);
 
 int getGadgetOperands(char** operandList, char* operandString);
 int getOperands(char** operandList, char* operandString);
+int64_t getVarValue(char* valStr);
 
 int getProgLines(char** progList, char* progString);
 

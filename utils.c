@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <math.h>
 #include "utils.h"
 
 // Remove all occurrences of c from str
@@ -62,6 +63,22 @@ int getOperands(char** operandList, char* operandString) {
         operand = strtok(NULL, " ");
     }
     return numOperands;
+}
+
+int64_t getVarValue(char* valStr) {
+    if ((valStr[0] >= '0' && valStr[0] <= '9') || valStr[0 == '-']) {
+        return atol(valStr);
+    }
+    // String
+    else {
+        int len = strlen(valStr);
+        int64_t total = 0;
+        for (int i = 0 ; i < len ; i++) {
+            total += (int)valStr[i] * pow(2,8*(len-i-1));
+        }
+        return total;
+    }
+
 }
 
 int getProgLines(char** progList, char* progString) {

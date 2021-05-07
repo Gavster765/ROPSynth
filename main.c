@@ -30,10 +30,11 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
             if(strcmp(opcode,"Const") == 0){
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
-                newVar->value = atol(operandList[1]);
+                int64_t value = getVarValue(operandList[1]);
+                newVar->value = value;
                 LoadConst newConst = {
                     .out = operandList[0],
-                    .value = atol(operandList[1]),
+                    .value = value,
                     .instLoad = false
                 };
                 Pseudo p = {
