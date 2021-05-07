@@ -218,26 +218,13 @@ char* replaceVars(char* synth, ArithOp inst, Vars* vars) {
 }
 
 char* findAlternative(Pseudo instr, Vars* vars, Gadgets gadgets) {
-    if (instr.type == SPECIAL) {
-        // printf("test\n");
-        char* components = findComponents(gadgets);
-        char* spec = createProgSpec(instr, vars);
-        char* synth = run(components, spec);
-        // printf("%s\n",synth);
-        char* prog = parseNewProg(synth, instr, vars);
-        // printf("%s\n",synth);
-        free(synth);
-        free(spec);
-        free(components);
-        return prog;
-
-    }
-
-    ArithOp inst = instr.arithOp;
-    char* staticSynth = checkStatic(inst, vars, gadgets);
-    if (staticSynth != NULL) {
-        char* synth = replaceVars(staticSynth, inst, vars);
-        return synth;
+    // Check for static
+    if (instr.type == ARITH_OP) {
+        char* staticSynth = checkStatic(instr.arithOp, vars, gadgets);
+        if (staticSynth != NULL) {
+            char* synth = replaceVars(staticSynth, instr.arithOp, vars);
+            return synth;
+        }
     }
     
     char* components = findComponents(gadgets);
