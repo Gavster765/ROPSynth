@@ -4,6 +4,6 @@
 // Linked rust function
 char* run(char* components, char* program);
 
-char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets);
+char* findAlternative(Pseudo inst, Vars* vars, Gadgets gadgets);
 
 void staticSynthesis(Gadgets gadgets);

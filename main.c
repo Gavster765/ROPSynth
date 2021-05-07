@@ -783,7 +783,11 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     }
     // Couldn't find gadget so try to find alternative
     Vars* tmpVars = copyVars(vars);
-    char* alt = findAlternative(inst, tmpVars, gadgets);
+    Pseudo p = {
+        .type = ARITH_OP,
+        .arithOp = inst
+    };
+    char* alt = findAlternative(p, tmpVars, gadgets);
     if (alt == NULL) {
         freeVars(tmpVars);
         return -1;  // Synthesis failed
@@ -1101,7 +1105,50 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
         freeUsedRegs(usedRegs, tmpVars->count);
         freeVars(tmpVars);
     }
-    // TODO - call cegis on fail - e.g. for not
+    
+    // Couldn't find gadget so try to find alternative
+    vars = *varsPtr;
+    Vars* tmpVars = copyVars(vars);
+    Pseudo p = {
+        .type = SPECIAL,
+        .special = inst
+    };
+    char* alt = findAlternative(p, tmpVars, gadgets);
+    if (alt == NULL) {
+        freeVars(tmpVars);
+        return;  // Synthesis failed
+    }
+
+    int lines = 0;
+    for (int i = 0 ; i < strlen(alt) ; i++) {
+        if (alt[i] == '\n'){
+            lines++;
+        }
+    }
+
+    // All non fresh vars should have lifespans longer than alt prog
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            tmpVars->vars[i]->lifeSpan = lines + 1;
+        }
+    }
+    char* altProg[lines];
+    getProgLines(altProg, alt);
+    Pseudo altPseudoInst[lines];
+    createPseudo(lines, altProg, tmpVars, altPseudoInst);
+    translatePseudo(lines, &tmpVars, altPseudoInst, gadgets);
+    // Swap variables
+    for (int i = 0 ; i < tmpVars->count ; i ++) {
+        if (tmpVars->vars[i]->name[0] != '_') {
+            Var* temp = vars->vars[i];
+            (*varsPtr)->vars[i] = tmpVars->vars[i];
+            (*varsPtr)->vars[i]->lifeSpan = temp->lifeSpan;  // Reset lifespan
+            tmpVars->vars[i] = temp;
+        }
+    }
+    free(alt);
+    freeVars(tmpVars);
+    freePseudo(lines, altPseudoInst);
 }
 
 // Read list of pseudo instructions and write required asm

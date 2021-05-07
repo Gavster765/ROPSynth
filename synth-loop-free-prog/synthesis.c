@@ -86,8 +86,18 @@ char* checkStatic(ArithOp inst, Vars* vars, Gadgets gadgets) {
     return synth;
 }
 
-char* createProgSpec(ArithOp inst, Vars* vars) {
+char* createProgSpec(Pseudo instr, Vars* vars) {
     // for single inst will be var,var/const,op 0 1
+    if (instr.type == SPECIAL) {
+        char* spec = malloc(40);  // Guess at max size
+        spec[0] = '\0';
+        strcat(spec,"Var,");
+        strcat(spec, instr.special.op);
+        strcat(spec, " 0");
+        return spec;
+    }
+
+    ArithOp inst = instr.arithOp;
     char* spec = malloc(40);  // Guess at max size
     spec[0] = '\0';
     strcat(spec,"Var,");
@@ -105,13 +115,31 @@ char* createProgSpec(ArithOp inst, Vars* vars) {
     return spec;
 }
 
-char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
+char* parseNewProg(char* prog, Pseudo inst, Vars* vars) {
     char* pseudoInst = malloc(strlen(prog)+100); // TODO calculate actual length
     pseudoInst[0] = '\0';
     char* varName = malloc(2);
     char* freshName = malloc(3);
     char* newInst = malloc(30);
     bool firstVar = true;
+    
+    char* op1;
+    char* op2;
+    switch (inst.type){
+    case ARITH_OP: {
+        op1 = inst.arithOp.operand1;
+        op2 = inst.arithOp.operand2;
+        break;
+    }
+    
+    case SPECIAL: {
+        op1 = inst.special.operand;
+        break;
+    }
+
+    default :
+        break;
+    }
 
     char* curr = prog;
     while (curr) {
@@ -137,11 +165,11 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
 
         if (strcmp("Var",opcode) == 0) {
             if (firstVar) {
-                sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,inst.operand1);
+                sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,op1);
                 firstVar = false;
             }
             else {
-                sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,inst.operand2);
+                sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,op2);
             }
             // strcat(pseudoInst,"Copy");
         }
@@ -161,7 +189,7 @@ char* parseNewProg(char* prog, ArithOp inst, Vars* vars) {
         }
         free(operandList);
     }
-    sprintf(pseudoInst,"%sCopy %s _%s\n",pseudoInst,inst.operand1,varName);
+    sprintf(pseudoInst,"%sCopy %s _%s\n",pseudoInst,op1,varName);
     free(varName);
     free(freshName);
     free(newInst);
@@ -189,7 +217,23 @@ char* replaceVars(char* synth, ArithOp inst, Vars* vars) {
     return completeSynth;
 }
 
-char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
+char* findAlternative(Pseudo instr, Vars* vars, Gadgets gadgets) {
+    if (instr.type == SPECIAL) {
+        // printf("test\n");
+        char* components = findComponents(gadgets);
+        char* spec = createProgSpec(instr, vars);
+        char* synth = run(components, spec);
+        // printf("%s\n",synth);
+        char* prog = parseNewProg(synth, instr, vars);
+        // printf("%s\n",synth);
+        free(synth);
+        free(spec);
+        free(components);
+        return prog;
+
+    }
+
+    ArithOp inst = instr.arithOp;
     char* staticSynth = checkStatic(inst, vars, gadgets);
     if (staticSynth != NULL) {
         char* synth = replaceVars(staticSynth, inst, vars);
@@ -197,7 +241,7 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
     }
     
     char* components = findComponents(gadgets);
-    char* spec = createProgSpec(inst, vars);
+    char* spec = createProgSpec(instr, vars);
     char* synth = getSynth(spec, gadgets);
     if (synth == NULL) {
         synth = run(components, spec);
@@ -208,11 +252,11 @@ char* findAlternative(ArithOp inst, Vars* vars, Gadgets gadgets) {
             return NULL; // Synthesis failed
         }
         addSynthComp(spec, synth, gadgets);
-        synth = parseNewProg(synth, inst, vars);
+        synth = parseNewProg(synth, instr, vars);
     }
     else {
         free(spec);
-        synth = parseNewProg(synth, inst, vars);
+        synth = parseNewProg(synth, instr, vars);
     }
     free(components);
     return synth;
