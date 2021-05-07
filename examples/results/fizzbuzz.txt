@@ -8,23 +8,36 @@ mov QWORD PTR[rcx], rax
 pop rax (0)
 
 
-pop rcx (1004)
+pop rcx (1011)
+mov QWORD PTR[rcx], rax
+
+pop rax (8)
+
+
+pop rcx (1013)
 mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
+pop rdi (0)
 
-pop rcx (1005)
-mov QWORD PTR[rcx], rax
-
-pop rax (0)
+pop rsi (1011)
 
 
-pop rcx (1006)
-mov QWORD PTR[rcx], rax
+
+pop rcx (1013)
+mov rdx, QWORD PTR[rcx]
 
 
-pop rax (30)
+syscall
+
+
+
+pop rax (1011)
+mov rax, QWORD PTR[rax]
+
+
+
 
 
 
@@ -41,7 +54,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2026)
+pop rcx (2029)
 and rax, rcx
 
 
@@ -249,7 +262,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2022)
+pop rcx (2023)
 and rax, rcx
 
 
@@ -275,48 +288,70 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2019)
+pop rcx (2020)
 and rax, rcx
 
 
 add rsp, rax
 
+pop rax (8)
 
 
-pop rax (1006)
-mov rax, QWORD PTR[rax]
+pop rcx (1013)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+pop rdi (1)
+
+pop rsi (1006)
 
 
 
-pop rcx (1)
-add rax, rcx
+pop rcx (1013)
+mov rdx, QWORD PTR[rcx]
 
+
+syscall
+
+pop rax (0)
 
 
 pop rcx (1006)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (2021)
+pop rax (2022)
 add rsp, rax
 
+pop rax (8)
 
 
-pop rax (1004)
-mov rax, QWORD PTR[rax]
+pop rcx (1013)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+pop rdi (1)
+
+pop rsi (1004)
 
 
 
-pop rcx (1)
-add rax, rcx
+pop rcx (1013)
+mov rdx, QWORD PTR[rcx]
 
+
+syscall
+
+pop rax (0)
 
 
 pop rcx (1004)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (2024)
+pop rax (2027)
 add rsp, rax
 
 
@@ -339,26 +374,61 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2024)
+pop rcx (2025)
 and rax, rcx
 
 
 add rsp, rax
 
+pop rax (8)
 
 
-pop rax (1005)
-mov rax, QWORD PTR[rax]
+pop rcx (1013)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+pop rdi (1)
+
+pop rsi (1005)
 
 
 
-pop rcx (1)
-add rax, rcx
+pop rcx (1013)
+mov rdx, QWORD PTR[rcx]
 
+
+syscall
+
+pop rax (0)
 
 
 pop rcx (1005)
 mov QWORD PTR[rcx], rax
+
+
+pop rax (2027)
+add rsp, rax
+
+pop rax (8)
+
+
+pop rcx (1013)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+pop rdi (1)
+
+pop rsi (1001)
+
+
+
+pop rcx (1013)
+mov rdx, QWORD PTR[rcx]
+
+
+syscall
 
 
 
@@ -376,5 +446,5 @@ pop rcx (1001)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (-2011)
+pop rax (-2012)
 add rsp, rax

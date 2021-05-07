@@ -5,7 +5,7 @@ pop rax (0)
 pop rcx (1001)
 mov QWORD PTR[rcx], rax
 
-pop rax (1)
+pop rax (8)
 
 
 pop rcx (1003)
@@ -25,7 +25,7 @@ mov rdx, QWORD PTR[rcx]
 
 syscall
 
-pop rax (1)
+pop rax (8)
 
 
 pop rcx (1003)
