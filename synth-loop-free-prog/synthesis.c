@@ -67,11 +67,15 @@ char* findComponents(Gadgets gadgets) {
             // sprintf(components, "%s%s,",components,op.opcode);
         }
     }
+    for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
+        Gadget op = gadgets.specialGadgets[i];
+        sprintf(components, "%s%s,",components,op.opcode);
+    }
     int len = strlen(components);
     if (components[len-1] == ',') {
         components[len-1] = '\0';  // Remove trailing comma
     }
-    // printf("%s\n",components);
+    printf("%s\n",components);
     return components;
 }
 
@@ -177,8 +181,14 @@ char* parseNewProg(char* prog, Pseudo inst, Vars* vars) {
             sprintf(pseudoInst,"%sCopy _%s %s\n",pseudoInst,varName,operandList[0]);
         }
         else {
-            sprintf(pseudoInst,"%sCopy _%s _%s\n",pseudoInst,varName,operandList[0]);
-            sprintf(pseudoInst,"%s%s _%s _%s\n",pseudoInst,opcode,varName,operandList[1]);
+            if (num == 1) {
+                sprintf(pseudoInst,"%sCopy _%s _%s\n",pseudoInst,varName,operandList[0]);
+                sprintf(pseudoInst,"%s%s _%s\n",pseudoInst,opcode,varName);
+            }
+            else {
+                sprintf(pseudoInst,"%sCopy _%s _%s\n",pseudoInst,varName,operandList[0]);
+                sprintf(pseudoInst,"%s%s _%s _%s\n",pseudoInst,opcode,varName,operandList[1]);
+            }
             // printf("%s %s %s\n",opcode,operandList[0],operandList[1]);
         }
 

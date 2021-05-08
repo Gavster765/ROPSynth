@@ -87,14 +87,13 @@ fn synthesize_prog(context: &z3::Context, components: &str,
             "and" => library.components.push(component::and()),
             "mul" => library.components.push(component::mul()),
             "not" => library.components.push(component::not()),
-            "meg" => library.components.push(component::neg()),
+            "neg" => library.components.push(component::neg()),
+            "syscall" => (),
             _ => println!("Unknown Component"),
         }
         // println!("{}", comp);
     }
-    library.components.push(component::select());
-    library.components.push(component::not());
-    library.components.push(component::neg());
+    // library.components.push(component::select());
     library.components.push(component::const_(Some(0)));
     library.components.push(component::const_(Some(1)));
     library.components.push(component::const_(Some(std::u64::MAX)));
