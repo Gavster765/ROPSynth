@@ -90,6 +90,7 @@ fn synthesize_prog(context: &z3::Context, components: &str,
         }
         // println!("{}", comp);
     }
+    library.components.push(component::select());
     library.components.push(component::const_(Some(0)));
     library.components.push(component::const_(Some(1)));
     library.components.push(component::const_(Some(std::u64::MAX)));
@@ -115,6 +116,16 @@ fn synthesize_prog(context: &z3::Context, components: &str,
         match operands[0] {
             "Var" => vars.push(builder.var()),
             "Const" => vars.push(builder.const_(operands[1].parse().unwrap())),
+            "Add" => {
+                let a: usize = operands[1].parse().unwrap();
+                let b: usize = operands[2].parse().unwrap();
+                vars.push(builder.add(vars[a], vars[b]));
+            },
+            "Sub" => {
+                let a: usize = operands[1].parse().unwrap();
+                let b: usize = operands[2].parse().unwrap();
+                vars.push(builder.sub(vars[a], vars[b]));
+            },
             "Mul" => {
                 let a: usize = operands[1].parse().unwrap();
                 let b: usize = operands[2].parse().unwrap();
@@ -129,6 +140,11 @@ fn synthesize_prog(context: &z3::Context, components: &str,
                 let a: usize = operands[1].parse().unwrap();
                 let b: usize = operands[2].parse().unwrap();
                 vars.push(builder.xor(vars[a], vars[b]));
+            },
+            "And" => {
+                let a: usize = operands[1].parse().unwrap();
+                let b: usize = operands[2].parse().unwrap();
+                vars.push(builder.and(vars[a], vars[b]));
             },
             "Not" => {
                 let a: usize = operands[1].parse().unwrap();
