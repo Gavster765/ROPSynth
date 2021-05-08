@@ -11,6 +11,8 @@ pub enum Operator {
 
     // Unary operators.
     Eqz(Id),
+    Not(Id),
+    Neg(Id),
     Clz(Id),
     Ctz(Id),
     Popcnt(Id),
@@ -52,7 +54,7 @@ impl Operator {
     pub fn arity(&self) -> usize {
         match self {
             Operator::Var | Operator::Const(_) => 0,
-            Operator::Eqz(_) | Operator::Clz(_) | Operator::Ctz(_) | Operator::Popcnt(_) => 1,
+            Operator::Eqz(_) | Operator::Not(_) | Operator::Neg(_) | Operator::Clz(_) | Operator::Ctz(_) | Operator::Popcnt(_) => 1,
             Operator::Eq(_, _)
             | Operator::Ne(_, _)
             | Operator::LtS(_, _)
@@ -91,7 +93,7 @@ impl Operator {
     pub fn operands(&self, mut f: impl FnMut(Id)) {
         match *self {
             Operator::Var | Operator::Const(_) => {}
-            Operator::Eqz(a) | Operator::Clz(a) | Operator::Ctz(a) | Operator::Popcnt(a) => f(a),
+            Operator::Eqz(a) | Operator::Not(a) | Operator::Neg(a) | Operator::Clz(a) | Operator::Ctz(a) | Operator::Popcnt(a) => f(a),
             Operator::Eq(a, b)
             | Operator::Ne(a, b)
             | Operator::LtS(a, b)
@@ -131,7 +133,7 @@ impl Operator {
     pub fn operands_mut(&mut self, mut f: impl FnMut(&mut Id)) {
         match self {
             Operator::Var | Operator::Const(_) => {}
-            Operator::Eqz(a) | Operator::Clz(a) | Operator::Ctz(a) | Operator::Popcnt(a) => f(a),
+            Operator::Eqz(a) | Operator::Not(a) | Operator::Neg(a) | Operator::Clz(a) | Operator::Ctz(a) | Operator::Popcnt(a) => f(a),
             Operator::Eq(a, b)
             | Operator::Ne(a, b)
             | Operator::LtS(a, b)
@@ -175,6 +177,8 @@ impl Display for Operator {
             Operator::Var => write!(f, "var"),
             Operator::Const(c) => write!(f, "const {:#X}", c),
             Operator::Eqz(id) => write!(f, "eqz {}", id),
+            Operator::Not(id) => write!(f, "not {}", id),
+            Operator::Neg(id) => write!(f, "neg {}", id),
             Operator::Clz(id) => write!(f, "clz {}", id),
             Operator::Ctz(id) => write!(f, "ctz {}", id),
             Operator::Popcnt(id) => write!(f, "popcnt {}", id),

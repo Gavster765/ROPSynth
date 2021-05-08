@@ -86,11 +86,15 @@ fn synthesize_prog(context: &z3::Context, components: &str,
             "xor" => library.components.push(component::xor()),
             "and" => library.components.push(component::and()),
             "mul" => library.components.push(component::mul()),
+            "not" => library.components.push(component::not()),
+            "meg" => library.components.push(component::neg()),
             _ => println!("Unknown Component"),
         }
         // println!("{}", comp);
     }
     library.components.push(component::select());
+    library.components.push(component::not());
+    library.components.push(component::neg());
     library.components.push(component::const_(Some(0)));
     library.components.push(component::const_(Some(1)));
     library.components.push(component::const_(Some(std::u64::MAX)));
@@ -148,14 +152,22 @@ fn synthesize_prog(context: &z3::Context, components: &str,
             },
             "Not" => {
                 let a: usize = operands[1].parse().unwrap();
-                vars.push(builder.const_(std::u64::MAX));
-                vars.push(builder.xor(vars[a], vars[vars.len()-1]));
+                vars.push(builder.not(vars[a]));
             },
             "Neg" => {
                 let a: usize = operands[1].parse().unwrap();
-                vars.push(builder.const_(0));
-                vars.push(builder.sub(vars[vars.len()-1], vars[a]));
+                vars.push(builder.neg(vars[a]));
             },
+            // "Not" => {
+            //     let a: usize = operands[1].parse().unwrap();
+            //     vars.push(builder.const_(std::u64::MAX));
+            //     vars.push(builder.xor(vars[a], vars[vars.len()-1]));
+            // },
+            // "Neg" => {
+            //     let a: usize = operands[1].parse().unwrap();
+            //     vars.push(builder.const_(0));
+            //     vars.push(builder.sub(vars[vars.len()-1], vars[a]));
+            // },
             _ => println!("Unknown program line"),
         }
     }

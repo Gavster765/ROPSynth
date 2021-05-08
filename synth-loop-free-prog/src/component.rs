@@ -106,6 +106,60 @@ pub fn eqz() -> Box<dyn Component> {
 }
 
 #[derive(Debug)]
+struct Not;
+
+impl Component for Not {
+    fn operand_arity(&self) -> usize {
+        1
+    }
+
+    fn make_operator(&self, _immediates: &[u64], operands: &[Id]) -> Operator {
+        Operator::Not(operands[0])
+    }
+
+    fn make_expression<'a>(
+        &self,
+        _context: &'a z3::Context,
+        _immediates: &[BitVec<'a>],
+        operands: &[BitVec<'a>],
+        _bit_width: u32,
+    ) -> BitVec<'a> {
+        operands[0].bvnot()
+    }
+}
+
+pub fn not() -> Box<dyn Component> {
+    Box::new(Not) as _
+}
+
+#[derive(Debug)]
+struct Neg;
+
+impl Component for Neg {
+    fn operand_arity(&self) -> usize {
+        1
+    }
+
+    fn make_operator(&self, _immediates: &[u64], operands: &[Id]) -> Operator {
+        Operator::Neg(operands[0])
+    }
+
+    fn make_expression<'a>(
+        &self,
+        _context: &'a z3::Context,
+        _immediates: &[BitVec<'a>],
+        operands: &[BitVec<'a>],
+        _bit_width: u32,
+    ) -> BitVec<'a> {
+        operands[0].bvneg()
+    }
+}
+
+pub fn neg() -> Box<dyn Component> {
+    Box::new(Neg) as _
+}
+
+#[derive(Debug)]
 struct Clz;
 
 impl Component for Clz {
@@ -963,6 +1017,14 @@ macro_rules! with_operator_component {
             }
             Operator::Eqz(_) => {
                 let $c = Eqz;
+                $body
+            }
+            Operator::Not(_) => {
+                let $c = Not;
+                $body
+            }
+            Operator::Neg(_) => {
+                let $c = Neg;
                 $body
             }
             Operator::Clz(_) => {

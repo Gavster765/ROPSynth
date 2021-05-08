@@ -57,6 +57,24 @@ impl ProgramBuilder {
         result
     }
 
+    pub fn not(&mut self, a: Id) -> Id {
+        let result = self.next_id();
+        self.program.instructions.push(Instruction {
+            result,
+            operator: Operator::Not(a),
+        });
+        result
+    }
+
+    pub fn neg(&mut self, a: Id) -> Id {
+        let result = self.next_id();
+        self.program.instructions.push(Instruction {
+            result,
+            operator: Operator::Neg(a),
+        });
+        result
+    }
+
     pub fn clz(&mut self, a: Id) -> Id {
         let result = self.next_id();
         self.program.instructions.push(Instruction {
