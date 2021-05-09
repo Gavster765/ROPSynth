@@ -75,7 +75,6 @@ char* findComponents(Gadgets gadgets) {
     if (components[len-1] == ',') {
         components[len-1] = '\0';  // Remove trailing comma
     }
-    printf("%s\n",components);
     return components;
 }
 
