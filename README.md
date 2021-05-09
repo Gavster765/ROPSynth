@@ -1,6 +1,16 @@
 # Project
 Final year project  - ROP compiler
 
+## Build
+
+`sudo apt install clang`
+
+`sudo apt install cargo`
+
+`sudo apt install libz3-dev`
+
+`make`
+
 ## Examples
 
 Example programs can be found in example/programs and the results of running them in examples/results
