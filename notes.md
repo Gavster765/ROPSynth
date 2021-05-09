@@ -4,6 +4,7 @@ Issues:
 • Add x x doesn't work
 • Says warning since something is in rax already when storing - could try to store this first or just let it get moved to rcx
   Moved load data to be first <- think this fixe?
+• If multiple store mems are used there will be issues because of no tmpvars
 
 Report notes:
 • mention stale vars
@@ -12,6 +13,7 @@ Report notes:
 • gadgets that clobber unused registers not considered
 • movs directly to mem instead of mem gadget and mov <- maybe ?
 • mention rax vs eax
+• cegis flaws?? <- only one of each, constants?
 
 
 TODO?:
@@ -22,6 +24,8 @@ TODO?:
 • Allow more operations in cegis api
 • Double moves?
 • Check new store order
+• Increase timeout??
+• Use cegis for not?
 
 DONE:
 • Extend language to include basic loops using jump gadgets
