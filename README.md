@@ -29,7 +29,7 @@ Variables:
 
 Comparison Operators:
 
-`= < <= > >= `
+`= < <= > >= !=`
 
 `<comp> And <comp>`
 
