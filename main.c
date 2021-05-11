@@ -704,6 +704,10 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
     }
 
     Var* src = findVar(inst.src, vars);
+    if (src == dest) {
+        return strdup("");
+    }
+
     // If src is constant just update value as if fresh
     if (src->constant) {
         dest->value = src->value;
