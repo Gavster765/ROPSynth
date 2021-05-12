@@ -998,7 +998,18 @@ void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     int lines;
     progString[0] = '\0';
 
-    int bufferLocation = findVar(inst.operand, tmpVars)->memAddress;
+    Var* v = findVar(inst.operand, tmpVars);
+    int bufferLocation = v->memAddress;
+    if (!v->inMemory) {
+        char** usedRegs = usedRegisters(vars);
+        char* store =storeMem(v, &usedRegs, varsPtr, gadgets);
+        printf("%s\n",store);
+        free(store);
+        vars = *varsPtr;
+        freeUsedRegs(usedRegs, vars->count);
+    }
+
+
     switch (inst.opcode) {
         case 'r': {
             lines = 7;
