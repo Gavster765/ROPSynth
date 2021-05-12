@@ -66,7 +66,7 @@ int getOperands(char** operandList, char* operandString) {
 }
 
 int64_t getVarValue(char* valStr) {
-    if ((valStr[0] >= '0' && valStr[0] <= '9') || valStr[0 == '-']) {
+    if ((valStr[0] >= '0' && valStr[0] <= '9') || valStr[0] == '-') {
         return atol(valStr);
     }
     // String
