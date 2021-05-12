@@ -47,9 +47,11 @@ void createPseudo(int progLines, char** prog, Vars* vars, Pseudo* pseudoInst) {
                 Var* newVar = addVar(operandList[0], vars);
                 newVar->lifeSpan = i+1;
                 newVar->constant = false;
+                int64_t value = getVarValue(operandList[1]);
+                newVar->value = value;
                 LoadConst newConst = {
                     .out = operandList[0],
-                    .value = atol(operandList[1]),
+                    .value = value,
                     .instLoad = false
                 };
                 Pseudo p = {
@@ -1063,31 +1065,6 @@ void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     freePseudo(lines, progPseudoInst);
 }
 
-void synthesizeSyscallOld(Special inst, Vars* *varsPtr, Gadgets gadgets) {
-    storeAllVar(varsPtr, gadgets); // Ensure all regs free
-
-    printf("%s %c %s\n",inst.op,inst.opcode,inst.operand);
-    char** usedRegs = usedRegisters(*varsPtr);
-    Var* tmpVar = (*varsPtr)->vars[0];
-    tmpVar->value = 0;
-    char* loadOp = loadConstValue(tmpVar, "rax", &usedRegs, varsPtr, gadgets);
-    char* loadFd = loadConstValue(tmpVar, "rdi", &usedRegs, varsPtr, gadgets);
-    tmpVar->value = findVar(inst.operand, *varsPtr)->memAddress;
-    char* loadBuf = loadConstValue(tmpVar, "rsi", &usedRegs, varsPtr, gadgets);
-    tmpVar->value = 1;
-    char* storeTmp =  storeMem(tmpVar, &usedRegs, varsPtr, gadgets);
-    tmpVar = (*varsPtr)->vars[0];
-
-    char* loadCount = loadConstValue(tmpVar, "rdx", &usedRegs, varsPtr, gadgets);
-    printf("%s %s %s %s %s\n",loadOp,loadFd,loadBuf,storeTmp,loadCount);
-    
-    freeUsedRegs(usedRegs,(*varsPtr)->count);
-    free(loadOp);
-    free(loadFd);
-    free(loadBuf);
-    free(loadCount);
-}
-
 void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
@@ -1268,10 +1245,10 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case END: {
                 End inst = pseudoInst[i].end;
-                storeAllVar(varsPtr, gadgets);
 
                 // End of loop so jump back to start
                 if (inst.loop != NULL) {
+                    storeAllVar(varsPtr, gadgets);
                     Jump j = {
                         .dest = -2000 - inst.loop->start,
                         .opcode = "_"
