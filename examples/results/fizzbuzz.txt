@@ -294,6 +294,12 @@ and rax, rcx
 
 add rsp, rax
 
+pop rax (7379564130479732736)
+
+
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
+
 pop rax (8)
 
 
@@ -314,7 +320,7 @@ mov rdx, QWORD PTR[rcx]
 
 syscall
 
-pop rax (0)
+pop rax (7379564130479732736)
 
 
 pop rcx (1006)
@@ -323,6 +329,12 @@ mov QWORD PTR[rcx], rax
 
 pop rax (2022)
 add rsp, rax
+
+pop rax (1718188666)
+
+
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
 
 pop rax (8)
 
@@ -344,7 +356,7 @@ mov rdx, QWORD PTR[rcx]
 
 syscall
 
-pop rax (0)
+pop rax (1718188666)
 
 
 pop rcx (1004)
@@ -380,6 +392,12 @@ and rax, rcx
 
 add rsp, rax
 
+pop rax (1651866234)
+
+
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
+
 pop rax (8)
 
 
@@ -400,7 +418,7 @@ mov rdx, QWORD PTR[rcx]
 
 syscall
 
-pop rax (0)
+pop rax (1651866234)
 
 
 pop rcx (1005)
