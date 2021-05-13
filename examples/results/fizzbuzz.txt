@@ -325,12 +325,6 @@ mov rdx, QWORD PTR[rcx]
 
 syscall
 
-pop rax (7379564130479732736)
-
-
-pop rcx (1006)
-mov QWORD PTR[rcx], rax
-
 
 pop rax (2022)
 add rsp, rax
@@ -361,12 +355,6 @@ mov rdx, QWORD PTR[rcx]
 
 
 syscall
-
-pop rax (1718188666)
-
-
-pop rcx (1004)
-mov QWORD PTR[rcx], rax
 (2022)
 
 
@@ -425,12 +413,6 @@ mov rdx, QWORD PTR[rcx]
 
 
 syscall
-
-pop rax (1651866234)
-
-
-pop rcx (1005)
-mov QWORD PTR[rcx], rax
 
 
 pop rax (2027)
