@@ -158,7 +158,7 @@ void deleteStaleVars(int line, Vars* vars) {
         if (v->noKill) {
             continue;
         }
-        if (v->lifeSpan == line || v->constant || v->inMemory){
+        if (v->lifeSpan < line || v->constant || v->inMemory){
             strcpy(v->reg, "new");
         }
     }
