@@ -43,9 +43,6 @@ Gadgets loadGadgets(){
     SynthComp* synthComps = malloc(sizeof(SynthComp) * 10);  // Max 10 saved synthesis components
     int* numSynthComps = malloc(sizeof(int));
     *numSynthComps = 0;
-    int* jumpAddrs = malloc(sizeof(int) * 20);
-    int* numJumpAddrs = malloc(sizeof(int));
-    *numJumpAddrs = 0;
 
     Gadget* curr;
     int count;
@@ -108,9 +105,7 @@ Gadgets loadGadgets(){
         numSpecialGadgets,
         specialGadgets,
         numSynthComps,  // 0 components already synthesized
-        synthComps,
-        numJumpAddrs,
-        jumpAddrs
+        synthComps
     };
 
     return gadgets;
@@ -163,8 +158,6 @@ void freeGadgets(Gadgets gadgets) {
     free(gadgets.synthComps);
     free(gadgets.specialGadgets);
     free(gadgets.numSynthComps);
-    free(gadgets.numJumps);
-    free(gadgets.jumpAddrs);
 }
 
 void addSynthComp(char* spec, char* synth, Gadgets gadgets) {
@@ -183,18 +176,4 @@ char* getSynth(char* spec, Gadgets gadgets) {
         }
     }
     return NULL;
-}
-
-void addJumpAddr(int addr, Gadgets gadgets) {
-    gadgets.jumpAddrs[*gadgets.numJumps] = addr;
-    (*gadgets.numJumps)++;
-}
-
-int checkJump(int line, Gadgets gadgets) {
-    for (int i = 0 ; i < *gadgets.numJumps ; i++) {
-        if (gadgets.jumpAddrs[i] == line) {
-            return 1;
-        }
-    }
-    return 0;
 }
