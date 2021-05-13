@@ -1238,6 +1238,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         .opcode = "_"
                     };
                     synthesizeJump(j, vars, gadgets);
+                    printf("(%d)\n",inst->joinedIf->end+2000);
                 } 
                 // No jump for else
                 if (strcmp(inst->opcode, "") != 0 ) {
@@ -1264,17 +1265,17 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case END: {
                 End inst = pseudoInst[i].end;
+                storeAllVar(varsPtr, gadgets);
 
                 // End of loop so jump back to start
                 if (inst.loop != NULL) {
-                    storeAllVar(varsPtr, gadgets);
                     Jump j = {
                         .dest = 2000 + inst.loop->start,
                         .opcode = "_"
                     };
                     synthesizeJump(j, *varsPtr, gadgets);
-                    printf("(%d)\n",i+2000);
                 }
+                printf("(%d)\n",i+2000);
                 break;
             }
             case JUMP: {
