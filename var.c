@@ -57,10 +57,26 @@ Var* addVar(char* name, Vars* vars) {
     return v;
 }
 
+Var* copyVar(char* name, Var* var, Vars* vars) {
+    Var *v = malloc(sizeof(Var) + strlen(name) + 1);
+    v->value = var->value;
+    v->lifeSpan = var->lifeSpan;
+    v->loop = var->loop;
+    v->constant = var->constant;
+    v->inMemory = var->inMemory;
+    v->address = var->address;
+    v->noKill = var->noKill;
+    v->memAddress = var->memAddress;
+    strcpy(v->reg, var->reg);
+    strcpy(v->name, name);
+    addNewVar(v, vars);
+    return v;
+}
+
 int removeVar(Var* delVar, Vars* vars) {
     bool found = false;
     for (int i = 0 ; i < vars->count ; i++) {
-        printf("%d %d\n",i,vars->count);
+        // printf("%d %d\n",i,vars->count);
         if(strcmp(vars->vars[i]->name, delVar->name) == 0) {
             if (i < vars->count - 1) {
                 vars->vars[i] = vars->vars[i+1];

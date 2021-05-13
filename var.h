@@ -33,6 +33,7 @@ Var* findVarByReg(char* reg, Vars* vars);
 
 int addNewVar(Var* newVar, Vars* vars);
 Var* addVar(char* name, Vars* vars);
+Var* copyVar(char* name, Var* var, Vars* vars);
 int removeVar(Var* delVar, Vars* vars);
 
 // Used during createPseudo phase to calculate variable lifespan

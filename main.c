@@ -755,27 +755,39 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
 // Write asm for arithmetic operations
 int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     Vars* vars = *varsPtr;
-    int count = vars->count;
     char op = inst.opcode;
 
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
-        char** usedRegs = usedRegisters(vars);
         Vars* tmpVars = copyVars(vars);
+        bool tmpCopy = false;
         Var* a = findVar(inst.operand1,tmpVars);
         Var* b = findVar(inst.operand2,tmpVars);
+        if (a == b & inst.opcode != 'a') {
+            b = copyVar("_tmp",a,tmpVars);
+            tmpCopy = true;
+        }
+        char** usedRegs = usedRegisters(tmpVars);
         Gadget gadget = gadgets.arithOpGadgets[i];
 
         if (checkArithOpGadget(op, gadget.opcode)) {
             char* setupA = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets); 
             a = findVar(inst.operand1,tmpVars);
-            b = findVar(inst.operand2,tmpVars);
+            if (tmpCopy) {
+                b = findVar("_tmp",tmpVars);
+            }
+            else {
+                b = findVar(inst.operand2,tmpVars);
+            }
             // WARNING may have moved value from add dest to add src - could now be stuck when other moves where possible
             char* setupB = checkRegisterPossible(b, gadget.operands[1], a, &usedRegs, &tmpVars, gadgets);
             if (setupA != NULL && setupB != NULL){
                 // Set new register - could be the same if unchanged
                 *varsPtr = tmpVars;
+                freeUsedRegs(usedRegs, tmpVars->count);
                 freeVars(vars);
-                freeUsedRegs(usedRegs, count);
+                if (tmpCopy) {
+                    removeVar(findVar("_tmp",*varsPtr), *varsPtr);
+                }
                 printf("%s\n%s\n%s\n",setupA,setupB,gadget.assembly);
                 free(setupA);
                 free(setupB);
@@ -784,7 +796,7 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
             free(setupA);
             free(setupB);
         }
-        freeUsedRegs(usedRegs, count);
+        freeUsedRegs(usedRegs, tmpVars->count);
         freeVars(tmpVars);
     }
     // Couldn't find gadget so try to find alternative
