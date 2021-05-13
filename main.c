@@ -992,23 +992,21 @@ void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
 
     storeAllVar(varsPtr, gadgets);
 
+    Var* v = findVar(inst.operand, *varsPtr);
+    int bufferLocation = v->memAddress;
+    if (!v->inMemory) {
+        char** usedRegs = usedRegisters(*varsPtr);
+        char* store = storeMem(v, &usedRegs, varsPtr, gadgets);
+        printf("%s\n",store);
+        free(store);
+        freeUsedRegs(usedRegs, (*varsPtr)->count);
+    }
+
     Vars* vars = *varsPtr;
     Vars* tmpVars = copyVars(vars);
     char* progString = malloc(200);  // TODO - actual size
     int lines;
     progString[0] = '\0';
-
-    Var* v = findVar(inst.operand, tmpVars);
-    int bufferLocation = v->memAddress;
-    if (!v->inMemory) {
-        char** usedRegs = usedRegisters(vars);
-        char* store =storeMem(v, &usedRegs, varsPtr, gadgets);
-        printf("%s\n",store);
-        free(store);
-        vars = *varsPtr;
-        freeUsedRegs(usedRegs, vars->count);
-    }
-
 
     switch (inst.opcode) {
         case 'r': {
