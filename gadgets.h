@@ -49,6 +49,9 @@ typedef struct Gadgets {
 
     int* numSynthComps;
     SynthComp* synthComps;
+
+    int* numJumps;
+    int* jumpAddrs;
 } Gadgets;
 
 Gadget createGadget(GadgetType type, char* assembly);
@@ -58,5 +61,7 @@ void freeGadgets(Gadgets gadgets);
 
 void addSynthComp(char* spec, char* synth, Gadgets gadgets);
 char* getSynth(char* spec, Gadgets gadgets);
+
+void addJumpAddr(int addr, Gadgets gadgets);
 
 #endif /* GADGET_H */

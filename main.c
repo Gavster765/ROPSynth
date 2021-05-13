@@ -1235,6 +1235,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 } 
                 // No jump for else
                 if (strcmp(inst->opcode, "") != 0 ) {
+                    addJumpAddr(inst->end, gadgets);
                     Jump j = {
                         .dest = inst->end + 2000,
                         .opcode = inst->opcode,
@@ -1243,6 +1244,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                     };
                     synthesizeJump(j, vars, gadgets);
                     if (inst->and != NULL) {
+                        addJumpAddr(inst->and->end, gadgets);
                         Jump j2 = {
                             .dest = inst->and->end + 2000,
                             .opcode = inst->and->opcode,
