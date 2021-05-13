@@ -1148,6 +1148,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
     for (int i = 0 ; i < progLines ; i++){
         Vars* vars = *varsPtr;
         deleteStaleVars(i, vars);
+        // if (checkJump(i, gadgets)) {
+        //     printf("(%d)\n",i+2000);
+        // }
         switch (pseudoInst[i].type){
             case LOAD_CONST: {
                 LoadConst inst = pseudoInst[i].loadConst;
@@ -1225,6 +1228,9 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 Comp* inst = &pseudoInst[i].comp;
                 storeAllVar(varsPtr, gadgets);
                 vars = *varsPtr;
+                if (inst->loop) {
+                    printf("(%d)\n",i+2000);
+                }
                 // Jump over elseif/else if required
                 if (inst->joinedIf != NULL) {
                     Jump j = {
@@ -1263,10 +1269,11 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 if (inst.loop != NULL) {
                     storeAllVar(varsPtr, gadgets);
                     Jump j = {
-                        .dest = -2000 - inst.loop->start,
+                        .dest = 2000 + inst.loop->start,
                         .opcode = "_"
                     };
                     synthesizeJump(j, *varsPtr, gadgets);
+                    printf("(%d)\n",i+2000);
                 }
                 break;
             }
@@ -1278,6 +1285,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 else {
                     inst.dest += 2000;
                 }
+                addJumpAddr(inst.dest, gadgets);
                 synthesizeJump(inst, vars, gadgets);
                 break;
             }

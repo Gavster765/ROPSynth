@@ -63,5 +63,6 @@ void addSynthComp(char* spec, char* synth, Gadgets gadgets);
 char* getSynth(char* spec, Gadgets gadgets);
 
 void addJumpAddr(int addr, Gadgets gadgets);
+int checkJump(int line, Gadgets gadgets); 
 
 #endif /* GADGET_H */

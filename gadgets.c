@@ -189,3 +189,12 @@ void addJumpAddr(int addr, Gadgets gadgets) {
     gadgets.jumpAddrs[*gadgets.numJumps] = addr;
     (*gadgets.numJumps)++;
 }
+
+int checkJump(int line, Gadgets gadgets) {
+    for (int i = 0 ; i < *gadgets.numJumps ; i++) {
+        if (gadgets.jumpAddrs[i] == line) {
+            return 1;
+        }
+    }
+    return 0;
+}
