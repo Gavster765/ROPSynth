@@ -677,6 +677,9 @@ void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
     for (int i = 0 ; i < count ; i++) {
         Var* v = (*varsPtr)->vars[i];
         if (!v->constant && !v->inMemory) {
+            if (v->lifeSpan == -1) {
+                continue;
+            }
             char** usedRegs = usedRegisters(*varsPtr);
             char* assembly = storeMem(v, &usedRegs, varsPtr, gadgets);
             if (assembly != NULL) {
