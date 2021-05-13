@@ -920,7 +920,7 @@ void synthesizeJump(Jump inst, Vars* vars, Gadgets gadgets) {
         );
     }
     else if (strcmp(inst.opcode, "!=") == 0) {
-        lines = 10;
+        lines = 11;
         sprintf(progString,
             "Const _0 0\n"
             "Const _1 0\n"
