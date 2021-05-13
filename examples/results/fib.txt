@@ -28,6 +28,7 @@ pop rax (1)
 
 pop rcx (1006)
 mov QWORD PTR[rcx], rax
+(2006)
 
 
 pop rax (5)
@@ -115,5 +116,6 @@ pop rcx (1005)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (-2006)
+pop rax (2006)
 add rsp, rax
+(2011)
