@@ -1,4 +1,4 @@
-EXAMPLES:= fib fizzbuzz jump cegis read_write
+EXAMPLES:= fib fizzbuzz jump cegis read_write if_else while
 
 build:
 	cargo build --release --manifest-path=synth-loop-free-prog/Cargo.toml

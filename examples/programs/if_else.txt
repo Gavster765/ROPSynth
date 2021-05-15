@@ -1,0 +1,11 @@
+Var x 1
+Const y 2
+Const z 3
+
+If x > z
+    Sub x z
+ElseIf x < z
+    Add x y
+Else
+    Add x z
+End

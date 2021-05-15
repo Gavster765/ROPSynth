@@ -1,0 +1,7 @@
+Var x 3
+Const y 1
+Const z 0
+
+While x > z
+    Sub x y
+End
