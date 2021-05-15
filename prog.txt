@@ -1,6 +1,37 @@
-Var x 1
-Var y 2
+Var num 1
+Const r1 0
+Const r2 0
 
-If x < y
-   Xor x y 
+Const fizz fizz
+Const buzz buzz
+Const fizzBuzz fizzbuzz
+
+Const zero 0
+Const one 1
+Const three 3
+Const five 5
+
+Var n 0
+Read n
+
+While num <= n
+    Copy r1 num
+    Copy r2 num
+    Mod r1 three
+    Mod r2 five
+    
+    If r1 = zero
+        If r2 = zero
+            Write fizzBuzz
+        Else 
+            Write fizz
+        End
+    ElseIf r2 = zero
+        Write buzz
+    Else
+        Write num
+    End
+
+    Add num one
 End
+    
