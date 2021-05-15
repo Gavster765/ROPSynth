@@ -18,6 +18,7 @@ Example programs can be found in example/programs and the results of running the
 All examples can be ran with `make example`
 
 ## Language
+Program files must end with a new line character
 
 Variables:
 
