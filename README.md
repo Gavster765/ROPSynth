@@ -1,17 +1,17 @@
-# Project
-Final year project  - ROP compiler
+# ROP Synthesizer
+Final year project - ROP compiler
 
-## Build
-
+## Dependencies
 `sudo apt install clang`
 
 `sudo apt install cargo`
 
 `sudo apt install libz3-dev`
 
-`make`
+## Build
+Can build by using `make`
 
-## Examples
+A sample program is available in `prog.txt` this program can be ran using `make run`
 
 Example programs can be found in example/programs and the results of running them in examples/results
 
