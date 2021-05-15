@@ -2,3 +2,4 @@ main
 .vscode
 peda-session-main.txt
 .gdb_history
+notes.md
