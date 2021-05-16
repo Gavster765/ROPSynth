@@ -22,13 +22,7 @@ pop rax (0)
 
 pop rcx (1005)
 mov QWORD PTR[rcx], rax
-
-pop rax (1)
-
-
-pop rcx (1006)
-mov QWORD PTR[rcx], rax
-(2006)
+(2005)
 
 
 pop rax (5)
@@ -48,7 +42,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2011)
+pop rcx (2010)
 and rax, rcx
 
 
@@ -102,13 +96,8 @@ mov rax, QWORD PTR[rax]
 
 
 
-
-
-pop rcx (1006)
-mov rdx, QWORD PTR[rcx]
-
-
-add rax, rdx
+pop rcx (1001)
+add rax, rcx
 
 
 
@@ -116,6 +105,6 @@ pop rcx (1005)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (2006)
+pop rax (2005)
 add rsp, rax
-(2011)
+(2010)

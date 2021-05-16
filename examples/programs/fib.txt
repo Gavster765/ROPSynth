@@ -4,11 +4,10 @@ Var temp 0
 Const n 5
 
 Var i 0
-Var one 1
 While i <= n
     Copy temp f2   
     Add f2 f1
     Copy f1 temp
 
-    Add i one
+    Add i 1
 End

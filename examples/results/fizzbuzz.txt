@@ -8,33 +8,33 @@ mov QWORD PTR[rcx], rax
 pop rax (0)
 
 
-pop rcx (1011)
+pop rcx (1007)
 mov QWORD PTR[rcx], rax
 
 pop rax (8)
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov QWORD PTR[rcx], rax
 
 pop rax (0)
 
 pop rdi (0)
 
-pop rsi (1011)
+pop rsi (1007)
 
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov rdx, QWORD PTR[rcx]
 
 
 syscall
-(2012)
+(2008)
 
 
 
-pop rax (1011)
+pop rax (1007)
 mov rax, QWORD PTR[rax]
 
 
@@ -55,7 +55,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2029)
+pop rcx (2025)
 and rax, rcx
 
 
@@ -97,13 +97,13 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
+pop rcx (1008)
 mov QWORD PTR[rcx], rax
 (2008)
 
 
 
-pop rax (1012)
+pop rax (1008)
 mov rax, QWORD PTR[rax]
 
 
@@ -127,7 +127,7 @@ add rsp, rax
 
 
 
-pop rax (1012)
+pop rax (1008)
 mov rax, QWORD PTR[rax]
 
 
@@ -137,7 +137,7 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
+pop rcx (1008)
 mov QWORD PTR[rcx], rax
 
 
@@ -147,7 +147,7 @@ add rsp, rax
 
 
 
-pop rax (1012)
+pop rax (1008)
 mov rax, QWORD PTR[rax]
 
 
@@ -157,7 +157,7 @@ add rax, rcx
 
 
 
-pop rcx (1012)
+pop rcx (1008)
 mov QWORD PTR[rcx], rax
 
 
@@ -179,13 +179,13 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
+pop rcx (1008)
 mov QWORD PTR[rcx], rax
 (2008)
 
 
 
-pop rax (1012)
+pop rax (1008)
 mov rax, QWORD PTR[rax]
 
 
@@ -209,7 +209,7 @@ add rsp, rax
 
 
 
-pop rax (1012)
+pop rax (1008)
 mov rax, QWORD PTR[rax]
 
 
@@ -219,7 +219,7 @@ sub rax, rcx
 
 
 
-pop rcx (1012)
+pop rcx (1008)
 mov QWORD PTR[rcx], rax
 
 
@@ -229,7 +229,7 @@ add rsp, rax
 
 
 
-pop rax (1012)
+pop rax (1008)
 mov rax, QWORD PTR[rax]
 
 
@@ -239,7 +239,7 @@ add rax, rcx
 
 
 
-pop rcx (1012)
+pop rcx (1008)
 mov QWORD PTR[rcx], rax
 
 
@@ -267,7 +267,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2023)
+pop rcx (2019)
 and rax, rcx
 
 
@@ -293,7 +293,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2020)
+pop rcx (2016)
 and rax, rcx
 
 
@@ -308,7 +308,7 @@ mov QWORD PTR[rcx], rax
 pop rax (8)
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov QWORD PTR[rcx], rax
 
 pop rax (1)
@@ -319,16 +319,16 @@ pop rsi (1006)
 
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov rdx, QWORD PTR[rcx]
 
 
 syscall
 
 
-pop rax (2022)
+pop rax (2018)
 add rsp, rax
-(2020)
+(2016)
 
 pop rax (1718188666)
 
@@ -339,7 +339,7 @@ mov QWORD PTR[rcx], rax
 pop rax (8)
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov QWORD PTR[rcx], rax
 
 pop rax (1)
@@ -350,17 +350,17 @@ pop rsi (1004)
 
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov rdx, QWORD PTR[rcx]
 
 
 syscall
-(2022)
+(2018)
 
 
-pop rax (2027)
+pop rax (2023)
 add rsp, rax
-(2023)
+(2019)
 
 
 
@@ -382,7 +382,7 @@ adc rax, rax
 neg rax
 
 
-pop rcx (2025)
+pop rcx (2021)
 and rax, rcx
 
 
@@ -397,7 +397,7 @@ mov QWORD PTR[rcx], rax
 pop rax (8)
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov QWORD PTR[rcx], rax
 
 pop rax (1)
@@ -408,21 +408,21 @@ pop rsi (1005)
 
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov rdx, QWORD PTR[rcx]
 
 
 syscall
 
 
-pop rax (2027)
+pop rax (2023)
 add rsp, rax
-(2025)
+(2021)
 
 pop rax (8)
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov QWORD PTR[rcx], rax
 
 pop rax (1)
@@ -433,12 +433,12 @@ pop rsi (1001)
 
 
 
-pop rcx (1013)
+pop rcx (1009)
 mov rdx, QWORD PTR[rcx]
 
 
 syscall
-(2027)
+(2023)
 
 
 
@@ -456,6 +456,6 @@ pop rcx (1001)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (2012)
+pop rax (2008)
 add rsp, rax
-(2029)
+(2025)

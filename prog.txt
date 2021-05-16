@@ -6,32 +6,27 @@ Const fizz fizz
 Const buzz buzz
 Const fizzBuzz fizzbuzz
 
-Const zero 0
-Const one 1
-Const three 3
-Const five 5
-
 Var n 0
 Read n
 
 While num <= n
     Copy r1 num
     Copy r2 num
-    Mod r1 three
-    Mod r2 five
+    Mod r1 3
+    Mod r2 5
     
-    If r1 = zero
-        If r2 = zero
+    If r1 = 0
+        If r2 = 0
             Write fizzBuzz
         Else 
             Write fizz
         End
-    ElseIf r2 = zero
+    ElseIf r2 = 0
         Write buzz
     Else
         Write num
     End
 
-    Add num one
+    Add num 1
 End
     
