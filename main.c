@@ -763,11 +763,19 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++){
         Vars* tmpVars = copyVars(vars);
         bool tmpCopy = false;
+        bool inlineConst = false;
         Var* a = findVar(inst.operand1,tmpVars);
         Var* b = findVar(inst.operand2,tmpVars);
         if (a == b & inst.opcode != 'a') {
             b = copyVar("_tmp",a,tmpVars);
             tmpCopy = true;
+        }
+        else if (b == NULL) {
+            int64_t value;
+            sscanf(inst.operand2,"%ld",&value);
+            b = tmpVars->vars[0];
+            b->value = value;
+            inlineConst = true;
         }
         char** usedRegs = usedRegisters(tmpVars);
         Gadget gadget = gadgets.arithOpGadgets[i];
@@ -777,6 +785,9 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
             a = findVar(inst.operand1,tmpVars);
             if (tmpCopy) {
                 b = findVar("_tmp",tmpVars);
+            }
+            else if (inlineConst) {
+                b = tmpVars->vars[0];
             }
             else {
                 b = findVar(inst.operand2,tmpVars);
@@ -1201,26 +1212,26 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 else if (update == 1) {
                     findVar(inst.operand1,vars)->constant = false;
                     findVar(inst.operand1,vars)->inMemory = false;
-                    switch (inst.opcode) {
-                        case '+':
-                            findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
-                            break;
-                        case '-':
-                            findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
-                            break;
-                        case '*':
-                            findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
-                            break;
-                        case '/':
-                            findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
-                            break;
-                        case '&':
-                            findVar(inst.operand1,vars)->value &= findVar(inst.operand2,vars)->value;
-                            break;
-                        case '%':
-                            findVar(inst.operand1,vars)->value %= findVar(inst.operand2,vars)->value;
-                            break;
-                    }
+                    // switch (inst.opcode) {
+                    //     case '+':
+                    //         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
+                    //         break;
+                    //     case '-':
+                    //         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
+                    //         break;
+                    //     case '*':
+                    //         findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
+                    //         break;
+                    //     case '/':
+                    //         findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
+                    //         break;
+                    //     case '&':
+                    //         findVar(inst.operand1,vars)->value &= findVar(inst.operand2,vars)->value;
+                    //         break;
+                    //     case '%':
+                    //         findVar(inst.operand1,vars)->value %= findVar(inst.operand2,vars)->value;
+                    //         break;
+                    // }
                 }
                 break;
             }
