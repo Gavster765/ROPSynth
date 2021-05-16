@@ -36,19 +36,19 @@ Comparison Operators:
 
 Operations:
 
-`Add <var> <var>`
+`Add <var> <var/value>`
 
-`Sub <var> <var>`
+`Sub <var> <var/value>`
 
-`Mul <var> <var>`
+`Mul <var> <var/value>`
 
-`Div <var> <var>`
+`Div <var> <var/value>`
 
-`Mod <var> <var>`
+`Mod <var> <var/value>`
 
-`Xor <var> <var>`
+`Xor <var> <var/value>`
 
-`And <var> <var>`
+`And <var> <var/value>`
 
 `Neg <var>`
 
@@ -57,9 +57,9 @@ Operations:
 Conditionals:
 
 ```
-If <var> <comp op> <var> 
+If <var/value> <comp op> <var/value> 
     code
-ElseIf <var> <comp op> <var>
+ElseIf <var/value> <comp op> <var/value>
     code
 Else
     code
@@ -68,7 +68,7 @@ End
 
 Loops:
 ```
-While <var> <comp op> <var>
+While <var/value> <comp op> <var/value>
     code
 End
 
