@@ -24,7 +24,7 @@ void staticSynthesis(Gadgets gadgets) {
                             "Add _res _x\n"
                             "Add _count _one\n"
                          "End\n");
-    addSynthComp(spec, synth, gadgets);
+    addStaticSynthComp(spec, synth, gadgets);
     // Division by var
     spec = strdup("Var,"
                   "Var,"
@@ -38,7 +38,7 @@ void staticSynthesis(Gadgets gadgets) {
                        "Add _res _one\n"
                        "Sub _x _y\n"
                    "End\n");
-    addSynthComp(spec, synth, gadgets);
+    addStaticSynthComp(spec, synth, gadgets);
     // Modulus
     spec = strdup("Var,"
                   "Var,"
@@ -53,7 +53,7 @@ void staticSynthesis(Gadgets gadgets) {
                    "End\n"
                    "Add _x _y\n"
                    "Copy _res _x\n");
-    addSynthComp(spec, synth, gadgets);
+    addStaticSynthComp(spec, synth, gadgets);
 }
 
 char* findComponents(Gadgets gadgets) {
@@ -84,7 +84,7 @@ char* checkStatic(ArithOp inst, Vars* vars, Gadgets gadgets) {
     char* spec = malloc(40);  // Guess at max size
     spec[0] = '\0';
     sprintf(spec,"Var,Var,%s 0 1",inst.op);
-    char* synth = getSynth(spec, gadgets);
+    char* synth = getSynth(spec, gadgets, true);
     free(spec);
     return synth;
 }
@@ -106,7 +106,10 @@ char* createProgSpec(Pseudo instr, Vars* vars) {
     strcat(spec,"Var,");
 
     Var* b = findVar(inst.operand2, vars);
-    if (b->constant) {
+    if (b == NULL) {
+        sprintf(spec, "%sConst %ld,",spec,getVarValue(inst.operand2));
+    }
+    else if (b->constant) {
         sprintf(spec, "%sConst %ld,",spec,b->value);
     }
     else {
@@ -238,7 +241,7 @@ char* findAlternative(Pseudo instr, Vars* vars, Gadgets gadgets) {
     
     char* components = findComponents(gadgets);
     char* spec = createProgSpec(instr, vars);
-    char* synth = getSynth(spec, gadgets);
+    char* synth = getSynth(spec, gadgets, false);
     if (synth == NULL) {
         synth = run(components, spec);
         if (strcmp(synth,"Error") == 0) {

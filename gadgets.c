@@ -160,18 +160,29 @@ void freeGadgets(Gadgets gadgets) {
     free(gadgets.numSynthComps);
 }
 
-void addSynthComp(char* spec, char* synth, Gadgets gadgets) {
+void addStaticSynthComp(char* spec, char* synth, Gadgets gadgets) {
     SynthComp s = {
         .spec = spec,
-        .synth = synth
+        .synth = synth,
+        .staticSwap = true
     };
     gadgets.synthComps[*gadgets.numSynthComps] = s;
     (*gadgets.numSynthComps)++;
 }
 
-char* getSynth(char* spec, Gadgets gadgets) {
+void addSynthComp(char* spec, char* synth, Gadgets gadgets) {
+    SynthComp s = {
+        .spec = spec,
+        .synth = synth,
+        .staticSwap = false
+    };
+    gadgets.synthComps[*gadgets.numSynthComps] = s;
+    (*gadgets.numSynthComps)++;
+}
+
+char* getSynth(char* spec, Gadgets gadgets, bool staticOnly) {
     for (int i = 0 ; i < *gadgets.numSynthComps ; i++) {
-        if (strcmp(gadgets.synthComps[i].spec, spec) == 0) {
+        if (strcmp(gadgets.synthComps[i].spec, spec) == 0 && gadgets.synthComps[i].staticSwap == staticOnly) {
             return gadgets.synthComps[i].synth;
         }
     }

@@ -1,5 +1,6 @@
 #ifndef GADGET_H
 #define GADGET_H
+#include <stdbool.h>
 
 typedef enum {
     LOAD_CONST,
@@ -26,6 +27,7 @@ typedef struct Gadget {
 typedef struct SynthComp {
     char* spec;
     char* synth;
+    bool staticSwap;
 } SynthComp;
 
 typedef struct Gadgets {
@@ -57,6 +59,7 @@ Gadgets loadGadgets();
 void freeGadgets(Gadgets gadgets);
 
 void addSynthComp(char* spec, char* synth, Gadgets gadgets);
-char* getSynth(char* spec, Gadgets gadgets);
+void addStaticSynthComp(char* spec, char* synth, Gadgets gadgets);
+char* getSynth(char* spec, Gadgets gadgets, bool staticOnly);
 
 #endif /* GADGET_H */
