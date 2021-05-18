@@ -1,0 +1,22 @@
+
+pop rax (42)
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+not rax
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+neg rax

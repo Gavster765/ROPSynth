@@ -1,0 +1,4 @@
+Var x 42
+
+Not x
+Neg x
