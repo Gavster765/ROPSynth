@@ -1100,7 +1100,7 @@ void synthesizeSyscall(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     freePseudo(lines, progPseudoInst);
 }
 
-void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
+bool synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     Vars* vars = *varsPtr;
     for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
         Gadget gadget = gadgets.specialGadgets[i];
@@ -1115,7 +1115,7 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
                 freeUsedRegs(usedRegs, (*varsPtr)->count);
                 printf("%s\n%s\n",setup,gadget.assembly);
                 free(setup);
-                return;
+                return true;
             }
         }
         freeUsedRegs(usedRegs, tmpVars->count);
@@ -1132,7 +1132,7 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     char* alt = findAlternative(p, tmpVars, gadgets);
     if (alt == NULL) {
         freeVars(tmpVars);
-        return;  // Synthesis failed
+        return false;  // Synthesis failed
     }
 
     int lines = 0;
@@ -1165,6 +1165,7 @@ void synthesizeSpecial(Special inst, Vars* *varsPtr, Gadgets gadgets) {
     free(alt);
     freeVars(tmpVars);
     freePseudo(lines, altPseudoInst);
+    return false;
 }
 
 // Read list of pseudo instructions and write required asm
@@ -1212,26 +1213,6 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 else if (update == 1) {
                     findVar(inst.operand1,vars)->constant = false;
                     findVar(inst.operand1,vars)->inMemory = false;
-                    // switch (inst.opcode) {
-                    //     case '+':
-                    //         findVar(inst.operand1,vars)->value += findVar(inst.operand2,vars)->value;
-                    //         break;
-                    //     case '-':
-                    //         findVar(inst.operand1,vars)->value -= findVar(inst.operand2,vars)->value;
-                    //         break;
-                    //     case '*':
-                    //         findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
-                    //         break;
-                    //     case '/':
-                    //         findVar(inst.operand1,vars)->value *= findVar(inst.operand2,vars)->value;
-                    //         break;
-                    //     case '&':
-                    //         findVar(inst.operand1,vars)->value &= findVar(inst.operand2,vars)->value;
-                    //         break;
-                    //     case '%':
-                    //         findVar(inst.operand1,vars)->value %= findVar(inst.operand2,vars)->value;
-                    //         break;
-                    // }
                 }
                 break;
             }
@@ -1310,6 +1291,7 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
             }
             case SPECIAL: {
                 Special inst = pseudoInst[i].special;
+                bool update = false;
                 switch (inst.opcode) {
                     case 'r': {
                         synthesizeSyscall(inst, varsPtr, gadgets);
@@ -1320,26 +1302,28 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         break;
                     }
                     default: {
-                        synthesizeSpecial(inst, varsPtr, gadgets);
+                        update = synthesizeSpecial(inst, varsPtr, gadgets);
                     }
                 }
                 Var* v = findVar(inst.operand,*varsPtr);
-                switch (inst.opcode) {
-                    case '~': {
-                        v->constant = false;
-                        v->inMemory = false;
-                        v->value = ~v->value;
-                        v->value ++;
-                        break;
-                    }
-                    case '!': {
-                        v->constant = false;
-                        v->inMemory = false;
-                        v->value = ~v->value;
-                        break;
-                    }
-                    case 'w': {
-                        break;
+                if (update){
+                    switch (inst.opcode) {
+                        case '~': {
+                            v->constant = false;
+                            v->inMemory = false;
+                            v->value = ~v->value;
+                            v->value ++;
+                            break;
+                        }
+                        case '!': {
+                            v->constant = false;
+                            v->inMemory = false;
+                            v->value = ~v->value;
+                            break;
+                        }
+                        case 'w': {
+                            break;
+                        }
                     }
                 }
                 break;
