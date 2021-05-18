@@ -1339,8 +1339,6 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                         break;
                     }
                     case 'w': {
-                        v->constant = false;
-                        v->inMemory = false;
                         break;
                     }
                 }
