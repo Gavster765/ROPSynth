@@ -1,4 +1,4 @@
-# ROP Synthesizer
+# ROPSynth
 Final year project - ROP compiler
 
 ## Dependencies
