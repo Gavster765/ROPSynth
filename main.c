@@ -1327,17 +1327,20 @@ void translatePseudo(int progLines, Vars* *varsPtr, Pseudo* pseudoInst, Gadgets 
                 switch (inst.opcode) {
                     case '~': {
                         v->constant = false;
+                        v->inMemory = false;
                         v->value = ~v->value;
                         v->value ++;
                         break;
                     }
                     case '!': {
                         v->constant = false;
+                        v->inMemory = false;
                         v->value = ~v->value;
                         break;
                     }
                     case 'w': {
                         v->constant = false;
+                        v->inMemory = false;
                         break;
                     }
                 }
