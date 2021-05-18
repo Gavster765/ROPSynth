@@ -49,6 +49,20 @@ pop rcx (1005)
 mov QWORD PTR[rcx], rax
 
 
+
+
+pop rcx (1005)
+mov rdx, QWORD PTR[rcx]
+
+
+add rax, rdx
+
+
+
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
+
+
 pop rax (1003)
 mov rax, QWORD PTR[rax]
 
@@ -65,39 +79,13 @@ add rax, rdx
 
 
 
-pop rcx (1006)
-mov QWORD PTR[rcx], rax
-
-
-pop rax (1005)
-mov rax, QWORD PTR[rax]
-
-
-
-
-
-
-pop rcx (1005)
-mov rdx, QWORD PTR[rcx]
-
-
-add rax, rdx
-
-
-
 pop rcx (1007)
 mov QWORD PTR[rcx], rax
 
 
-pop rax (1006)
-mov rax, QWORD PTR[rax]
 
 
-
-
-
-
-pop rdi (1007)
+pop rdi (1006)
 mov rcx, QWORD PTR[rdi]
 
 

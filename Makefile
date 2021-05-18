@@ -1,4 +1,4 @@
-EXAMPLES:= fib fizzbuzz jump cegis read_write if_else while
+EXAMPLES:= fib fizzbuzz jump xor read_write if_else while neg_not
 
 build:
 	cargo build --release --manifest-path=synth-loop-free-prog/Cargo.toml
