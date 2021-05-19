@@ -476,6 +476,9 @@ char* loadConstValue(Var* var, char* dest, char** *usedRegsPtr, Vars* *varsPtr, 
 
 // Store a var in memory so doesn't need to be in a reg
 char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
+    if (var == NULL) {
+        return NULL;
+    }
     char* varName = strdup(var->name);
     Vars* vars = *varsPtr;
     char** usedRegs = *usedRegsPtr;
@@ -493,7 +496,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
         usedRegs = *usedRegsPtr;
         var = findVar(varName, vars);
         if (used(storeAddr,usedRegs,vars->count)) {
-            printf("Warning!\n");
+            free(moveData);
             continue;
             // clearReg = moveRegAnywhere(storeAddr, usedRegsPtr, varsPtr, gadgets);
         }
@@ -506,6 +509,7 @@ char* storeMem(Var* var, char** *usedRegsPtr, Vars* *varsPtr, Gadgets gadgets) {
             addressVar->value = var->memAddress;
             loadAddr = loadConstValue(addressVar, storeAddr, usedRegsPtr, varsPtr, gadgets);
             if (loadAddr == NULL) {
+                free(moveData);
                 continue;
             }
             usedRegs = *usedRegsPtr;
