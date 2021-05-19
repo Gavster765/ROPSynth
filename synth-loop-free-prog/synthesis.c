@@ -61,7 +61,7 @@ char* findComponents(Gadgets gadgets) {
     components[0] = '\0';
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++) {
         Gadget op = gadgets.arithOpGadgets[i];
-        if (strcmp(op.operands[0], op.operands[1]) != 0) {
+        if (strcmp(op.operands[0], op.operands[1]) != 0 && strcmp(op.operands[0], "rsp") != 0) {
             sprintf(components, "%s%s,",components,op.opcode);
             // sprintf(components, "%s%s,",components,op.opcode);
             // sprintf(components, "%s%s,",components,op.opcode);
@@ -70,6 +70,7 @@ char* findComponents(Gadgets gadgets) {
     for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
         Gadget op = gadgets.specialGadgets[i];
         sprintf(components, "%s%s,",components,op.opcode);
+        // sprintf(components, "%s%s,",components,op.opcode);
     }
     int len = strlen(components);
     if (components[len-1] == ',') {
@@ -109,9 +110,9 @@ char* createProgSpec(Pseudo instr, Vars* vars) {
     if (b == NULL) {
         sprintf(spec, "%sConst %ld,",spec,getVarValue(inst.operand2));
     }
-    else if (b->constant) {
-        sprintf(spec, "%sConst %ld,",spec,b->value);
-    }
+    // else if (b->constant) {
+    //     sprintf(spec, "%sConst %ld,",spec,b->value);
+    // }
     else {
         strcat(spec,"Var,");
     }
@@ -244,6 +245,7 @@ char* findAlternative(Pseudo instr, Vars* vars, Gadgets gadgets) {
     char* synth = getSynth(spec, gadgets, false);
     if (synth == NULL) {
         synth = run(components, spec);
+        // printf("%s\n",synth);
         if (strcmp(synth,"Error") == 0) {
             free(spec);
             free(components);
