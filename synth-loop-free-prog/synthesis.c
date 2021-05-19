@@ -70,7 +70,7 @@ char* findComponents(Gadgets gadgets) {
     for (int i = 0 ; i < gadgets.numSpecialGadgets ; i++) {
         Gadget op = gadgets.specialGadgets[i];
         sprintf(components, "%s%s,",components,op.opcode);
-        // sprintf(components, "%s%s,",components,op.opcode);
+        sprintf(components, "%s%s,",components,op.opcode);
     }
     int len = strlen(components);
     if (components[len-1] == ',') {
