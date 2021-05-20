@@ -61,6 +61,7 @@ pop rcx (1003)
 mov QWORD PTR[rcx], rax
 
 
+
 pop rax (1002)
 mov rax, QWORD PTR[rax]
 
@@ -91,12 +92,13 @@ pop rcx (1001)
 mov QWORD PTR[rcx], rax
 
 
+
 pop rax (1005)
 mov rax, QWORD PTR[rax]
 
 
 
-pop rcx (1001)
+pop rcx (1)
 add rax, rcx
 
 

@@ -20,6 +20,17 @@ mov rax, QWORD PTR[rax]
 
 
 
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1004)
+mov rax, QWORD PTR[rax]
+
+
+
+
 
 pop rdi (1002)
 mov rcx, QWORD PTR[rdi]

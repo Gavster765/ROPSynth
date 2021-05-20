@@ -41,6 +41,17 @@ mov rax, QWORD PTR[rax]
 
 
 
+pop rcx (1009)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1009)
+mov rax, QWORD PTR[rax]
+
+
+
+
 
 pop rdi (1001)
 mov rcx, QWORD PTR[rdi]
@@ -85,10 +96,22 @@ pop rcx (1003)
 mov QWORD PTR[rcx], rax
 
 
+
 pop rax (1002)
 mov rax, QWORD PTR[rax]
 
 
+
+
+
+
+pop rcx (1008)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1008)
+mov rax, QWORD PTR[rax]
 
 
 
@@ -106,6 +129,17 @@ mov QWORD PTR[rcx], rax
 pop rax (1008)
 mov rax, QWORD PTR[rax]
 
+
+
+
+
+pop rcx (1014)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1014)
+mov rax, QWORD PTR[rax]
 
 
 
@@ -174,6 +208,17 @@ mov rax, QWORD PTR[rax]
 
 
 
+
+pop rcx (1008)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1008)
+mov rax, QWORD PTR[rax]
+
+
+
 pop rcx (5)
 sub rax, rcx
 
@@ -188,6 +233,17 @@ mov QWORD PTR[rcx], rax
 pop rax (1008)
 mov rax, QWORD PTR[rax]
 
+
+
+
+
+pop rcx (1014)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1014)
+mov rax, QWORD PTR[rax]
 
 
 
@@ -255,6 +311,17 @@ mov rax, QWORD PTR[rax]
 
 
 
+
+pop rcx (1009)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1009)
+mov rax, QWORD PTR[rax]
+
+
+
 pop rcx (0)
 sub rax, rcx
 
@@ -278,6 +345,17 @@ add rsp, rax
 pop rax (1003)
 mov rax, QWORD PTR[rax]
 
+
+
+
+
+pop rcx (1009)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1009)
+mov rax, QWORD PTR[rax]
 
 
 
@@ -367,6 +445,17 @@ add rsp, rax
 pop rax (1003)
 mov rax, QWORD PTR[rax]
 
+
+
+
+
+pop rcx (1009)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1009)
+mov rax, QWORD PTR[rax]
 
 
 

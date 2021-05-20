@@ -568,6 +568,8 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
         char* move;
         char* moveBack;
         Vars* tmpVars = copyVars(*varsPtr);
+        freeUsedRegs(*usedRegsPtr,tmpVars->count);
+        *usedRegsPtr = usedRegisters(tmpVars);
 
         if (used(loadDest,*usedRegsPtr,tmpVars->count)) {
             clearReg = moveRegAnywhere(loadDest, usedRegsPtr, &tmpVars, gadgets);
@@ -618,7 +620,6 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             else {
                 moveBack = strdup("");
             }
-            free(noMoveVarName);
         }
         else {
             moveBack = strdup("");
@@ -639,17 +640,22 @@ char* loadMem(Var* var, char* dest, Var* noMove, char** *usedRegsPtr, Vars* *var
             free(move);
             free(moveBack);
             free(varName);
+            if (noMove != NULL) {    
+                free(noMoveVarName);
+            }
             return assembly;
         }
         freeVars(tmpVars);
         free(clearReg);
         free(clearRegAddr);
         free(loadAddr);
-        free(move);
+        // printf("me\n");
+        // free(move);
+        // printf("no me\n");
         free(moveBack);
     }
     free(varName);
-    if (noMove != NULL) {
+    if (noMove != NULL) {    
         free(noMoveVarName);
     }
     return NULL;
@@ -685,14 +691,16 @@ void storeAllVar(Vars* *varsPtr, Gadgets gadgets) {
                 continue;
             }
             char** usedRegs = usedRegisters(*varsPtr);
-            char* assembly = storeMem(v, &usedRegs, varsPtr, gadgets);
+            Vars* tmpVars = copyVars(*varsPtr);
+            char* assembly = storeMem(v, &usedRegs, &tmpVars, gadgets);
             if (assembly != NULL) {
                 printf("%s\n",assembly);
+                Vars* tmp = *varsPtr;
+                *varsPtr = tmpVars;
+                tmpVars = tmp;
                 free(assembly);
             }
-            else {
-                printf("Warning could not store\n");
-            }
+            freeVars(tmpVars);
             freeUsedRegs(usedRegs, count);
         }
     }
@@ -761,6 +769,9 @@ char* synthesizeCopy(Copy inst, Vars* *varsPtr, Gadgets gadgets){
 // Create type a=a+b, return whether needs updating (yes=1,no=0,fail=-1)
 // Write asm for arithmetic operations
 int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
+    if (inst.opcode != '&' && strcmp(inst.operand1,"_rsp") != 0) {
+        storeAllVar(varsPtr, gadgets);
+    }
     Vars* vars = *varsPtr;
     char op = inst.opcode;
 
@@ -786,6 +797,10 @@ int synthesizeArith(ArithOp inst, Vars* *varsPtr, Gadgets gadgets){
 
         if (checkArithOpGadget(op, gadget.opcode)) {
             char* setupA = checkRegisterPossible(a, gadget.operands[0], NULL, &usedRegs, &tmpVars, gadgets); 
+            freeUsedRegs(usedRegs,tmpVars->count);
+            usedRegs = usedRegisters(tmpVars);
+            addRegToUsed(usedRegs,gadget.operands[0],tmpVars->count);
+
             a = findVar(inst.operand1,tmpVars);
             if (tmpCopy) {
                 b = findVar("_tmp",tmpVars);

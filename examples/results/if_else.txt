@@ -59,6 +59,17 @@ mov rax, QWORD PTR[rax]
 
 
 
+
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1005)
+mov rax, QWORD PTR[rax]
+
+
+
 pop rcx (3)
 sub rax, rcx
 
