@@ -84,6 +84,10 @@ Read <var>
 Write <var>
 ```
 
+## Gadgets
+
+To change the set of gadgets modify `gadgets.txt`. The first line of this files contains a comma separated list of numbers. This list is the number of gadgets in each category and must be updated otherwise ROPSynth will crash.
+
 ## References
 
 Code used to find alternative gadgets in 'synth-loop-free-prog' taken from: https://github.com/fitzgen/synth-loop-free-prog
