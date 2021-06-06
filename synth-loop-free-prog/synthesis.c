@@ -56,12 +56,22 @@ void staticSynthesis(Gadgets gadgets) {
     addStaticSynthComp(spec, synth, gadgets);
 }
 
-char* findComponents(Gadgets gadgets) {
+char* findComponents(Pseudo instr, Gadgets gadgets) {
+    char* inst;
+    if (instr.type == ARITH_OP) {
+        inst = strdup(instr.arithOp.op);
+    }
+    else {
+        inst = strdup(instr.special.op);
+    }
+    inst[0] = tolower(inst[0]);
+
+
     char* components = malloc(gadgets.numArithOpGadgets * 4 * 3 + 1);  // Max 3 char op with comma
     components[0] = '\0';
     for (int i = 0 ; i < gadgets.numArithOpGadgets ; i++) {
         Gadget op = gadgets.arithOpGadgets[i];
-        if (strcmp(op.operands[0], op.operands[1]) != 0 && strcmp(op.operands[0], "rsp") != 0) {
+        if (strcmp(op.operands[0], op.operands[1]) != 0 && strcmp(op.operands[0], "rsp") != 0 && strcmp(op.opcode, inst) != 0) {
             sprintf(components, "%s%s,",components,op.opcode);
             sprintf(components, "%s%s,",components,op.opcode);
             // sprintf(components, "%s%s,",components,op.opcode);
@@ -76,6 +86,7 @@ char* findComponents(Gadgets gadgets) {
     if (components[len-1] == ',') {
         components[len-1] = '\0';  // Remove trailing comma
     }
+    free(inst);
     return components;
 }
 
@@ -240,8 +251,9 @@ char* findAlternative(Pseudo instr, Vars* vars, Gadgets gadgets) {
         }
     }
     
-    char* components = findComponents(gadgets);
+    char* components = findComponents(instr, gadgets);
     char* spec = createProgSpec(instr, vars);
+    // printf("%s %s %s\n",instr.arithOp.op,instr.arithOp.operand1,instr.arithOp.operand2);
     char* synth = getSynth(spec, gadgets, false);
     if (synth == NULL) {
         synth = run(components, spec);
@@ -257,6 +269,7 @@ char* findAlternative(Pseudo instr, Vars* vars, Gadgets gadgets) {
     }
     else {
         free(spec);
+        // printf("%s\n",synth);
         synth = parseNewProg(synth, instr, vars);
     }
     free(components);

@@ -1,4 +1,4 @@
-EXAMPLES:= fib fizzbuzz jump xor read_write if_else while neg_not
+EXAMPLES:= fib fizzbuzz jump xor read_write if_else while neg_not fac
 
 build:
 	cargo build --release --manifest-path=synth-loop-free-prog/Cargo.toml

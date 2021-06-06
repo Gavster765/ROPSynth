@@ -1,0 +1,243 @@
+
+pop rax (5)
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+(2002)
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1004)
+mov rax, QWORD PTR[rax]
+
+
+
+pop rcx (0)
+sub rax, rcx
+
+pop rax (0)
+
+adc rax, rax
+
+neg rax
+
+
+pop rcx (2009)
+and rax, rcx
+
+
+add rsp, rax
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1004)
+mov rax, QWORD PTR[rax]
+
+
+
+pop rcx (0)
+sub rax, rcx
+
+neg rax
+
+pop rax (0)
+
+adc rax, rax
+
+neg rax
+
+
+pop rcx (2005)
+and rax, rcx
+
+
+add rsp, rax
+
+
+pop rax (2009)
+add rsp, rax
+
+
+pop rax (2008)
+add rsp, rax
+(2005)
+
+
+
+pop rax (1002)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1003)
+mov QWORD PTR[rcx], rax
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1004)
+mov QWORD PTR[rcx], rax
+
+pop rax (0)
+
+
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
+
+pop rax (1)
+
+
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
+(2007)
+
+
+
+pop rax (1004)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1009)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1009)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rdi (1006)
+mov rcx, QWORD PTR[rdi]
+
+
+sub rax, rcx
+
+pop rax (0)
+
+adc rax, rax
+
+neg rax
+
+
+pop rcx (2010)
+and rax, rcx
+
+
+add rsp, rax
+
+
+
+pop rax (1005)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1003)
+mov rdx, QWORD PTR[rcx]
+
+
+add rax, rdx
+
+
+
+pop rcx (1005)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1006)
+mov rax, QWORD PTR[rax]
+
+
+
+pop rcx (1)
+add rax, rcx
+
+
+
+pop rcx (1006)
+mov QWORD PTR[rcx], rax
+
+
+pop rax (2007)
+add rsp, rax
+(2010)
+
+
+
+pop rax (1005)
+mov rax, QWORD PTR[rax]
+
+
+
+
+
+pop rcx (1002)
+mov QWORD PTR[rcx], rax
+
+
+
+pop rax (1001)
+mov rax, QWORD PTR[rax]
+
+
+
+pop rcx (1)
+sub rax, rcx
+
+
+
+pop rcx (1001)
+mov QWORD PTR[rcx], rax
+(2008)
+
+
+pop rax (2002)
+add rsp, rax
+(2009)
